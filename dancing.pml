@@ -31,6 +31,15 @@
         <File name="ti_mnogo_rabotaesh" src="ti_mnogo_rabotaesh.wav" />
         <File name="da_ya_ochen_mnogo_rabotau" src="da_ya_ochen_mnogo_rabotau.wav" />
         <File name="net_vse_v_poryadke" src="net_vse_v_poryadke.wav" />
+        <File name="smotrite_technograd_tv" src="smotrite_technograd_tv.wav" />
+        <File name="fond_kpd_sto" src="fond_kpd_sto.wav" />
+        <File name="Sofya_Suzdalova" src="Sofya_Suzdalova.wav" />
+        <File name="spetsialniy" src="spetsialniy.wav" />
+        <File name="mc_kakos" src="mc_kakos.wav" />
+        <File name="msk_club_show" src="msk_club_show.wav" />
+        <File name="pobeda_team" src="pobeda_team.wav" />
+        <File name="eto_proekt_pobeda" src="eto_proekt_pobeda.wav" />
+        <File name="kozhanie meshki" src="kozhanie meshki.wav" />
     </Resources>
     <Topics />
     <IgnoredPaths />
