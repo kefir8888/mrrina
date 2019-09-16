@@ -6,6 +6,7 @@ import math
 import requests
 import time
 
+from interface import interface_window
 
 def get_middle_point(image):
     nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(image)
@@ -19,17 +20,7 @@ def get_middle_point(image):
         return x, y
     return -1, -1
 
-
-# TODO: свитч на кнопки, словарь с активностями
-# TODO: отрефакторить это произведение искусства 
-# TODO: поменять клавиатурный интерфейс хождения
-# TODO: словарь на действия и кнопки, а то совсем плохо
-# TODO: добавить хэндлинг русских букв
-# TODO: добавить флаг на работу в автономном режиме, без робота
-# TODO: добавить кнопки на: руку вперед, "привет", разжать/сжать пальцы, танец
-
 def main():
-
     WIND_X = 200
     WIND_Y = 200
 
@@ -40,7 +31,7 @@ def main():
 
     # ip_num = "10.197.241.216"
     # ip_num = "10.0.0.103"
-    ip_num = "192.168.43.65"
+    ip_num = "192.168.1.29"
 
     # ip_num = "192.168.43.42"
     ip_postfix = ":"
@@ -59,11 +50,14 @@ def main():
     curr_time = time.time()
     time_of_prev_press = 0.0
 
-    cam1 = cv2.VideoCapture(1)
+    cam1 = cv2.VideoCapture(0)
 
     cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
 
     cv2.resizeWindow("frame", (960, 720))
+
+    angle      = 10
+    angle_sent = False
 
     while True:
         ret1, frame1 = cam1.read()
@@ -95,17 +89,34 @@ def main():
 
         distance = abs(x_blue - x_red)
 
-        if distance < 100:
-            r = requests.get(ip + port + "/?action=/hands_front&text=qwer")
+        #if distance < 100:
+        #    r = requests.get(ip + port + "/?action=/hands_front&text=qwer")
 
-        elif distance >= 100:
-            r = requests.get(ip + port + "/?action=/hands_sides&text=open_right")
+        #elif distance >= 100:
+        #    r = requests.get(ip + port + "/?action=/hands_sides&text=open_right")
 
-        print(distance)
+        #print(distance)
+        
+        print (angle)
+        
         time.sleep(0.01)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        key = cv2.waitKey(1) & 0xFF
+
+        if (key == ord('n')):
+            angle += 1
+            angle_sent = False
+
+        elif (key == ord('m')):
+            angle -= 1
+            angle_sent = False
+
+        elif (key == ord('q')):
             break
+        
+        if (angle_sent == False):
+                r = requests.get(ip + port + "/?action=/raise_hands&text=" + str (angle))
+                angle_sent = True
 
     cam1.release()
 
