@@ -28,83 +28,89 @@ def get_middle_point(image):
 # TODO: добавить флаг на работу в автономном режиме, без робота
 # TODO: добавить кнопки на: руку вперед, "привет", разжать/сжать пальцы, танец
 
-WIND_X = 200
-WIND_Y = 200
+def main():
 
-cv2.namedWindow("remote_controller", cv2.WINDOW_AUTOSIZE)
-cv2.resizeWindow("remote_controller", (WIND_Y, WIND_X))
+    WIND_X = 200
+    WIND_Y = 200
 
-ip_prefix = "http://"
+    cv2.namedWindow("remote_controller", cv2.WINDOW_AUTOSIZE)
+    cv2.resizeWindow("remote_controller", (WIND_Y, WIND_X))
 
-# ip_num = "10.197.241.216"
-# ip_num = "10.0.0.103"
-ip_num = "192.168.43.65"
+    ip_prefix = "http://"
 
-# ip_num = "192.168.43.42"
-ip_postfix = ":"
+    # ip_num = "10.197.241.216"
+    # ip_num = "10.0.0.103"
+    ip_num = "192.168.43.65"
 
-ip = ip_prefix + ip_num + ip_postfix
+    # ip_num = "192.168.43.42"
+    ip_postfix = ":"
 
-port = "9562"
+    ip = ip_prefix + ip_num + ip_postfix
 
-canvas = np.ones((WIND_Y, WIND_X, 3), np.uint8) * 100
+    port = "9562"
 
-queue = []
-queue_ = []
+    canvas = np.ones((WIND_Y, WIND_X, 3), np.uint8) * 100
 
-to_next_operation = False
+    queue = []
+    queue_ = []
 
-curr_time = time.time()
-time_of_prev_press = 0.0
+    to_next_operation = False
 
-cam1 = cv2.VideoCapture(1)
+    curr_time = time.time()
+    time_of_prev_press = 0.0
 
-cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
+    cam1 = cv2.VideoCapture(1)
 
-cv2.resizeWindow("frame", (960, 720))
+    cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
 
-while True:
-    ret1, frame1 = cam1.read()
+    cv2.resizeWindow("frame", (960, 720))
 
-    cv2.waitKey(1)
+    while True:
+        ret1, frame1 = cam1.read()
 
-    ker_sz = 19
+        cv2.waitKey(1)
 
-    frame1_hsv = cv2.cvtColor(frame1, cv2.COLOR_BGR2HSV)
+        ker_sz = 19
 
-    lower_red = np.array([0, 120, 70])
-    upper_red = np.array([10, 255, 255])
+        frame1_hsv = cv2.cvtColor(frame1, cv2.COLOR_BGR2HSV)
 
-    mask_red = cv2.inRange(frame1_hsv, lower_red, upper_red)
+        lower_red = np.array([0, 120, 70])
+        upper_red = np.array([10, 255, 255])
 
-    lower_blue = np.array([120, 120, 70])
-    upper_blue = np.array([140, 255, 255])
+        mask_red = cv2.inRange(frame1_hsv, lower_red, upper_red)
 
-    mask_blue = cv2.inRange(frame1_hsv, lower_blue, upper_blue)
+        lower_blue = np.array([120, 120, 70])
+        upper_blue = np.array([140, 255, 255])
 
-    clear_output(wait=True)
+        mask_blue = cv2.inRange(frame1_hsv, lower_blue, upper_blue)
 
-    x_blue, y_blue = get_middle_point(mask_blue)
+        clear_output(wait=True)
 
-    x_red, y_red = get_middle_point(mask_red)
+        x_blue, y_blue = get_middle_point(mask_blue)
 
-    mask = np.concatenate((mask_blue, mask_red), axis=1)
-    cv2.imshow('mask', mask)
+        x_red, y_red = get_middle_point(mask_red)
 
-    distance = abs(x_blue - x_red)
+        mask = np.concatenate((mask_blue, mask_red), axis=1)
+        cv2.imshow('mask', mask)
 
-    if distance < 100:
-        r = requests.get(ip + port + "/?action=/hands_front&text=qwer")
+        distance = abs(x_blue - x_red)
 
-    elif distance >= 100:
-        r = requests.get(ip + port + "/?action=/hands_sides&text=open_right")
+        if distance < 100:
+            r = requests.get(ip + port + "/?action=/hands_front&text=qwer")
 
-    print(distance)
-    time.sleep(0.01)
+        elif distance >= 100:
+            r = requests.get(ip + port + "/?action=/hands_sides&text=open_right")
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+        print(distance)
+        time.sleep(0.01)
 
-cam1.release()
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-cv2.destroyAllWindows()
+    cam1.release()
+
+    cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    main()
