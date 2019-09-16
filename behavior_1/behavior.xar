@@ -14,7 +14,7 @@
     <Timeline enable="0">
       <BehaviorLayer name="behavior_layer1">
         <BehaviorKeyframe name="keyframe1" index="1">
-          <Diagram scale="42.0448">
+          <Diagram scale="50">
             <Box name="Python Script" id="1" localization="8" tooltip="This box contains a basic python script and can be used to create any python script box you would like.&#x0A;&#x0A;To edit its script, double-click on it." x="334" y="107">
               <bitmap>media/images/box/box-python-script.png</bitmap>
               <script language="4">
@@ -37,9 +37,10 @@ import almath
 #ip = '192.168.43.42'
 #ip = '10.197.241.216'
 #ip = '10.0.0.103'
+#ip = '172.20.10.14'
+#ip = '192.168.43.65'
 ip = '192.168.1.29'
-
-port = 9561
+port = 9562
 
 class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
 
@@ -148,6 +149,8 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
     elif action == "/play_zhel_logo_ku_gi":   current_object.play_zhel_logo_ku_gi()
     elif action == "/play_zhel_logo_no":      current_object.play_zhel_logo_no()
     elif action == "/play_zhel_logo_su_sa":   current_object.play_zhel_logo_su_sa()
+
+    elif action == "/raise_hands":   current_object.raise_hands(int(text))
 
     elif action == "/stop_voice":           current_object.stop_voice()
 
@@ -378,6 +381,7 @@ class MyClass(GeneratedClass):
               <Output name="rot_m20" type="1" type_size="1" nature="2" inner="0" tooltip="" id="82" />
               <Output name="rot_50" type="1" type_size="1" nature="2" inner="0" tooltip="" id="83" />
               <Output name="rot_m50" type="1" type_size="1" nature="2" inner="0" tooltip="" id="84" />
+              <Output name="raise_hands" type="2" type_size="1" nature="2" inner="0" tooltip="" id="85" />
             </Box>
             <Box name="Eye LEDs Red" id="2" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="878" y="261">
               <bitmap>media/images/box/interaction/LED.png</bitmap>
@@ -32086,6 +32090,40 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
+            <Box name="Python Script (2)" id="179" localization="8" tooltip="This box contains a basic python script and can be used to create any python script box you would like.&#x0A;&#x0A;To edit its script, double-click on it." x="1894" y="1370">
+              <bitmap>media/images/box/box-python-script.png</bitmap>
+              <script language="4">
+                <content>
+                  <![CDATA[class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self)
+        self.motionProxy = ALProxy("ALMotion")
+
+    def onLoad(self):
+        #put initialization code here
+        pass
+
+    def onUnload(self):
+        #put clean-up code here
+        pass
+
+    def onInput_onStart(self, number):
+        #self.onStopped() #activate the output of the box
+        names = ["RShoulderPitch"]
+        self.motionProxy.setAngles(names, [number/60.0], 0.2)
+        pass
+
+    def onInput_onStop(self):
+        self.onUnload() #it is recommended to reuse the clean-up as the box is stopped
+        self.onStopped() #activate the output of the box]]>
+                </content>
+              </script>
+              <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+              <Input name="onStart" type="2" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+              <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+              <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
+              <Parameter name="number" inherits_from_parent="0" content_type="1" value="0" default_value="0" min="0" max="10000000" tooltip="" id="5" />
+            </Box>
             <Link inputowner="1" indexofinput="3" outputowner="1" indexofoutput="7" />
             <Link inputowner="2" indexofinput="2" outputowner="1" indexofoutput="9" />
             <Link inputowner="3" indexofinput="2" outputowner="1" indexofoutput="10" />
@@ -32311,6 +32349,8 @@ class MyClass(GeneratedClass):
             <Link inputowner="12" indexofinput="2" outputowner="178" indexofoutput="4" />
             <Link inputowner="177" indexofinput="2" outputowner="1" indexofoutput="39" />
             <Link inputowner="12" indexofinput="2" outputowner="177" indexofoutput="4" />
+            <Link inputowner="179" indexofinput="2" outputowner="1" indexofoutput="85" />
+            <Link inputowner="12" indexofinput="2" outputowner="179" indexofoutput="4" />
           </Diagram>
         </BehaviorKeyframe>
       </BehaviorLayer>
