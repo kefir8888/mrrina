@@ -5,8 +5,9 @@ import argparse
 import numpy as np
 import pandas as pd
 # from naoqi import ALProxy
+import click
 import requests
-import pyautogui
+# import pyautogui
 
 # Global variables
 listAngles = []
@@ -29,14 +30,14 @@ cursor = [
 
 ]
 
-
-def click(x, y):
-    # win32api.SetCursorPos((x,y))
-    # time.sleep(.01)
-    # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,x,y,0,0)
-    # time.sleep(.01)
-    # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,x,y,0,0)
-    pyautogui.click(x, y)
+#
+# def click(x, y):
+#     # win32api.SetCursorPos((x,y))
+#     # time.sleep(.01)
+#     # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,x,y,0,0)
+#     # time.sleep(.01)
+#     # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,x,y,0,0)
+#     pyautogui.click(x, y)
 
 def transform_raw(file_path):
     ###how joint posotions are saved in file
@@ -189,7 +190,12 @@ def transform_raw_every_5_motion(file_path):
 
     result = pd.DataFrame.from_records(data, columns=columns)
     result = result[new_columns]
-    return result[::30]
+    i = 1
+    result_real = result.copy()
+    while i*10 < result.shape[0]:
+        result_real.loc[i-1] = result[(i-1)*10:i*10].mean(axis=0)
+        i+=1
+    return result[:i]
 
 
 def angleRShoulderPitch(x2, y2, z2, x1, y1, z1): #calulates the Shoulderpitch value for the Right shoulder by using geometry
@@ -313,9 +319,11 @@ def angleLElbowRoll(x3, y3, z3, x2, y2, z2, x1, y1, z1): #calulates the ElbowRol
     angle = -180+ angle
     return angle
 
-def on_message(RobotIP, RobotPort): # Checks the mqtt message it receives and processes the json
+def on_message(RobotIP, RobotPort, path): # Checks the mqtt message it receives and processes the json
+    # path = 'C:/KinectData/test5/Skel/' + path
     path = 'C:/KinectData/test5/Skel/Joint_Position.binary'
     result_all = transform_raw_every_5_motion(file_path=path)
+    # result_all = transform_raw(file_path=path)
     for i, result_of_row in result_all.iterrows():
         time.sleep(1)
         result = []
@@ -378,17 +386,19 @@ def on_message(RobotIP, RobotPort): # Checks the mqtt message it receives and pr
 
 def sendrobot(angles, robot_ip, port):
     action = "/?action=/raise_hands" + angles
+    # print(action)
     r = requests.get('http://' + robot_ip + ':' + port + action)
     # print(action)
 
-def main(robotIp, port):
+
+@click.argument('path')
+def main(robotIp, port, path):
     # while True:
         # click(cursor[0][0], cursor[0][1])
         # time.sleep(1)
         # click(cursor[1][0], cursor[1][1])
         # time.sleep(1)
-        on_message(robotIp, port)
-
+        on_message(robotIp, port, path)
 
 if __name__ == '__main__':
     main(RobotIP, '9562')
