@@ -195,7 +195,7 @@ def transform_raw_every_5_motion(file_path):
     while i*10 < result.shape[0]:
         result_real.loc[i-1] = result[(i-1)*10:i*10].mean(axis=0)
         i+=1
-    return result[:i]
+    return result_real[:i]
 
 
 def angleRShoulderPitch(x2, y2, z2, x1, y1, z1): #calulates the Shoulderpitch value for the Right shoulder by using geometry
@@ -319,10 +319,10 @@ def angleLElbowRoll(x3, y3, z3, x2, y2, z2, x1, y1, z1): #calulates the ElbowRol
     angle = -180+ angle
     return angle
 
-def on_message(RobotIP, RobotPort, path): # Checks the mqtt message it receives and processes the json
-    # path = 'C:/KinectData/test5/Skel/' + path
-    path = 'C:/KinectData/test5/Skel/Joint_Position.binary'
-    result_all = transform_raw_every_5_motion(file_path=path)
+def on_message(RobotIP, RobotPort): # Checks the mqtt message it receives and processes the json
+    #path = 'C:/KinectData/test5/Skel/' + path
+    path_ = 'C:/KinectData/test9/Skel/Joint_Position.binary'
+    result_all = transform_raw_every_5_motion(file_path=path_)
     # result_all = transform_raw(file_path=path)
     for i, result_of_row in result_all.iterrows():
         time.sleep(1)
@@ -391,14 +391,14 @@ def sendrobot(angles, robot_ip, port):
     # print(action)
 
 
-@click.argument('path')
-def main(robotIp, port, path):
+# @click.argument('path')
+def main(robotIp, port):
     # while True:
         # click(cursor[0][0], cursor[0][1])
         # time.sleep(1)
         # click(cursor[1][0], cursor[1][1])
         # time.sleep(1)
-        on_message(robotIp, port, path)
+        on_message(robotIp, port)
 
 if __name__ == '__main__':
     main(RobotIP, '9562')
