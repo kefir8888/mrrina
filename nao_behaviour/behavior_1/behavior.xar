@@ -39,7 +39,7 @@ import almath
 #ip = '10.0.0.102'
 #ip = '172.20.10.14'
 #ip = '192.168.43.65'
-ip = '192.168.1.29'
+ip = '172.20.10.14'
 port = 9562
 
 class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
