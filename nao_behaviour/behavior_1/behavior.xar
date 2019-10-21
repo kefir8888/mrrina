@@ -32,16 +32,16 @@ import time
 import almath
 
 #ip = '0.0.0.0'
-#ip = '10.0.1.178'
+ip = '10.0.0.102'
 
 #ip = '192.168.43.42'
 #ip = '10.197.241.216'
-#ip = '10.0.0.102'
+#ip = '10.0.0.106'
 #ip = '172.20.10.14'
 #ip = '192.168.43.65'
 #ip = '172.20.10.14'
-ip = '192.168.1.29'
-port = 9562
+#ip = '192.168.1.29'
+port = 9568
 
 class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
 
@@ -109,7 +109,11 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
     response = 200
 
     #setting global status as running
-    if action != "/free": ALMemory.insertData("nao-remote/is_action_running", 1)
+    if (action != "/free" and
+       action != "/start_voice_recognition" and
+       action != "/stop_voice_recognition" and
+       action != "/word_if_any"):
+        ALMemory.insertData("nao-remote/is_action_running", 1)
 
     #eyes section###################################################
     if   action == "/red":       current_object.onRedEyes()
@@ -270,6 +274,8 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
     elif action == "/come_here": current_object.onSpeak("Подойди ко мне.")
     elif action == "/want_play": current_object.onSpeak("Хочешь поиграть?")
 
+    elif action == "/play_mp3": current_object.play_mp3(text)
+
     elif action == "/free":
         status = ALMemory.getData("nao-remote/is_action_running")
         response = status + 666
@@ -278,9 +284,18 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
         status = ALMemory.getData("nao-remote/stop_queue")
         response = status + 666
 
+    elif action == "/start_voice_recognition": current_object.start_voice_recognition ()
+    elif action == "/stop_voice_recognition": current_object.stop_voice_recognition ()
+
+    elif action == "/word_if_any":
+        response = 666 + ALMemory.getData("nao-remote/word_if_any")
+        ALMemory.insertData("nao-remote/word_if_any", 0)
+
     else:
         ALMemory.insertData("nao-remote/is_action_running", 0)
         response = 404
+
+    current_object.logger.info (response)
 
     self.send_response (response)
 
@@ -305,6 +320,7 @@ class MyClass(GeneratedClass):
         #put initialization code here
 
         ALMemory.insertData("nao-remote/is_action_running", 0)
+        ALMemory.insertData("nao-remote/word_if_any", 0)
 
         pass
 
@@ -447,6 +463,10 @@ class MyClass(GeneratedClass):
               <Output name="M4" type="1" type_size="1" nature="2" inner="0" tooltip="" id="89" />
               <Output name="M5" type="1" type_size="1" nature="2" inner="0" tooltip="" id="90" />
               <Output name="M6" type="1" type_size="1" nature="2" inner="0" tooltip="" id="91" />
+              <Output name="voice_recognition" type="1" type_size="1" nature="2" inner="0" tooltip="" id="92" />
+              <Output name="start_voice_recognition" type="1" type_size="1" nature="2" inner="0" tooltip="" id="93" />
+              <Output name="stop_voice_recognition" type="1" type_size="1" nature="2" inner="0" tooltip="" id="94" />
+              <Output name="play_mp3" type="3" type_size="1" nature="2" inner="0" tooltip="" id="95" />
             </Box>
             <Box name="Eye LEDs Red" id="2" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="878" y="261">
               <bitmap>media/images/box/interaction/LED.png</bitmap>
@@ -656,6 +676,9 @@ class MyClass(GeneratedClass):
         self.ids = []
         self.leds = ALProxy("ALLeds")
 
+        #aup = ALProxy("ALAudioPlayer", "127.0.0.1", 9559)
+        #fileId = aup.post.playFile("/home/nao/music/moi_horosho.mp3")
+
     def onUnload(self):
         #~ puts code for box cleanup here
         pass
@@ -733,6 +756,7 @@ class MyClass(GeneratedClass):
         #ALMemory.insertData("nao-remote/is_action_running", 0)
 
         ALMemory.insertData("nao-remote/is_action_running", 0)
+        current_object.logger.info ("stopped")
 
         pass
 
@@ -1539,7 +1563,7 @@ class MyClass(GeneratedClass):
               <Parameter name="Amplitude" inherits_from_parent="0" content_type="2" value="0.905405" default_value="0.5" min="0" max="1" tooltip="Amplitude of the breathing animation. At high frequencies, only low amplitudes are allowed. Input amplitude may be clipped." id="6" />
               <Parameter name="Bpm" inherits_from_parent="0" content_type="2" value="15" default_value="12" min="5" max="30" tooltip="Bpm is the breathing frequency in beat per minute." id="7" />
             </Box>
-            <Box name="BreathOn (1)" id="151" localization="8" tooltip="Activate or deactivate breathing animation on the desired Chain." x="793" y="562">
+            <Box name="BreathOn (1)" id="151" localization="8" tooltip="Activate or deactivate breathing animation on the desired Chain." x="899" y="557">
               <bitmap>media/images/box/movement/animation_mode.png</bitmap>
               <script language="4">
                 <content>
@@ -1606,7 +1630,7 @@ class MyClass(GeneratedClass):
               <Parameter name="Amplitude" inherits_from_parent="0" content_type="2" value="0" default_value="0.5" min="0" max="1" tooltip="Amplitude of the breathing animation. At high frequencies, only low amplitudes are allowed. Input amplitude may be clipped." id="6" />
               <Parameter name="Bpm" inherits_from_parent="0" content_type="2" value="5" default_value="12" min="5" max="30" tooltip="Bpm is the breathing frequency in beat per minute." id="7" />
             </Box>
-            <Box name="BreathOn (2)" id="152" localization="8" tooltip="Activate or deactivate breathing animation on the desired Chain." x="652" y="559">
+            <Box name="BreathOn (2)" id="152" localization="8" tooltip="Activate or deactivate breathing animation on the desired Chain." x="609" y="661">
               <bitmap>media/images/box/movement/animation_mode.png</bitmap>
               <script language="4">
                 <content>
@@ -14977,7 +15001,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="Move_20" id="10" localization="8" tooltip="Make the robot move to a configured point relative to its current location." x="834" y="1532">
+            <Box name="Move_20" id="10" localization="8" tooltip="Make the robot move to a configured point relative to its current location." x="779" y="1382">
               <bitmap>media/images/box/movement/walk_forward.png</bitmap>
               <script language="4">
                 <content>
@@ -14993,6 +15017,7 @@ class MyClass(GeneratedClass):
 
     def onUnload(self):
         self.motion.moveToward(0.0, 0.0, 0.0)
+        #ALMemory.insertData("nao-remote/is_action_running", 0)
 
     def onInput_onStart(self):
         import almath
@@ -15209,7 +15234,7 @@ class MyClass(GeneratedClass):
               <Parameter name="Arms movement enabled" inherits_from_parent="0" content_type="0" value="1" default_value="1" tooltip="Enables natural motion of the arms." id="9" />
               <Resource name="Legs" type="Lock" timeout="0" />
             </Box>
-            <Box name="Move To (5)" id="16" localization="8" tooltip="Make the robot move to a configured point relative to its current location." x="896" y="1845">
+            <Box name="Move To (5)" id="16" localization="8" tooltip="Make the robot move to a configured point relative to its current location." x="851" y="1840">
               <bitmap>media/images/box/movement/walk_forward.png</bitmap>
               <script language="4">
                 <content>
@@ -38493,7 +38518,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="All motors" type="Lock" timeout="0" />
             </Box>
-            <Box name="Hello (1)" id="238" localization="8" tooltip="Simple hello animation.&#x0A;&#x0A;!!Warning!! There is no speech in this box. It is a just an animation box with some&#x0A;leds animation." x="452" y="461">
+            <Box name="Hello (1)" id="238" localization="8" tooltip="Simple hello animation.&#x0A;&#x0A;!!Warning!! There is no speech in this box. It is a just an animation box with some&#x0A;leds animation." x="530" y="451">
               <bitmap>media/images/box/movement/move.png</bitmap>
               <script language="4">
                 <content>
@@ -38928,7 +38953,7 @@ class MyClass(GeneratedClass):
                 <Choice value="Close the hand" />
               </Parameter>
             </Box>
-            <Box name="closeBothHands (1)" id="254" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="152" y="498">
+            <Box name="closeBothHands (1)" id="254" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="186" y="567">
               <bitmap>media/images/box/movement/move_arm.png</bitmap>
               <script language="4">
                 <content>
@@ -38978,6 +39003,180 @@ class MyClass(GeneratedClass):
                 <Choice value="Open the hand" />
                 <Choice value="Close the hand" />
               </Parameter>
+            </Box>
+            <Box name="Speech Reco." id="255" localization="8" tooltip="Recognize a word from a list of words set in the box parameters.&#x0A;&#x0A;V1.1.0&#x0A;" x="137" y="1813">
+              <bitmap>media/images/box/interaction/ear.png</bitmap>
+              <script language="4">
+                <content>
+                  <![CDATA[
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+
+    def onLoad(self):
+        try:
+            self.asr = self.session().service("ALSpeechRecognition")
+        except Exception as e:
+            self.asr = None
+            self.logger.error(e)
+        self.memory = self.session().service("ALMemory")
+        from threading import Lock
+        self.bIsRunning = False
+        self.mutex = Lock()
+        self.hasPushed = False
+        self.hasSubscribed = False
+        self.BIND_PYTHON(self.getName(), "onWordRecognized")
+
+    def onUnload(self):
+        from threading import Lock
+        self.mutex.acquire()
+        try:
+            if (self.bIsRunning):
+                if (self.hasSubscribed):
+                    self.memory.unsubscribeToEvent("WordRecognized", self.getName())
+                if (self.hasPushed and self.asr):
+                    self.asr.popContexts()
+        except RuntimeError, e:
+            self.mutex.release()
+            raise e
+        self.bIsRunning = False;
+        self.mutex.release()
+
+    def onInput_onStart(self):
+        from threading import Lock
+        current_object.logger.info ("AAAAAAAAA")
+        self.mutex.acquire()
+        if(self.bIsRunning):
+            self.mutex.release()
+            return
+        self.bIsRunning = True
+        try:
+            if self.asr:
+                self.asr.pushContexts()
+            self.hasPushed = True
+            if self.asr:
+                self.asr.setVocabulary( self.getParameter("Word list").split(';'), self.getParameter("Enable word spotting") )
+            self.memory.subscribeToEvent("WordRecognized", self.getName(), "onWordRecognized")
+            self.hasSubscribed = True
+        except RuntimeError, e:
+            self.mutex.release()
+            self.onUnload()
+            raise e
+        self.mutex.release()
+
+    def onInput_onStop(self):
+        if( self.bIsRunning ):
+            self.onUnload()
+            self.onStopped()
+
+    def onWordRecognized(self, key, value, message):
+        if(len(value) > 1 and value[1] >= self.getParameter("Confidence threshold (%)")/100.):
+            current_object.logger.info ("AAAAAAAAA" + value [0] [6:-6])
+
+            word = value [0] [6:-6]
+
+            if (word == "yes"):
+                ALMemory.insertData("nao-remote/word_if_any", 1)
+
+            elif (word == "no"):
+                ALMemory.insertData("nao-remote/word_if_any", 2)
+
+            elif (word == "привет"):
+                ALMemory.insertData("nao-remote/word_if_any", 3)
+
+            elif (word == "подними"):
+                ALMemory.insertData("nao-remote/word_if_any", 4)
+
+            elif (word == "правую"):
+                ALMemory.insertData("nao-remote/word_if_any", 5)
+
+            elif (word == "левую"):
+                ALMemory.insertData("nao-remote/word_if_any", 6)
+
+            elif (word == "руку"):
+                ALMemory.insertData("nao-remote/word_if_any", 7)
+
+            elif (word == "вперед"):
+                ALMemory.insertData("nao-remote/word_if_any", 8)
+
+            elif (word == "вправо"):
+                ALMemory.insertData("nao-remote/word_if_any", 9)
+
+            elif (word == "влево"):
+                ALMemory.insertData("nao-remote/word_if_any", 10)
+
+            elif (word == "встань"):
+                ALMemory.insertData("nao-remote/word_if_any", 11)
+
+            elif (word == "сядь"):
+                ALMemory.insertData("nao-remote/word_if_any", 12)
+
+            elif (word == "красный"):
+                ALMemory.insertData("nao-remote/word_if_any", 13)
+
+            elif (word == "зеленый"):
+                ALMemory.insertData("nao-remote/word_if_any", 14)
+
+            elif (word == "синий"):
+                ALMemory.insertData("nao-remote/word_if_any", 15)
+
+            elif (word == "разожми"):
+                ALMemory.insertData("nao-remote/word_if_any", 16)
+
+            elif (word == "сожми"):
+                ALMemory.insertData("nao-remote/word_if_any", 23)
+
+            elif (word == "пальцы"):
+                ALMemory.insertData("nao-remote/word_if_any", 18)
+
+            elif (word == "иди"):
+                ALMemory.insertData("nao-remote/word_if_any", 19)
+
+            elif (word == "назад"):
+                ALMemory.insertData("nao-remote/word_if_any", 20)
+
+            elif (word == "поверни"):
+                ALMemory.insertData("nao-remote/word_if_any", 21)
+
+            elif (word == "направо"):
+                ALMemory.insertData("nao-remote/word_if_any", 22)
+
+            elif (word == "прямо"):
+                ALMemory.insertData("nao-remote/word_if_any", 17)
+
+            else:
+                ALMemory.insertData("nao-remote/word_if_any", 0)
+
+
+            self.wordRecognized(value[0]) #~ activate output of the box
+        else:
+            self.onNothing()]]>
+                </content>
+              </script>
+              <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+              <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+              <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+              <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
+              <Output name="wordRecognized" type="3" type_size="1" nature="2" inner="0" tooltip="Word recognized with a confidence higher than the threshold set in the box parameters." id="5" />
+              <Output name="onNothing" type="1" type_size="1" nature="2" inner="0" tooltip="Nothing has been understood." id="6" />
+              <Parameter name="Word list" inherits_from_parent="0" content_type="3" value="yes;no;привет;прямо;подними;правую;левую;руку;вперед;вправо;влево;встань;сядь;разожми;сожми;пальцы;иди;назад;поверни;направо;красный;зеленый;синий" default_value="yes;no" custom_choice="0" tooltip="Try to recognize a word from a list of words set in the box parameters." id="7" />
+              <Parameter name="Confidence threshold (%)" inherits_from_parent="0" content_type="1" value="0" default_value="30" min="0" max="100" tooltip="If the confidence associated with the word recognized is below this threshold, the robot will consider that it is not recognized." id="8" />
+              <Parameter name="Enable word spotting" inherits_from_parent="0" content_type="0" value="1" default_value="0" tooltip="If this option is not activated the robot will only understand exact expressions. If it is, he will spot the exact expressions even in the middle of a sentence.&#x0A;&#x0A;!!Warning!! This option is only available with the speech recognition module using Nuance (ie in Atom version of the robot)." id="9" />
+              <Resource name="Speech recognition" type="Lock" timeout="0" />
+            </Box>
+            <Box name="Python Script" id="256" localization="8" tooltip="This box contains a basic python script and can be used to create any python script box you would like.&#x0A;&#x0A;To edit its script, double-click on it." x="364" y="1960">
+              <bitmap>media/images/box/box-python-script.png</bitmap>
+              <script language="4">
+                <content>
+                  <![CDATA[]]>
+                </content>
+              </script>
+              <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+              <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+              <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+              <Input name="input" type="3" type_size="1" nature="1" inner="0" tooltip="" id="4" />
+              <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="5" />
             </Box>
             <Link inputowner="1" indexofinput="3" outputowner="1" indexofoutput="7" />
             <Link inputowner="2" indexofinput="2" outputowner="1" indexofoutput="9" />
@@ -39287,6 +39486,12 @@ class MyClass(GeneratedClass):
             <Link inputowner="12" indexofinput="2" outputowner="254" indexofoutput="3" />
             <Link inputowner="12" indexofinput="2" outputowner="249" indexofoutput="3" />
             <Link inputowner="12" indexofinput="2" outputowner="248" indexofoutput="3" />
+            <Link inputowner="255" indexofinput="2" outputowner="1" indexofoutput="92" />
+            <Link inputowner="255" indexofinput="2" outputowner="1" indexofoutput="93" />
+            <Link inputowner="255" indexofinput="3" outputowner="1" indexofoutput="94" />
+            <Link inputowner="12" indexofinput="2" outputowner="1" indexofoutput="94" />
+            <Link inputowner="256" indexofinput="4" outputowner="1" indexofoutput="95" />
+            <Link inputowner="12" indexofinput="2" outputowner="256" indexofoutput="5" />
           </Diagram>
         </BehaviorKeyframe>
       </BehaviorLayer>
