@@ -32,7 +32,7 @@ import time
 import almath
 
 #ip = '0.0.0.0'
-ip = '10.0.0.102'
+#ip = '10.0.0.102'
 
 #ip = '192.168.43.42'
 #ip = '10.197.241.216'
@@ -40,8 +40,8 @@ ip = '10.0.0.102'
 #ip = '172.20.10.14'
 #ip = '192.168.43.65'
 #ip = '172.20.10.14'
-#ip = '192.168.1.29'
-port = 9568
+ip = '192.168.1.29'
+port = 9569
 
 class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
 
@@ -39169,7 +39169,31 @@ class MyClass(GeneratedClass):
               <bitmap>media/images/box/box-python-script.png</bitmap>
               <script language="4">
                 <content>
-                  <![CDATA[]]>
+                  <![CDATA[class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self)
+
+    def onLoad(self):
+        #put initialization code here
+
+        pass
+
+    def onUnload(self):
+        #put clean-up code here
+        pass
+
+    def onInput_onStart(self):
+        #self.onStopped() #activate the output of the box
+
+        pass
+
+    def onInput_onStop(self):
+        self.onUnload() #it is recommended to reuse the clean-up as the box is stopped
+        self.onStopped() #activate the output of the box
+
+    def onInput_input(self, p):
+        aup = ALProxy("ALAudioPlayer", "127.0.0.1", 9559)
+        fileId = aup.post.playFile("/home/nao/music/Posheltyvzhopu.mp3")]]>
                 </content>
               </script>
               <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
@@ -39177,6 +39201,70 @@ class MyClass(GeneratedClass):
               <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
               <Input name="input" type="3" type_size="1" nature="1" inner="0" tooltip="" id="4" />
               <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="5" />
+            </Box>
+            <Box name="Take Picture" id="257" localization="8" tooltip="Take a picture with one of the cameras camera and store it in his memory in ~/recordings/cameras. The image format is JPG.&#x0A;&#x0A;V1.1.0&#x0A;" x="122" y="1043">
+              <bitmap>media/images/box/interaction/picture.png</bitmap>
+              <script language="4">
+                <content>
+                  <![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.resolutionMap = {
+            '160 x 120': 0,
+            '320 x 240': 1,
+            '640 x 480': 2,
+            '1280 x 960': 3
+        }
+        self.cameraMap = {
+            'Top': 0,
+            'Bottom': 1
+        }
+
+        self.recordFolder = "/home/nao/recordings/cameras/"
+
+    def onLoad(self):
+        self.bIsRunning = False
+        try:
+            self.photoCapture = self.session().service( "ALPhotoCapture" )
+        except Exception as e:
+            self.photoCapture = None
+            self.logger.error(e)
+
+    def onUnload(self):
+        pass
+
+    def onInput_onStart(self):
+        if( self.bIsRunning ):
+            return
+        self.bIsRunning = True
+        resolution = self.resolutionMap['320 x 240']#self.getParameter("Resolution")]
+        cameraID = self.cameraMap[self.getParameter("Camera")]
+        fileName = "kek"#self.getParameter("File Name")
+        if self.photoCapture:
+            self.photoCapture.setResolution(resolution)
+            self.photoCapture.setCameraID(cameraID)
+            self.photoCapture.setPictureFormat("jpg")
+            self.photoCapture.takePicture( self.recordFolder, fileName )
+        self.bIsRunning = False
+        self.onStopped()]]>
+                </content>
+              </script>
+              <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+              <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+              <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="3" />
+              <Parameter name="Resolution" inherits_from_parent="0" content_type="3" value="640 x 480" default_value="640 x 480" custom_choice="0" tooltip="Image resolution." id="4">
+                <Choice value="160 x 120" />
+                <Choice value="320 x 240" />
+                <Choice value="640 x 480" />
+                <Choice value="1280 x 960" />
+              </Parameter>
+              <Parameter name="File Name" inherits_from_parent="0" content_type="3" value="image" default_value="image" custom_choice="0" tooltip="Name of the file without its extension." id="5" />
+              <Parameter name="Camera" inherits_from_parent="0" content_type="3" value="Top" default_value="Top" custom_choice="0" tooltip="Enables to select the camera (Top or Bottom) that will take the picture." id="6">
+                <Choice value="Top" />
+                <Choice value="Bottom" />
+              </Parameter>
             </Box>
             <Link inputowner="1" indexofinput="3" outputowner="1" indexofoutput="7" />
             <Link inputowner="2" indexofinput="2" outputowner="1" indexofoutput="9" />
@@ -39385,7 +39473,6 @@ class MyClass(GeneratedClass):
             <Link inputowner="180" indexofinput="2" outputowner="1" indexofoutput="30" />
             <Link inputowner="12" indexofinput="2" outputowner="180" indexofoutput="4" />
             <Link inputowner="179" indexofinput="2" outputowner="1" indexofoutput="85" />
-            <Link inputowner="52" indexofinput="2" outputowner="0" indexofoutput="2" />
             <Link inputowner="1" indexofinput="2" outputowner="52" indexofoutput="3" />
             <Link inputowner="166" indexofinput="2" outputowner="1" indexofoutput="8" />
             <Link inputowner="12" indexofinput="2" outputowner="166" indexofoutput="4" />
@@ -39492,6 +39579,7 @@ class MyClass(GeneratedClass):
             <Link inputowner="12" indexofinput="2" outputowner="1" indexofoutput="94" />
             <Link inputowner="256" indexofinput="4" outputowner="1" indexofoutput="95" />
             <Link inputowner="12" indexofinput="2" outputowner="256" indexofoutput="5" />
+            <Link inputowner="1" indexofinput="2" outputowner="0" indexofoutput="2" />
           </Diagram>
         </BehaviorKeyframe>
       </BehaviorLayer>
