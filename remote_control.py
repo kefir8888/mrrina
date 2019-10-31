@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import time
 import math
+import random
 
 from IPython.display import clear_output
 
@@ -44,6 +45,7 @@ dict_of_commands = {'a': '/?action=/stand&text=qwer', # встать
                    'e': '/?action=/hands_front&text=qwer', # руки вперед
                    'r': '/?action=/hands_sides&text=open_right', # руки вбок
                    't': '/?action=/hands&text=close_right', # закрыть правую руку
+                   'y': '/?action=/hands&text=open_right', # закрыть правую руку
                    'x': '/?action=/sit&text=qwer', # сесть
                    'c': '/?action=/rest&text=qwer', # корточки
                     
@@ -61,6 +63,7 @@ dict_of_commands = {'a': '/?action=/stand&text=qwer', # встать
                    'l': '/?action=/say_local_ru&text=Попробуй еще раз', # 
                    #'o': '/?action=/say_local_ru&text=Маркус, подожди, сейчас очередь Бориса', # открыть правую руку
                    #'p': '/?action=/say_local_ru&text=Борис, подожди, сейчас очередь Маркуса', # открыть правую руку
+                   'p': "/?action=/talk_random&text=qwer", # открыть правую руку
                    '1': '/?action=/M1',
                    '2': '/?action=/M2',
                    '3': '/?action=/M3',
@@ -86,13 +89,16 @@ response_word = {666 : ".",
                  680 : "зеленый",
                  681 : "синий",
                  682 : "разожми",
-                 689 : "сожми",
+                 683 : "сожми",
                  684 : "пальцы",
                  685 : "иди",
                  686 : "назад",
                  687 : "поверни",
                  688 : "направо",
-                 683 : "прямо"}
+                 
+                 689 : "перед",
+                 690 : "стороны",
+                 691 : "говори"}
 
 st = "/?action=/stop&text=qwer"
 
@@ -107,20 +113,57 @@ phrases_actions = {#"правуюрукувправо" : ["/?action=/right_hand_
                    #"повернивправо" : ["/?action=/rot_m20&text=qwer", st],
                    #"повернивлево" : ["/?action=/rot_20&text=qwer", st],
                    
-                   "вперед" : ["/?action=/walk_20&text=qwer"],
-                   "назад" : ["/?action=/walk_m30&text=qwer"],
-                   "вправо" : ["/?action=/rot_m20&text=qwer"],
-                   "влево" : ["/?action=/rot_20&text=qwer"],
-
-                   "подними" : ["/?action=/hands_sides&text=qwer"],
+                   "вперед" : ["/?action=/walk_20&text=qwer", st],
+                   "назад" : ["/?action=/walk_m30&text=qwer", st],
+                   "вправо" : ["/?action=/rot_m20&text=qwer", st],
+                   "влево" : ["/?action=/rot_20&text=qwer", st],
 
                    "встань" : ["/?action=/stand&text=qwer"],
                    "сядь" : ["/?action=/rest&text=qwer"],
+
                    "красный" : ["/?action=/red&text=qwer"],
                    "зеленый" : ["/?action=/green&text=qwer"],
-                   "синий" : ["/?action=/blue&text=qwer"]}
+                   "синий" : ["/?action=/blue&text=qwer"],
+                   
+                   "подними" : ["/?action=/hands_sides&text=qwer"],
+                   
+                   "перед" : ["/?action=/hands_front&text=qwer"],
+                   "стороны" : ["/?action=/hands_sides&text=qwer"],
+                   "говори" : ["/?action=/talk_random&text=qwer"]}
 
 activities = {}
+
+#activities.update ({"talk_random" : ["/?action=/say_local_ru&text=Будем писать на доске",
+#                                     "/?action=/say_local_ru&text=Репликация ошибки",
+#                                     "/?action=/say_local_ru&text=Кино в Болливуде",
+#                                     "/?action=/say_local_ru&text=Я люблю разговаривать",
+#                                     "/?action=/say_local_en&text=Hello",
+#                                     "/?action=/say_local_fr&text=Bonjour",
+#                                     "/?action=/say_local_de&text=Guten Tag",
+#                                     "/?action=/say_local_ru&text=Репликация ошибки"]})
+
+activities.update ({"talk_random" : ["/?action=/say_local_en&text=Hello",
+                                     "/?action=/say_local_en&text=I am Nao",
+                                     
+                                     "/?action=/say_local_fr&text=Bonjour",
+                                     
+                                     "/?action=/say_local_ru&text=Я умею говорить по-русски",
+                                     "/?action=/say_local_ru&text=Я разумию на украинском",
+                                     
+                                     "/?action=/say_local_de&text=Guten Tag",
+                                     "/?action=/say_local_de&text=Ich bin Nao",
+                                     "/?action=/say_local_de&text=Danke",
+                                     
+                                     "/?action=/say_local_es&text=Gracias",
+                                     "/?action=/say_local_es&text=Hola",
+                                     "/?action=/say_local_es&text=Yo soy Nao",
+                                     
+                                     "/?action=/say_local_es&text=Yo soy Nao",
+                                     
+                                     "/?action=/say_local_tr&text=Merhaba",
+                                     
+                                     "/?action=/say_local_it&text=Italiano",
+                                     "/?action=/say_local_it&text=Buongiorno"]})
 
 activities.update ({"greeting" : ["/?action=/stand&text=qwer",
                                   "/?action=/say_local_ru&text=Привет!"]})
@@ -220,16 +263,24 @@ for key in activities.keys ():
     activity = activities [key]
     
     for command in activity:
-        if ("/say_local_ru" in command):
+        if ("/say_local" in command):
+            language_start = command.find ("/say_local")
+            language = command [language_start + 11 : language_start + 13]
+
             text, filename = get_text_and_filename (command)
             
+            if (language != "ru"):
+                filename = "sounds/" + text [:26] + ".mp3"
+                filename = "".join(c for c in filename if c not in
+                    ['!', ':', "'", '?', ' ', '-', '\'', ',', '\n'])
+            
             if (os.path.exists (filename) and os.path.isfile (filename)):
-                print ("already exists: ", filename)
+                #print ("already exists: ", filename)
                 continue
             
             else:
                 print ("generating: ", filename)
-                tts = gTTS (text, lang='ru')
+                tts = gTTS (text, lang=language)
                 tts.save (filename)
 
 # for a in range (int ('a'), int ('z')):
@@ -271,13 +322,14 @@ def main():
     ip_prefix  = "http://"
     ip_num = "192.168.1.29"
     #ip_num = "10.0.0.102"
+    #ip_num = "10.6.100.13"
     ip_postfix = ":"
     ip = ip_prefix + ip_num + ip_postfix
-    port = "9568"
+    port = "9569"
     
     words_queue = []
     
-    AUTONOMOUS         = True #without robot
+    AUTONOMOUS         = False #without robot
     to_next_operation  = True
     mode_without_queue = False
     
@@ -331,22 +383,33 @@ def main():
         #handle keyboard events
         keyb = cv2.waitKey (1)
         
+        #if (len (sounds_queue) != 0):
+        #    print (sounds_queue [0], "sq")
+        
         if (len (sounds_queue) != 0 and
             mixer.music.get_busy () == False):# and
             #to_next_operation == True):
-            mixer.music.load (sounds_queue [0])
-            mixer.music.play ()
             
-            print (sounds_queue [0])
+            if (sounds_queue [0] == "stop"):
+                queue = ["/?action=/stop&text=qwer"] + queue
+                sounds_queue.remove (sounds_queue [0])
             
-            tex, _ = get_text_and_filename (sounds_queue [0])
+            else:
+                mixer.music.load (sounds_queue [0])
+                mixer.music.play ()
+                
+                #tex, _ = get_text_and_filename (sounds_queue [0])
+                tex = sounds_queue [0] [7:]
+                
+                print (tex, "kee")
+                
+                r = requests.get (ip + port + "/" + "?" + "action=/" + "play_mp3" + "&" + "text=" + tex)
+                
+                last_sound = [sounds_queue [0]]
+                
+                sounds_queue.remove (sounds_queue [0])
+                sounds_queue = ["stop"] + sounds_queue
             
-            r = requests.get (ip + port + "/" + "?" + "action=/" + "play_mp3" + "&" + "text=" + tex)
-            
-            last_sound = [sounds_queue [0]]
-            
-            sounds_queue.remove (sounds_queue [0])
-        
         if (len (queue) != 0 and (to_next_operation == True or "stop" in queue [0])):
             free = 6
             
@@ -355,10 +418,21 @@ def main():
                 text = 'qwer'
                 r = requests.get (ip + port + "/" + "?" + "action=/" + action + "&" + "text=" + text)
                 free = int (str (r) [13:14]) #6 free, 7 not free; don't ask, don't tell
-                print ("fuck", free)
+                #print ("fuck", free)
             
             if ("/say_local_ru" in queue [0]):
                 _, filename = get_text_and_filename (queue [0])
+                
+                sounds_queue.append (filename)
+                queue.remove (queue [0])
+                
+                if not mode_without_queue:
+                    to_next_operation = False
+
+            if ("/talk_random" in queue [0]):
+                print ("talk random")
+                _, filename = get_text_and_filename (activities ["talk_random"]
+                    [random.randint (0, len (activities ["talk_random"]) - 1)])
                 
                 sounds_queue.append (filename)
                 queue.remove (queue [0])
@@ -438,13 +512,13 @@ def main():
               (voice_recognition == True and
                curr_time - last_speech_request_time >= 0.5)):# and
              #free == 6):
-            print (curr_time - last_speech_request_time)
+            #print (curr_time - last_speech_request_time)
             last_speech_request_time = curr_time
             
             r = requests.get (ip + port + "/?" + "action=/" + "word_if_any" + "&" + "text=" + "m")
-            print (r)
+            #print (r)
             word = response_word [int (str (r) [11:14])]
-            print (word)
+            #print (word)
             
             if (word != "."):
                 words_queue.append (word)
@@ -466,8 +540,8 @@ def main():
         elif (keyb & 0xFF == ord ('o')):
             queue += activities ["complex_exercises"]
     
-        elif (keyb & 0xFF == ord ('p')):
-            queue += activities ["exercises"]
+        #elif (keyb & 0xFF == ord ('p')):
+        #    queue += activities ["exercises"]
             
         elif (keyb in list_of_keys):
             #queue.append(dict_with_ord[keyb])
@@ -509,6 +583,9 @@ def main():
     logfile.close ()
     #cv2.waitKey           (1)
     cv2.destroyAllWindows ()
+    os._exit(0)
 
 if __name__ == '__main__':
+    random.seed ()
+    
     main()
