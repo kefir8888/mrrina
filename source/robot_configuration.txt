@@ -1,0 +1,4 @@
+base lefthand 40 0
+base righthand 40 -3
+lefthand leftarm 35 0.2
+righthand rightarm 35 -0.2

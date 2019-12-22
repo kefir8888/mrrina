@@ -1,0 +1,220 @@
+from common import *
+
+class Robot:
+    def __init__(self, timeout_ = 0):
+        self.queue         = []
+        self.commands_sent = 0
+
+        self.available_commands = {"/rest"  : ("/action=/rest&text=", "a"),
+                                   "/stand" : ("/action=/stand&text=", "a"),
+                                   "/free"  : ("/action=/free&text=", "a")}
+
+        self.timeout_module = Timeout_module (timeout_)
+
+    def _send_command (self, command, args):
+        pass
+
+    def plot_state (self, img):
+        pass
+
+    def on_idle (self):
+        if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent)):
+            next_command = self.queue [self.commands_sent]
+            self.commands_sent += 1
+
+            #if (next_command [0] != "noaction"):
+            self._send_command (next_command)
+
+    def add_action (self, action):
+        #print ("appending ", action)
+        for act in action:
+            if (act [0] != "noaction"):
+                self.queue = self.queue + action
+
+class Fake_robot(Robot):
+    def __init__(self, timeout_ = 0.5):
+        Robot.__init__ (self, timeout_)
+
+    def _send_command (self, action):
+        if (action [0] in self.available_commands.keys ()):
+            print ("sending command [fake]: ", action)
+
+        else:
+            print ("action :", action, " is not implemented")
+
+class Joint:
+    def __init__(self, length_, angle_, col1_, col2_, name_):
+        self.length = length_
+        self.angle  = angle_
+        self.col1   = col1_
+        self.col2   = col2_
+        self.joint_name = name_
+
+        self.children = []
+
+    def name (self):
+        return self.joint_name
+
+    def draw (self, img, x, y, parent_angle):
+        #print ("joint: ", self.length, self.angle)
+
+        x1 = x + self.length * math.cos (self.angle + parent_angle)
+        y1 = y + self.length * math.sin (self.angle + parent_angle)
+
+        cv2.line (img, (int (x), int (y)), (int (x1), int (y1)), self.col1, 3)
+
+        for child in self.children:
+            child.draw (img, x1, y1, self.angle + parent_angle)
+
+    def set_angle (self, new_angle):
+        old_angle = self.angle
+
+        self.angle = new_angle
+
+        return old_angle
+
+    def add_child (self, name, length, angle):
+        self.children.append (Joint (length, angle, self.col1, self.col2, name))
+
+class Simulated_robot(Robot):
+    def __init__(self, timeout_ = 0.5, path_ = ""):
+        Robot.__init__ (self, timeout_)
+        self.base_point = Joint (0, 0, (10, 100, 200), (230, 121, 2), "base")
+        self.load_configuration (path_)
+
+    def load_configuration (self, path = ""):
+        if (path == ""):
+            path = "source/robot_configuration.txt"
+
+        config = open (path, "r")
+
+        string = config.readline ()
+
+        while (string != ""):
+            data = string [:-1].split (" ")
+
+            print ("dat", data)
+
+            parent = str   (data [0])
+            name   = str   (data [1])
+            length = float (data [2])
+            angle  = float (data [3])
+
+            self.add_joint (parent, name, length, angle)
+
+            string = config.readline ()
+
+    def find_joint (self, joint_name):
+        stack = [self.base_point]
+
+        target = stack [0]
+        found  = False
+
+        while (len (stack) != 0):
+            if (len (stack) >= 1000):
+                print ("Stack size has reached 1000. Probably smth went wrong, \
+for instance the robot model is recursive. Aborting operation.")
+                break
+
+            curr = stack [0]
+            
+            if (curr.name () == joint_name):
+                #print ("found ", joint_name)
+                target = curr
+                found = True
+
+                break
+
+            for child in curr.children:
+                stack.append (child)
+
+            stack.remove (curr)
+
+        if (found == False):
+            print ("Warning: requested joint ", joint_name, " not found")
+
+        return target, found
+
+    def set_joint_angle (self, joint_name, new_angle):
+        target_joint, succ = self.find_joint (joint_name)
+
+        if (succ == False):
+            print ("Unable to set ", joint_name, " to ", new_angle, ": no such joint")
+
+        _ = target_joint.set_angle (new_angle)
+
+    def add_joint (self, parent_name, new_joint_name, length, angle):
+        target_joint, succ = self.find_joint (parent_name)
+
+        if (succ == False):
+            print ("Unable to add child ", new_joint_name, " to ", parent_name, ": no such joint")
+
+        target_joint.add_child (new_joint_name, length, angle)
+
+    def _send_command (self, action):
+        if (action [0] in self.available_commands.keys ()):
+            print ("sending command [fake]: ", action)
+            
+            if (action [0] == "/stand"):
+                self.set_joint_angle ("rightarm", 0.2)
+
+            if (action [0] == "/rest"):
+                self.set_joint_angle ("rightarm", -0.2)
+
+        else:
+            print ("action :", action, " is not implemented")
+
+    def plot_state (self, img, x, y):
+        self.base_point.draw (img, x, y, 0)
+
+class Real_robot(Robot):
+    def __init__(self, ip_num, port_ = 9559, timeout_ = 4.5):
+        Robot.__init__ (self, timeout_)
+
+        self.ip_prefix = "http://"
+        self.ip_postfix = ":"
+
+        self.ip   = self.ip_prefix + ip_num + self.ip_postfix
+        self.port = port_
+
+        self.free = False
+        self.free_timeout_module = Timeout_module (0.4)
+
+    def _send_command (self, action):
+        r = -1
+
+        #if (action [0] == "noaction"):
+        #    pass
+
+        if (action in self.available_commands.keys ()):
+            r = requests.get (self.ip + self.port + "/?" + "action="
+                + action [0] + "&" + "text=" + str(action [1]))
+
+        else:
+            print ("action :", action, " is not implemented")
+
+        return r
+
+    def on_idle (self):
+        if (self.free_timeout_module.timeout_passed ()):
+            r = self._send_command ("/free")
+            #print ("resp", r)
+
+            free = int (str (r) [13:14]) #6 free, 7 not free; don't ask, don't tell
+
+            if (free == 6):
+                self.free = True
+
+            else:
+                self.free = False
+
+        print ("queue", self.queue [self.commands_sent:])
+
+        if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent) and
+            self.free == True):
+            command = self.queue [self.commands_sent]
+
+            print ("azaz", command)
+
+            self._send_command (command)
+            self.commands_sent += 1
