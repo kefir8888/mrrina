@@ -36,11 +36,11 @@ import almath
 
 #ip = '192.168.43.42'
 #ip = '10.197.241.216'
-#ip = '10.0.0.106'
+ip = '10.0.0.105'
 #ip = '172.20.10.14'
 #ip = '192.168.43.65'
 #ip = '172.20.10.14'
-ip = '192.168.1.29'
+#ip = '192.168.1.29'
 port = 9569
 
 class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -36947,7 +36947,7 @@ class MyClass(GeneratedClass):
                 ALMemory.insertData("nao-remote/word_if_any", 16)
 
             elif (word == "сожми"):
-                ALMemory.insertData("nao-remote/word_if_any", 17)
+                ALMemory.insertData("nao-remote/word_if_any", 23)
 
             elif (word == "пальцы"):
                 ALMemory.insertData("nao-remote/word_if_any", 18)
@@ -36964,17 +36964,8 @@ class MyClass(GeneratedClass):
             elif (word == "направо"):
                 ALMemory.insertData("nao-remote/word_if_any", 22)
 
-            elif (word == "перед"):
-                ALMemory.insertData("nao-remote/word_if_any", 23)
-
-            elif (word == "стороны"):
-                ALMemory.insertData("nao-remote/word_if_any", 24)
-
-            elif (word == "говори"):
-                ALMemory.insertData("nao-remote/word_if_any", 25)
-
-            #elif (word == "прямо"):
-            #    ALMemory.insertData("nao-remote/word_if_any", 17)
+            elif (word == "прямо"):
+                ALMemory.insertData("nao-remote/word_if_any", 17)
 
             else:
                 ALMemory.insertData("nao-remote/word_if_any", 0)
@@ -36991,7 +36982,7 @@ class MyClass(GeneratedClass):
               <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
               <Output name="wordRecognized" type="3" type_size="1" nature="2" inner="0" tooltip="Word recognized with a confidence higher than the threshold set in the box parameters." id="5" />
               <Output name="onNothing" type="1" type_size="1" nature="2" inner="0" tooltip="Nothing has been understood." id="6" />
-              <Parameter name="Word list" inherits_from_parent="0" content_type="3" value="привет;прямо;подними;правую;левую;вперед;вправо;влево;встань;сядь;разожми;сожми;пальцы;назад;поверни;направо;красный;зеленый;синий;перед;стороны;говори" default_value="yes;no" custom_choice="0" tooltip="Try to recognize a word from a list of words set in the box parameters." id="7" />
+              <Parameter name="Word list" inherits_from_parent="0" content_type="3" value="yes;no;привет;прямо;подними;правую;левую;руку;вперед;вправо;влево;встань;сядь;разожми;сожми;пальцы;иди;назад;поверни;направо;красный;зеленый;синий" default_value="yes;no" custom_choice="0" tooltip="Try to recognize a word from a list of words set in the box parameters." id="7" />
               <Parameter name="Confidence threshold (%)" inherits_from_parent="0" content_type="1" value="0" default_value="30" min="0" max="100" tooltip="If the confidence associated with the word recognized is below this threshold, the robot will consider that it is not recognized." id="8" />
               <Parameter name="Enable word spotting" inherits_from_parent="0" content_type="0" value="1" default_value="0" tooltip="If this option is not activated the robot will only understand exact expressions. If it is, he will spot the exact expressions even in the middle of a sentence.&#x0A;&#x0A;!!Warning!! This option is only available with the speech recognition module using Nuance (ie in Atom version of the robot)." id="9" />
               <Resource name="Speech recognition" type="Lock" timeout="0" />
@@ -37024,11 +37015,9 @@ class MyClass(GeneratedClass):
 
     def onInput_input(self, p):
         aup = ALProxy("ALAudioPlayer", "127.0.0.1", 9559)
+        self.logger.info("/home/nao/music/" + str (p))
 
-        filename = str (p)
-        current_object.logger.info ("AAAAAAAAA" + filename)
-
-        fileId = aup.post.playFile("/home/nao/music/" + filename)]]>
+        fileId = aup.post.playFile("/home/nao/music/sounds/" + str (p))]]>
                 </content>
               </script>
               <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
@@ -37378,7 +37367,6 @@ class MyClass(GeneratedClass):
             <Link inputowner="1" indexofinput="2" outputowner="0" indexofoutput="2" />
             <Link inputowner="12" indexofinput="2" outputowner="249" indexofoutput="3" />
             <Link inputowner="12" indexofinput="2" outputowner="152" indexofoutput="4" />
-            <Link inputowner="12" indexofinput="2" outputowner="255" indexofoutput="5" />
           </Diagram>
         </BehaviorKeyframe>
       </BehaviorLayer>
