@@ -1,3 +1,0 @@
-1570702203.394774http://192.168.1.29:9562/?action=/stop&text=qwer
-1570702206.460124/?action=/stand&text=qwer
-1570702229.736342/?action=/stand&text=qwer

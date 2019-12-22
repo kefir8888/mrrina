@@ -1,8 +1,0 @@
-1571318086.569927/?action=/stand&text=qwer
-1571318110.188902/?action=/right_hand_right&text=qwer
-1571318116.4882329/?action=/stand&text=qwer
-1571318120.180299/?action=/rest&text=qwer
-1571318144.923188/?action=/stand&text=qwer
-1571318166.913095/?action=/rot_20&text=qwer
-1571318190.94334/?action=/stand&text=qwer
-1571318192.690523/?action=/rest&text=qwer

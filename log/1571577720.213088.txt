@@ -1,9 +1,0 @@
-1571577968.535549/?action=/stand&text=qwer
-1571577976.9357939/?action=/blue&text=qwer
-1571578042.1375701/?action=/rest&text=qwer
-1571578067.477538/?action=/walk_20&text=qwer
-1571578067.684853/?action=/stop&text=qwer
-1571578299.668967/?action=/stand&text=qwer
-1571578335.037327/?action=/right_hand_front&text=qwer
-1571578437.441138/?action=/rest&text=qwer
-1571579050.3219872/?action=/rest&text=qwer

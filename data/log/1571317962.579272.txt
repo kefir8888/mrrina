@@ -1,8 +1,0 @@
-1571317989.63266/?action=/stand&text=qwer
-1571317998.6307359/?action=/red&text=qwer
-1571318010.3301451/?action=/rest&text=qwer
-1571318018.175414/?action=/stand&text=qwer
-1571318023.339755/?action=/walk_20&text=qwer
-1571318042.327487/?action=/stand&text=qwer
-1571318043.5266/?action=/stand&text=qwer
-1571318044.7473102/?action=/rest&text=qwer

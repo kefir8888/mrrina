@@ -1,6 +1,0 @@
-1571314700.879162/?action=/stand&text=qwer
-1571314709.4452028/?action=/red&text=qwer
-1571314743.871992/?action=/green&text=qwer
-1571314756.056032/?action=/walk_20&text=qwer
-1571314779.41128/?action=/stand&text=qwer
-1571314781.0574/?action=/rest&text=qwer

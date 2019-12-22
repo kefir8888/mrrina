@@ -1,4 +1,0 @@
-1570693254.835927/?action=/say_local_ru&text=ну привет
-1570693255.8871171http://192.168.1.29:9562/?action=/stop&text=qwer
-1570693257.34916http://192.168.1.29:9562/?action=/stop&text=qwer
-1570693258.327654/?action=/say_local_ru&text=ну привет
