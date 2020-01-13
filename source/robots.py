@@ -55,16 +55,24 @@ class Joint:
     def name (self):
         return self.joint_name
 
-    def draw (self, img, x, y, parent_angle):
+    def draw (self, img, x, y, parent_angle, scale = 1):
         #print ("joint: ", self.length, self.angle)
 
         x1 = x + self.length * math.cos (self.angle + parent_angle)
         y1 = y + self.length * math.sin (self.angle + parent_angle)
 
-        cv2.line (img, (int (x), int (y)), (int (x1), int (y1)), self.col1, 3)
+        x_  = int (x * scale)
+        y_  = int (y * scale)
+        x1_ = int (x1 * scale)
+        y1_ = int (y1 * scale)
+
+        cv2.line (img, (int (x_), int (y_)), (int (x1_), int (y1_)), self.col1, 3)
+        cv2.circle (img, (int (x1_), int (y1_)), 5, self.col2, -1)
+        cv2.putText (img, self.joint_name, (int (x1_) + 0, int (y1_) + 0),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 250, 231), 1, cv2.LINE_AA)
 
         for child in self.children:
-            child.draw (img, x1, y1, self.angle + parent_angle)
+            child.draw (img, x1, y1, self.angle + parent_angle, scale)
 
     def set_angle (self, new_angle):
         old_angle = self.angle
@@ -84,7 +92,7 @@ class Simulated_robot(Robot):
 
     def load_configuration (self, path = ""):
         if (path == ""):
-            path = "source/robot_configuration.txt"
+            path = "robot_configuration.txt"
 
         config = open (path, "r")
 
@@ -135,11 +143,14 @@ for instance the robot model is recursive. Aborting operation.")
 
         return target, found
 
-    def set_joint_angle (self, joint_name, new_angle):
+    def set_joint_angle (self, joint_name, new_angle, increment = False):
         target_joint, succ = self.find_joint (joint_name)
 
         if (succ == False):
             print ("Unable to set ", joint_name, " to ", new_angle, ": no such joint")
+
+        if (increment == True):
+            new_angle += target_joint.angle
 
         _ = target_joint.set_angle (new_angle)
 
@@ -156,16 +167,16 @@ for instance the robot model is recursive. Aborting operation.")
             print ("sending command [fake]: ", action)
             
             if (action [0] == "/stand"):
-                self.set_joint_angle ("rightarm", 0.2)
+                self.set_joint_angle ("righthand", -3.2)
 
             if (action [0] == "/rest"):
-                self.set_joint_angle ("rightarm", -0.2)
+                self.set_joint_angle ("righthand", -3)
 
         else:
             print ("action :", action, " is not implemented")
 
-    def plot_state (self, img, x, y):
-        self.base_point.draw (img, x, y, 0)
+    def plot_state (self, img, x, y, scale = 1):
+        self.base_point.draw (img, x, y, 0, scale)
 
 class Real_robot(Robot):
     def __init__(self, ip_num, port_ = 9559, timeout_ = 4.5):
@@ -186,7 +197,7 @@ class Real_robot(Robot):
         #if (action [0] == "noaction"):
         #    pass
 
-        if (action in self.available_commands.keys ()):
+        if (action [0] in self.available_commands.keys ()):
             r = requests.get (self.ip + self.port + "/?" + "action="
                 + action [0] + "&" + "text=" + str(action [1]))
 
@@ -197,8 +208,8 @@ class Real_robot(Robot):
 
     def on_idle (self):
         if (self.free_timeout_module.timeout_passed ()):
-            r = self._send_command ("/free")
-            #print ("resp", r)
+            r = self._send_command (["/free", "a"])
+            print ("resp", r)
 
             free = int (str (r) [13:14]) #6 free, 7 not free; don't ask, don't tell
 
@@ -209,6 +220,7 @@ class Real_robot(Robot):
                 self.free = False
 
         print ("queue", self.queue [self.commands_sent:])
+        print (len (self.queue), self.commands_sent, self.free)
 
         if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent) and
             self.free == True):

@@ -6,7 +6,7 @@ from common import *
 def main():
     AUTONOMOUS = True #without robot
 
-    WIND_X = 500
+    WIND_X = 800
     WIND_Y = 500
     cv2.namedWindow  ("remote_controller", cv2.WINDOW_AUTOSIZE)
     cv2.resizeWindow ("remote_controller", (WIND_Y, WIND_X))
@@ -16,10 +16,10 @@ def main():
     
     inputs = {"computer keyboard" : modalities.Computer_keyboard ()}
 
-    robot = robots.Simulated_robot ()
-
+    robots_list = {"simulated" : robots.Simulated_robot ()}
+    
     if (AUTONOMOUS == False):
-        robot = robots.Real_robot ("10.0.0.105", "9569")
+        robots_list.update ({"physical" : robots.Real_robot ("10.0.0.103", "9569")})
 
     fsm_processor = fsm.FSM_processor ()
 
@@ -45,13 +45,15 @@ def main():
             action = fsm_processor.handle_command (command)
             #print ("action", action)
 
-            robot.add_action (action)
+            for key in robots_list.keys ():
+                robots_list [key].add_action (action)
 
-        robot.on_idle ()
+        for key in robots_list.keys ():
+            robots_list [key].on_idle ()
 
         canvas = np.ones ((WIND_Y, WIND_X, 3), np.uint8) * 200
         
-        robot.plot_state (canvas, 200, 200)
+        robots_list ["simulated"].plot_state (canvas, 150, 40, 2.5)
 
         cv2.imshow ("remote_controller", canvas)
         

@@ -28622,8 +28622,7 @@ class MyClass(GeneratedClass):
         #self.onStopped() #activate the output of the box
 
         names = ["RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw", "LShoulderPitch", "LShoulderRoll", "LElbowRoll", "LElbowYaw"]
-        timeLists = [[0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [
-                 0.4]]
+        timeLists = [[0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4]]
         isAbsolute = True
         angleLists = []
 
@@ -28632,6 +28631,7 @@ class MyClass(GeneratedClass):
             self.logger.info(type(float(angle)))
             a.append(float(angle)*almath.TO_RAD)
             angleLists.append(a)
+
         self.motionProxy.angleInterpolation(names, angleLists, timeLists, isAbsolute)
         self.logger.info(angleLists)
 
