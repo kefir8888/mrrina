@@ -43,7 +43,7 @@ def main():
             #print ("command: ", command)
 
             action = fsm_processor.handle_command (command)
-            #print ("action", action)
+            print ("action", action)
 
             for key in robots_list.keys ():
                 robots_list [key].add_action (action)

@@ -7,7 +7,8 @@ class Robot:
 
         self.available_commands = {"/rest"  : ("/action=/rest&text=", "a"),
                                    "/stand" : ("/action=/stand&text=", "a"),
-                                   "/free"  : ("/action=/free&text=", "a")}
+                                   "/free"  : ("/action=/free&text=", "a"),
+                                   "/increment_joint_angle" : ()}
 
         self.timeout_module = Timeout_module (timeout_)
 
@@ -101,7 +102,7 @@ class Simulated_robot(Robot):
         while (string != ""):
             data = string [:-1].split (" ")
 
-            print ("dat", data)
+            #print ("dat", data)
 
             parent = str   (data [0])
             name   = str   (data [1])
@@ -164,12 +165,15 @@ for instance the robot model is recursive. Aborting operation.")
 
     def _send_command (self, action):
         if (action [0] in self.available_commands.keys ()):
-            print ("sending command [fake]: ", action)
+            print ("sending command [simulated]: ", action)
             
-            if (action [0] == "/stand"):
+            if (action [0] == "/increment_joint_angle"):
+                self.set_joint_angle (action [1] [0], float (action [1] [1]), increment = True)
+
+            elif (action [0] == "/stand"):
                 self.set_joint_angle ("righthand", -3.2)
 
-            if (action [0] == "/rest"):
+            elif (action [0] == "/rest"):
                 self.set_joint_angle ("righthand", -3)
 
         else:
@@ -190,6 +194,8 @@ class Real_robot(Robot):
 
         self.free = False
         self.free_timeout_module = Timeout_module (0.4)
+
+        self.simulated = Simulated_robot
 
     def _send_command (self, action):
         r = -1
