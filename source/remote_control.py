@@ -56,7 +56,7 @@ def main():
 
         canvas = np.ones ((WIND_Y, WIND_X, 3), np.uint8) * 200
         
-        robots_list ["simulated"].plot_state (canvas, 150, 40, 2.5)
+        list (robots_list.items ()) [0] [1].plot_state (canvas, 150, 40, 2.5)
 
         cv2.imshow ("remote_controller", canvas)
         

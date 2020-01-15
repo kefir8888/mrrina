@@ -45,11 +45,13 @@ class Fake_robot(Robot):
             print ("action :", action, " is not implemented")
 
 class Joint:
-    def __init__(self, length_, angle_, angle_multiplier_, col1_, col2_, name_):
+    def __init__(self, length_, angle_, angle_multiplier_, col1_, col2_, name_, min_angle_, max_angle_):
         self.length     = length_
         self.init_angle = angle_
         self.angle      = 0
         self.angle_multiplier = angle_multiplier_
+        self.min_angle = min_angle_
+        self.max_angle = max_angle_
         self.col1       = col1_
         self.col2       = col2_
         self.joint_name = name_
@@ -80,14 +82,17 @@ class Joint:
             child.draw (img, x1, y1, angle, scale)
 
     def set_angle (self, new_angle):
-        old_angle = self.angle
+        if (new_angle >= self.min_angle and new_angle <= self.max_angle):
+            self.angle = new_angle
 
-        self.angle = new_angle
+        else:
+            print ("warning: cannot set joint " + self.joint_name + " to " + str (new_angle) +\
+                ": the constraints are [" + str (self.min_angle) + ", " + str (self.max_angle) + "]")
 
-        return old_angle
+        return self.angle
 
-    def add_child (self, name, length, angle, angle_multiplier):
-        self.children.append (Joint (length, angle, angle_multiplier, self.col1, self.col2, name))
+    def add_child (self, name, length, angle, angle_multiplier, min_angle, max_angle):
+        self.children.append (Joint (length, angle, angle_multiplier, self.col1, self.col2, name, min_angle, max_angle))
 
 class Simulated_robot(Robot):
     def __init__(self, timeout_ = 0.5, path_ = ""):
@@ -95,8 +100,12 @@ class Simulated_robot(Robot):
 
         self.config_path = path_
 
-        self.base_point = Joint (0, 0, 1, (10, 100, 200), (230, 121, 2), "base")
+        self.base_point = Joint (0, 0, 1, (10, 100, 200), (230, 121, 2), "base", -10, 10)
         self.load_configuration (self.config_path)
+
+        self.joints_to_track = ["righthand", "lefthand", "leftarm", "rightarm"]
+
+        self.updated = False
 
     def load_configuration (self, path = ""):
         if (path == ""):
@@ -116,16 +125,22 @@ class Simulated_robot(Robot):
             length = float (data [2])
             angle  = float (data [3])
             angle_multiplier = float (data [4])
+            min_angle = float (data [5])
+            max_angle = float (data [6])
 
-            self.add_joint (parent, name, length, angle, angle_multiplier)
+            self.add_joint (parent, name, length, angle, angle_multiplier, min_angle, max_angle)
 
             string = config.readline ()
 
-    def find_joint (self, joint_name):
+    def find_joint (self, joint_name = ""):
         stack = [self.base_point]
+        all_joints = []
 
         target = stack [0]
         found  = False
+
+        if (joint_name == ""):
+            found = True
 
         while (len (stack) != 0):
             if (len (stack) >= 1000):
@@ -135,12 +150,14 @@ for instance the robot model is recursive. Aborting operation.")
 
             curr = stack [0]
             
-            if (curr.name () == joint_name):
-                #print ("found ", joint_name)
-                target = curr
-                found = True
+            if (joint_name != ""):
+                if (curr.name () == joint_name):
+                    target = curr
+                    found = True
 
-                break
+                    break
+            else:
+                all_joints.append (curr)
 
             for child in curr.children:
                 stack.append (child)
@@ -150,7 +167,10 @@ for instance the robot model is recursive. Aborting operation.")
         if (found == False):
             print ("Warning: requested joint ", joint_name, " not found")
 
-        return target, found
+        if (joint_name != ""):
+            return target, found
+
+        return all_joints
 
     def set_joint_angle (self, joint_name, new_angle, increment = False):
         target_joint, succ = self.find_joint (joint_name)
@@ -161,19 +181,24 @@ for instance the robot model is recursive. Aborting operation.")
         if (increment == True):
             new_angle += target_joint.angle
 
-        _ = target_joint.set_angle (new_angle)
+        set_angle = target_joint.set_angle (new_angle)
 
-    def add_joint (self, parent_name, new_joint_name, length, angle, angle_multiplier):
+        if (set_angle == new_angle):
+            self.updated = True
+
+        return set_angle
+
+    def add_joint (self, parent_name, new_joint_name, length, angle, angle_multiplier, min_angle, max_angle):
         target_joint, succ = self.find_joint (parent_name)
 
         if (succ == False):
             print ("Unable to add child ", new_joint_name, " to ", parent_name, ": no such joint")
 
-        target_joint.add_child (new_joint_name, length, angle, angle_multiplier)
+        target_joint.add_child (new_joint_name, length, angle, angle_multiplier, min_angle, max_angle)
 
     def _send_command (self, action):
         if (action [0] in self.available_commands.keys ()):
-            print ("sending command [simulated]: ", action)
+            #print ("sending command [simulated]: ", action)
             
             if (action [0] == "/increment_joint_angle"):
                 self.set_joint_angle (action [1] [0], float (action [1] [1]), increment = True)
@@ -194,6 +219,21 @@ for instance the robot model is recursive. Aborting operation.")
             print ("action :", action, " is not supported")
 
     def plot_state (self, img, x, y, scale = 1):
+        line_num = 0
+
+        for joint in self.find_joint (""):
+            if (joint.name () not in self.joints_to_track):
+                continue
+
+            text = joint.name () + ":  [" + "{0:.2f}".format(joint.min_angle) \
+                                 + " / " + "{0:.2f}".format(joint.angle) \
+                                 + " /  " + "{0:.2f}".format(joint.max_angle) + "]"
+
+            cv2.putText (img, text, (30, 30 * (1 + line_num)),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.4, (200, 50, 231), 1, cv2.LINE_AA)
+
+            line_num += 1
+
         self.base_point.draw (img, x, y, 0, scale)
 
 class Real_robot(Robot):
@@ -257,8 +297,13 @@ class Real_robot(Robot):
             print ("action :", action, " is not implemented")
             return -1
 
-        r = requests.get (self.ip + self.port + "/?" + "action="
-            + action_str + "&" + "text=" + text_str)
+        if (self.simulated.updated == True or action [0] == "/free"):
+            if (action [0] != "/free"):
+                print ("sending command [physical]: ", action)
+
+            r = requests.get (self.ip + self.port + "/?" + "action="
+                + action_str + "&" + "text=" + text_str)
+            self.simulated.updated = False
 
         return r
 
@@ -275,17 +320,17 @@ class Real_robot(Robot):
             else:
                 self.free = True
 
-        print ("queue", self.queue [self.commands_sent:])
-        print (len (self.queue), self.commands_sent, self.free)
+        #print ("queue", self.queue [self.commands_sent:])
+        #print (len (self.queue), self.commands_sent, self.free)
 
         if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent) and
             self.free == True):
             command = self.queue [self.commands_sent]
 
-            print ("azaz", command)
+            #print ("azaz", command)
 
             self._send_command (command)
             self.commands_sent += 1
 
-    def plot_state (self, img):
-        self.simulated.plot_state (img)
+    def plot_state (self, img, x, y, scale = 1):
+        self.simulated.plot_state (img, x, y, scale)

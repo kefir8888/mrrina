@@ -15,14 +15,14 @@ class Computer_keyboard (Modality):
 
         self.key_to_command = {"z"        : ("/stand",   ["heh"]),
                                "c"        : ("/rest",    ["kek"]),
-                               "w"        : ("/increment_joint_angle", ["lefthand", "0.4"]),
-                               "e"        : ("/increment_joint_angle", ["lefthand", "-0.4"]),
-                               "r"        : ("/increment_joint_angle", ["leftarm", "0.4"]),
-                               "t"        : ("/increment_joint_angle", ["leftarm", "-0.4"]),
-                               "s"        : ("/increment_joint_angle", ["righthand", "0.4"]),
-                               "d"        : ("/increment_joint_angle", ["righthand", "-0.4"]),
-                               "f"        : ("/increment_joint_angle", ["rightarm", "0.4"]),
-                               "g"        : ("/increment_joint_angle", ["rightarm", "-0.4"]),
+                               "w"        : ("/increment_joint_angle", ["lefthand", "0.21"]),
+                               "e"        : ("/increment_joint_angle", ["lefthand", "-0.21"]),
+                               "r"        : ("/increment_joint_angle", ["leftarm", "0.21"]),
+                               "t"        : ("/increment_joint_angle", ["leftarm", "-0.21"]),
+                               "s"        : ("/increment_joint_angle", ["righthand", "0.21"]),
+                               "d"        : ("/increment_joint_angle", ["righthand", "-0.21"]),
+                               "f"        : ("/increment_joint_angle", ["rightarm", "0.21"]),
+                               "g"        : ("/increment_joint_angle", ["rightarm", "-0.21"]),
                                "n"        : ("next",     [""]),
                                "noaction" : ("noaction", [""])}
 
