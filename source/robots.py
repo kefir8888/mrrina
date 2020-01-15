@@ -45,10 +45,11 @@ class Fake_robot(Robot):
             print ("action :", action, " is not implemented")
 
 class Joint:
-    def __init__(self, length_, angle_, col1_, col2_, name_):
+    def __init__(self, length_, angle_, angle_multiplier_, col1_, col2_, name_):
         self.length     = length_
         self.init_angle = angle_
         self.angle      = 0
+        self.angle_multiplier = angle_multiplier_
         self.col1       = col1_
         self.col2       = col2_
         self.joint_name = name_
@@ -85,14 +86,17 @@ class Joint:
 
         return old_angle
 
-    def add_child (self, name, length, angle):
-        self.children.append (Joint (length, angle, self.col1, self.col2, name))
+    def add_child (self, name, length, angle, angle_multiplier):
+        self.children.append (Joint (length, angle, angle_multiplier, self.col1, self.col2, name))
 
 class Simulated_robot(Robot):
     def __init__(self, timeout_ = 0.5, path_ = ""):
         Robot.__init__ (self, timeout_)
-        self.base_point = Joint (0, 0, (10, 100, 200), (230, 121, 2), "base")
-        self.load_configuration (path_)
+
+        self.config_path = path_
+
+        self.base_point = Joint (0, 0, 1, (10, 100, 200), (230, 121, 2), "base")
+        self.load_configuration (self.config_path)
 
     def load_configuration (self, path = ""):
         if (path == ""):
@@ -111,8 +115,9 @@ class Simulated_robot(Robot):
             name   = str   (data [1])
             length = float (data [2])
             angle  = float (data [3])
+            angle_multiplier = float (data [4])
 
-            self.add_joint (parent, name, length, angle)
+            self.add_joint (parent, name, length, angle, angle_multiplier)
 
             string = config.readline ()
 
@@ -158,13 +163,13 @@ for instance the robot model is recursive. Aborting operation.")
 
         _ = target_joint.set_angle (new_angle)
 
-    def add_joint (self, parent_name, new_joint_name, length, angle):
+    def add_joint (self, parent_name, new_joint_name, length, angle, angle_multiplier):
         target_joint, succ = self.find_joint (parent_name)
 
         if (succ == False):
             print ("Unable to add child ", new_joint_name, " to ", parent_name, ": no such joint")
 
-        target_joint.add_child (new_joint_name, length, angle)
+        target_joint.add_child (new_joint_name, length, angle, angle_multiplier)
 
     def _send_command (self, action):
         if (action [0] in self.available_commands.keys ()):
@@ -177,10 +182,13 @@ for instance the robot model is recursive. Aborting operation.")
                 self.set_joint_angle (action [1] [0], float (action [1] [1]))
 
             elif (action [0] == "/stand"):
-                self.set_joint_angle ("righthand", -0.2)
+                #self.set_joint_angle ("righthand", -0.2)
+                self.base_point.children = []
+                self.load_configuration (self.config_path)
+                self.set_joint_angle ("base", 0)
 
             elif (action [0] == "/rest"):
-                self.set_joint_angle ("righthand", 0)
+                self.set_joint_angle ("base", 5)
 
         else:
             print ("action :", action, " is not supported")
@@ -189,7 +197,7 @@ for instance the robot model is recursive. Aborting operation.")
         self.base_point.draw (img, x, y, 0, scale)
 
 class Real_robot(Robot):
-    def __init__(self, ip_num, port_ = 9559, timeout_ = 4.5):
+    def __init__(self, ip_num, port_ = 9559, timeout_ = 0.4):
         Robot.__init__ (self, timeout_)
 
         self.ip_prefix = "http://"
@@ -204,9 +212,23 @@ class Real_robot(Robot):
         self.simulated = Simulated_robot ()
 
         self.synchronized_joints = {"righthand" : "r_shoulderroll",
+                                    "rightarm"  : "r_elbowroll",
                                     "lefthand"  : "l_shoulderroll",
-                                    "rightarm" : "r_elbowroll",
-                                    "leftarm"  : "l_elbowroll",}
+                                    "leftarm"   : "l_elbowroll",
+                                    
+                                    "leftleg"   : "r_shoulderpitch",
+                                    "rightleg"  : "r_elbowyaw",
+                                    "leftfoot"  : "l_shoulderpitch",
+                                    "rightfoot" : "l_elbowyaw"}
+
+        self.init_positions = {"r_shoulderpitch" : 1.57,
+                               "r_shoulderroll"  : 0,
+                               "r_elbowroll"     : 0,
+                               "r_elbowyaw"      : 0,
+                               "l_shoulderpitch" : 1.57,
+                               "l_shoulderroll"  : 0,
+                               "l_elbowroll"     : 0,
+                               "l_elbowyaw"      : 0}
 
     def _send_command (self, action):
         r = -1
@@ -223,7 +245,9 @@ class Real_robot(Robot):
 
             for key in self.synchronized_joints.keys ():
                 joint, _ = self.simulated.find_joint (key)
-                text_str += "&" + self.synchronized_joints [key] + "=" + str (joint.angle)
+                robot_joint = self.synchronized_joints [key]
+                init_angle = self.init_positions [robot_joint]
+                text_str += "&" + robot_joint + "=" + str (joint.angle * joint.angle_multiplier + init_angle)
         
         elif (action [0] in self.available_commands.keys ()):
             action_str = action [0]

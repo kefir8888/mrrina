@@ -4,7 +4,7 @@ import robots
 from common import *
 
 def main():
-    AUTONOMOUS = True #without robot
+    AUTONOMOUS = False #without robot
 
     WIND_X = 800
     WIND_Y = 500
@@ -16,7 +16,10 @@ def main():
     
     inputs = {"computer keyboard" : modalities.Computer_keyboard ()}
 
-    robots_list = {"simulated" : robots.Simulated_robot ()}
+    robots_list = {}
+
+    if (AUTONOMOUS == True):
+        robots_list.update ({"simulated" : robots.Simulated_robot ()})
     
     if (AUTONOMOUS == False):
         robots_list.update ({"physical" : robots.Real_robot ("192.168.1.30", "9569")})

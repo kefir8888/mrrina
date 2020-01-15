@@ -34,12 +34,8 @@ import almath
 #ip = '0.0.0.0'
 #ip = '10.0.0.102'
 
-#ip = '192.168.43.42'
-#ip = '10.197.241.216'
-ip = '10.0.0.103'
-#ip = '172.20.10.14'
-#ip = '192.168.43.65'
-#ip = '172.20.10.14'
+ip = '192.168.1.30'
+#ip = '10.0.0.103'
 #ip = '192.168.1.29'
 port = 9569
 
@@ -102,6 +98,8 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
         list1.append(l_shoulderroll)
         list1.append(l_elbowroll)
         list1.append(l_elbowyaw)
+        current_object.logger.info ("angles list extracted")
+
     except:
         pass
 
@@ -210,7 +208,9 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
     elif action == "/play_zhel_logo_no":      current_object.play_zhel_logo_no()
     elif action == "/play_zhel_logo_su_sa":   current_object.play_zhel_logo_su_sa()
 
-    elif action == "/raise_hands":   current_object.raise_hands(list1)
+    elif action == "/raise_hands":
+        current_object.logger.info ("raising hands")
+        current_object.raise_hands(list1)
 
     elif action == "/stop_voice":           current_object.stop_voice()
 
@@ -246,33 +246,15 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
         #ALMemory.insertData("nao-remote/volume", 20)
         ALMemory.insertData("nao-remote/volume", int(text))
 
-        #current_object.logger.info ("voolume")
-
         current_object.logger.info (int (text))
         current_object.set_speaker_volume ()
 
     elif action == "/speak":            current_object.onSpeak(text)
-    elif action == "/hi":               current_object.onSpeak("Привет!")
-    elif action == "/bye":              current_object.onSpeak("Пока!")
-    elif action == "/name":             current_object.onSpeak("Меня зовут Нао.")
-    elif action == "/color":            current_object.onSpeak("Какого, цвета, мои, глазааа?")
-    elif action == "/touch_left_hand":  current_object.onSpeak("Потрогай мою левую руку.")
-    elif action == "/touch_right_hand": current_object.onSpeak("Потрогай мою правую руку.")
-    elif action == "/touch_left_foot":  current_object.onSpeak("Потрогай мою левую ногу.")
-    elif action == "/touch_right_foot": current_object.onSpeak("Потрогай мою правую ногу.")
-    elif action == "/touch_head":       current_object.onSpeak("Потрогай мою голову.")
-    elif action == "/good":             current_object.onSpeak("Молодец!")
 
     elif action == "/yes":       current_object.onSpeak("Да.")
     elif action == "/no":        current_object.onSpeak("Нет.")
     elif action == "/your_name": current_object.onSpeak("Как тебя зовут?")
     elif action == "/repeat":    current_object.onSpeak("Повторяй за мной!")
-    elif action == "/again":     current_object.onSpeak("Давай еще раз.")
-    elif action == "/nice":      current_object.onSpeak("Хорошо.")
-    elif action == "/give_ball": current_object.onSpeak("Дай мяч.")
-    elif action == "/give_toy":  current_object.onSpeak("Дай игрушку.")
-    elif action == "/come_here": current_object.onSpeak("Подойди ко мне.")
-    elif action == "/want_play": current_object.onSpeak("Хочешь поиграть?")
 
     elif action == "/play_mp3": current_object.play_mp3(text)
 
@@ -15657,7 +15639,7 @@ class MyClass(GeneratedClass):
               <Resource name="All motors" type="Lock" timeout="0" />
               <Resource name="Stiffness" type="Lock" timeout="0" />
             </Box>
-            <Box name="Set Language" id="26" localization="8" tooltip="Select the language you would like the robot to speak and understand. Any following call to&#x0A;ALSpeechRecognition (Speech Reco. box for instance) or ALTextToSpeech (Say box&#x0A;for instance) will use this language." x="2787" y="1557">
+            <Box name="Set Language" id="26" localization="8" tooltip="Select the language you would like the robot to speak and understand. Any following call to&#x0A;ALSpeechRecognition (Speech Reco. box for instance) or ALTextToSpeech (Say box&#x0A;for instance) will use this language." x="3598" y="1582">
               <bitmap>media/images/box/interaction/say.png</bitmap>
               <script language="4">
                 <content>
@@ -15731,7 +15713,7 @@ class MyClass(GeneratedClass):
               </Parameter>
               <Resource name="Speech" type="Lock" timeout="0" />
             </Box>
-            <Box name="Delay" id="79" localization="8" tooltip="Wait a moment before triggering the output. &#x0A;Can be stopped anytime. &#x0A;Multiple inputs will trigger multiple outputs." x="2837" y="1784">
+            <Box name="Delay" id="79" localization="8" tooltip="Wait a moment before triggering the output. &#x0A;Can be stopped anytime. &#x0A;Multiple inputs will trigger multiple outputs." x="3178" y="1857">
               <bitmap>media/images/box/wait.png</bitmap>
               <script language="4">
                 <content>
@@ -15946,7 +15928,7 @@ class MyClass(GeneratedClass):
                 </BehaviorLayer>
               </Timeline>
             </Box>
-            <Box name="Go to position dab" id="113" localization="8" tooltip="Robot will go to the position dab&lt;br/&gt;Position description : " x="3719" y="2096">
+            <Box name="Go to position dab" id="113" localization="8" tooltip="Robot will go to the position dab&lt;br/&gt;Position description : " x="3467" y="2054">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -17062,7 +17044,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Eye LEDs Red (1)" id="49" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="2284" y="131">
+            <Box name="Eye LEDs Red (1)" id="49" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="3095" y="156">
               <bitmap>media/images/box/interaction/LED.png</bitmap>
               <script language="4">
                 <content>
@@ -17150,7 +17132,7 @@ class MyClass(GeneratedClass):
                 </BehaviorLayer>
               </Timeline>
             </Box>
-            <Box name="Eye LEDs Blue (1)" id="50" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="2411" y="131">
+            <Box name="Eye LEDs Blue (1)" id="50" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="3222" y="156">
               <bitmap>media/images/box/interaction/LED.png</bitmap>
               <script language="4">
                 <content>
@@ -17238,7 +17220,7 @@ class MyClass(GeneratedClass):
                 </BehaviorLayer>
               </Timeline>
             </Box>
-            <Box name="Eye LEDs green (1)" id="51" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="2537" y="129">
+            <Box name="Eye LEDs green (1)" id="51" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="3348" y="154">
               <bitmap>media/images/box/interaction/LED.png</bitmap>
               <script language="4">
                 <content>
@@ -17400,7 +17382,7 @@ class MyClass(GeneratedClass):
               </Parameter>
               <Resource name="Speech" type="Lock" timeout="0" />
             </Box>
-            <Box name="Say Text" id="53" localization="8" tooltip="Say the text received on its input." x="2633" y="948">
+            <Box name="Say Text" id="53" localization="8" tooltip="Say the text received on its input." x="3444" y="973">
               <bitmap>media/images/box/interaction/say.png</bitmap>
               <script language="4">
                 <content>
@@ -17456,7 +17438,7 @@ class MyClass(GeneratedClass):
               <Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" />
               <Resource name="Speech" type="Lock" timeout="0" />
             </Box>
-            <Box name="Tai Chi Chuan" id="54" localization="8" tooltip="Tai Chi Chuan dance." x="2550" y="278">
+            <Box name="Tai Chi Chuan" id="54" localization="8" tooltip="Tai Chi Chuan dance." x="3361" y="303">
               <bitmap>media/images/box/movement/dance.png</bitmap>
               <script language="4">
                 <content>
@@ -18302,7 +18284,7 @@ class MyClass(GeneratedClass):
               <Resource name="Right eye leds" type="Lock" timeout="0" />
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="Stand Up (2)" id="55" localization="8" tooltip="the robot tries to stand up from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="2897" y="255">
+            <Box name="Stand Up (2)" id="55" localization="8" tooltip="the robot tries to stand up from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="3708" y="280">
               <bitmap>media/images/box/movement/stand.png</bitmap>
               <script language="4">
                 <content>
@@ -18381,7 +18363,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="All motors" type="Lock" timeout="0" />
             </Box>
-            <Box name="Sit Down (1)" id="57" localization="8" tooltip="the robot tries to sit down from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="3460" y="188">
+            <Box name="Sit Down (1)" id="57" localization="8" tooltip="the robot tries to sit down from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="4271" y="213">
               <bitmap>media/images/box/movement/sit_ground.png</bitmap>
               <script language="4">
                 <content>
@@ -18453,7 +18435,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="All motors" type="Lock" timeout="0" />
             </Box>
-            <Box name="Rest (1)" id="58" localization="0" tooltip="Call a Rest process.&#x0A;Apply crouch posture if the robot is Stand then unStiff all joints" x="2752" y="265">
+            <Box name="Rest (1)" id="58" localization="0" tooltip="Call a Rest process.&#x0A;Apply crouch posture if the robot is Stand then unStiff all joints" x="3563" y="290">
               <bitmap>media/images/box/movement/stiffness.png</bitmap>
               <script language="4">
                 <content>
@@ -18486,7 +18468,7 @@ class MyClass(GeneratedClass):
               <Resource name="All motors" type="Lock" timeout="0" />
               <Resource name="Stiffness" type="Lock" timeout="0" />
             </Box>
-            <Box name="WakeUp" id="59" localization="0" tooltip="Call a Wake Up process.&#x0A;Stiff all joints and apply stand Init posture if the robot is Stand" x="3031" y="262">
+            <Box name="WakeUp" id="59" localization="0" tooltip="Call a Wake Up process.&#x0A;Stiff all joints and apply stand Init posture if the robot is Stand" x="3842" y="287">
               <bitmap>media/images/box/movement/stiffness.png</bitmap>
               <script language="4">
                 <content>
@@ -18519,7 +18501,7 @@ class MyClass(GeneratedClass):
               <Resource name="All motors" type="Lock" timeout="0" />
               <Resource name="Stiffness" type="Lock" timeout="0" />
             </Box>
-            <Box name="Python Script (3)" id="60" localization="8" tooltip="This box contains a basic python script and can be used to create any python script box you would like.&#x0A;&#x0A;To edit its script, double-click on it." x="3846" y="658">
+            <Box name="Python Script (3)" id="60" localization="8" tooltip="This box contains a basic python script and can be used to create any python script box you would like.&#x0A;&#x0A;To edit its script, double-click on it." x="4657" y="683">
               <bitmap>media/images/box/box-python-script.png</bitmap>
               <script language="4">
                 <content>
@@ -18553,7 +18535,7 @@ class MyClass(GeneratedClass):
               <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
               <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
             </Box>
-            <Box name="openBothHands" id="61" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="2630" y="473">
+            <Box name="openBothHands" id="61" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="3441" y="498">
               <bitmap>media/images/box/movement/move_arm.png</bitmap>
               <script language="4">
                 <content>
@@ -18604,7 +18586,7 @@ class MyClass(GeneratedClass):
                 <Choice value="Close the hand" />
               </Parameter>
             </Box>
-            <Box name="closeBothHands" id="62" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="2757" y="474">
+            <Box name="closeBothHands" id="62" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="3568" y="499">
               <bitmap>media/images/box/movement/move_arm.png</bitmap>
               <script language="4">
                 <content>
@@ -18655,7 +18637,7 @@ class MyClass(GeneratedClass):
                 <Choice value="Close the hand" />
               </Parameter>
             </Box>
-            <Box name="BreathOn (3)" id="63" localization="8" tooltip="Activate or deactivate breathing animation on the desired Chain." x="2901" y="956">
+            <Box name="BreathOn (3)" id="63" localization="8" tooltip="Activate or deactivate breathing animation on the desired Chain." x="3712" y="981">
               <bitmap>media/images/box/movement/animation_mode.png</bitmap>
               <script language="4">
                 <content>
@@ -18722,7 +18704,7 @@ class MyClass(GeneratedClass):
               <Parameter name="Amplitude" inherits_from_parent="0" content_type="2" value="0.5" default_value="0.5" min="0" max="1" tooltip="Amplitude of the breathing animation. At high frequencies, only low amplitudes are allowed. Input amplitude may be clipped." id="6" />
               <Parameter name="Bpm" inherits_from_parent="0" content_type="2" value="12" default_value="12" min="5" max="30" tooltip="Bpm is the breathing frequency in beat per minute." id="7" />
             </Box>
-            <Box name="Hello" id="64" localization="8" tooltip="Simple hello animation.&#x0A;&#x0A;!!Warning!! There is no speech in this box. It is a just an animation box with some&#x0A;leds animation." x="2756" y="958">
+            <Box name="Hello" id="64" localization="8" tooltip="Simple hello animation.&#x0A;&#x0A;!!Warning!! There is no speech in this box. It is a just an animation box with some&#x0A;leds animation." x="3567" y="983">
               <bitmap>media/images/box/movement/move.png</bitmap>
               <script language="4">
                 <content>
@@ -18925,7 +18907,7 @@ class MyClass(GeneratedClass):
               <Resource name="Left eye leds" type="Lock" timeout="0" />
               <Resource name="Right eye leds" type="Lock" timeout="0" />
             </Box>
-            <Box name="Wipe Forehead" id="65" localization="8" tooltip="This box makes the robot wipe his forehead." x="3311" y="1784">
+            <Box name="Wipe Forehead" id="65" localization="8" tooltip="This box makes the robot wipe his forehead." x="4122" y="1809">
               <bitmap>media/images/box/movement/move.png</bitmap>
               <script language="4">
                 <content>
@@ -19071,7 +19053,7 @@ class MyClass(GeneratedClass):
               <Resource name="Head" type="Lock" timeout="0" />
               <Resource name="Arms" type="Lock" timeout="0" />
             </Box>
-            <Box name="closeLeftHand" id="66" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="3300" y="484">
+            <Box name="closeLeftHand" id="66" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="4111" y="509">
               <bitmap>media/images/box/movement/move_arm.png</bitmap>
               <script language="4">
                 <content>
@@ -19122,7 +19104,7 @@ class MyClass(GeneratedClass):
                 <Choice value="Close the hand" />
               </Parameter>
             </Box>
-            <Box name="openLeftHand" id="67" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="3177" y="488">
+            <Box name="openLeftHand" id="67" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="3988" y="513">
               <bitmap>media/images/box/movement/move_arm.png</bitmap>
               <script language="4">
                 <content>
@@ -19173,7 +19155,7 @@ class MyClass(GeneratedClass):
                 <Choice value="Close the hand" />
               </Parameter>
             </Box>
-            <Box name="openRightHand" id="68" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="2902" y="477">
+            <Box name="openRightHand" id="68" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="3713" y="502">
               <bitmap>media/images/box/movement/move_arm.png</bitmap>
               <script language="4">
                 <content>
@@ -19224,7 +19206,7 @@ class MyClass(GeneratedClass):
                 <Choice value="Close the hand" />
               </Parameter>
             </Box>
-            <Box name="closeRightHand" id="69" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="3039" y="482">
+            <Box name="closeRightHand" id="69" localization="8" tooltip="the robot stiffens the motors of one or both of his hands so that he can open or close&#x0A;it/them. Then he relaxes the motors of his hand(s)." x="3850" y="507">
               <bitmap>media/images/box/movement/move_arm.png</bitmap>
               <script language="4">
                 <content>
@@ -19275,7 +19257,7 @@ class MyClass(GeneratedClass):
                 <Choice value="Close the hand" />
               </Parameter>
             </Box>
-            <Box name="Go to position head_down" id="70" localization="8" tooltip="Robot will go to the position head_down&lt;br/&gt;Position description : " x="3378" y="1445">
+            <Box name="Go to position head_down" id="70" localization="8" tooltip="Robot will go to the position head_down&lt;br/&gt;Position description : " x="4189" y="1470">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -19368,7 +19350,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position Stand (1)" id="71" localization="8" tooltip="Robot will go to the position Stand&lt;br/&gt;Position description : Standing position with low power consumption. " x="3508" y="1447">
+            <Box name="Go to position Stand (1)" id="71" localization="8" tooltip="Robot will go to the position Stand&lt;br/&gt;Position description : Standing position with low power consumption. " x="4319" y="1472">
               <bitmap>media/images/positions/Stand.png</bitmap>
               <script language="4">
                 <content>
@@ -19415,7 +19397,7 @@ class MyClass(GeneratedClass):
               <Resource name="All motors" type="Lock" timeout="0" />
               <Resource name="Stiffness" type="Lock" timeout="0" />
             </Box>
-            <Box name="Go to position head_left" id="72" localization="8" tooltip="Robot will go to the position head_left&lt;br/&gt;Position description : " x="2658" y="1418">
+            <Box name="Go to position head_left" id="72" localization="8" tooltip="Robot will go to the position head_left&lt;br/&gt;Position description : " x="3469" y="1443">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -19508,7 +19490,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position head_right" id="73" localization="8" tooltip="Robot will go to the position head_right&lt;br/&gt;Position description : " x="2799" y="1420">
+            <Box name="Go to position head_right" id="73" localization="8" tooltip="Robot will go to the position head_right&lt;br/&gt;Position description : " x="3610" y="1445">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -19601,7 +19583,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position head_left (1)" id="74" localization="8" tooltip="Robot will go to the position head_left&lt;br/&gt;Position description : " x="2943" y="1434">
+            <Box name="Go to position head_left (1)" id="74" localization="8" tooltip="Robot will go to the position head_left&lt;br/&gt;Position description : " x="3754" y="1459">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -19694,7 +19676,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position head_right (1)" id="75" localization="8" tooltip="Robot will go to the position head_right&lt;br/&gt;Position description : " x="3085" y="1442">
+            <Box name="Go to position head_right (1)" id="75" localization="8" tooltip="Robot will go to the position head_right&lt;br/&gt;Position description : " x="3896" y="1467">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -19787,7 +19769,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position Stand (2)" id="76" localization="8" tooltip="Robot will go to the position Stand&lt;br/&gt;Position description : Standing position with low power consumption. " x="3230" y="1446">
+            <Box name="Go to position Stand (2)" id="76" localization="8" tooltip="Robot will go to the position Stand&lt;br/&gt;Position description : Standing position with low power consumption. " x="4041" y="1471">
               <bitmap>media/images/positions/Stand.png</bitmap>
               <script language="4">
                 <content>
@@ -19834,7 +19816,7 @@ class MyClass(GeneratedClass):
               <Resource name="All motors" type="Lock" timeout="0" />
               <Resource name="Stiffness" type="Lock" timeout="0" />
             </Box>
-            <Box name="Go to position right_hand_up" id="77" localization="8" tooltip="Robot will go to the position right_hand_up&lt;br/&gt;Position description : " x="2630" y="592">
+            <Box name="Go to position right_hand_up" id="77" localization="8" tooltip="Robot will go to the position right_hand_up&lt;br/&gt;Position description : " x="3441" y="617">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -19927,7 +19909,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position right_hand_right" id="78" localization="8" tooltip="Robot will go to the position right_hand_right&lt;br/&gt;Position description : " x="2755" y="589">
+            <Box name="Go to position right_hand_right" id="78" localization="8" tooltip="Robot will go to the position right_hand_right&lt;br/&gt;Position description : " x="3566" y="614">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -20020,7 +20002,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position right_hand_front" id="81" localization="8" tooltip="Robot will go to the position right_hand_front&lt;br/&gt;Position description : " x="2901" y="590">
+            <Box name="Go to position right_hand_front" id="81" localization="8" tooltip="Robot will go to the position right_hand_front&lt;br/&gt;Position description : " x="3712" y="615">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -20113,7 +20095,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position left_hand_up" id="82" localization="8" tooltip="Robot will go to the position left_hand_up&lt;br/&gt;Position description : " x="3045" y="596">
+            <Box name="Go to position left_hand_up" id="82" localization="8" tooltip="Robot will go to the position left_hand_up&lt;br/&gt;Position description : " x="3856" y="621">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -20206,7 +20188,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position left_hand_left" id="83" localization="8" tooltip="Robot will go to the position left_hand_left&lt;br/&gt;Position description : " x="3187" y="591">
+            <Box name="Go to position left_hand_left" id="83" localization="8" tooltip="Robot will go to the position left_hand_left&lt;br/&gt;Position description : " x="3998" y="616">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -20299,7 +20281,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position left_hand_front" id="84" localization="8" tooltip="Robot will go to the position left_hand_front&lt;br/&gt;Position description : " x="3308" y="591">
+            <Box name="Go to position left_hand_front" id="84" localization="8" tooltip="Robot will go to the position left_hand_front&lt;br/&gt;Position description : " x="4119" y="616">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -20392,7 +20374,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position hands_up" id="85" localization="8" tooltip="Robot will go to the position hands_up&lt;br/&gt;Position description : " x="2626" y="710">
+            <Box name="Go to position hands_up" id="85" localization="8" tooltip="Robot will go to the position hands_up&lt;br/&gt;Position description : " x="3437" y="735">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -20485,7 +20467,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position hands_sides" id="86" localization="8" tooltip="Robot will go to the position hands_sides&lt;br/&gt;Position description : " x="2758" y="710">
+            <Box name="Go to position hands_sides" id="86" localization="8" tooltip="Robot will go to the position hands_sides&lt;br/&gt;Position description : " x="3569" y="735">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -20578,7 +20560,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position hands_front" id="88" localization="8" tooltip="Robot will go to the position hands_front&lt;br/&gt;Position description : " x="2900" y="713">
+            <Box name="Go to position hands_front" id="88" localization="8" tooltip="Robot will go to the position hands_front&lt;br/&gt;Position description : " x="3711" y="738">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -20671,7 +20653,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position bend_right" id="89" localization="8" tooltip="Robot will go to the position bend_right&lt;br/&gt;Position description : " x="3032" y="717">
+            <Box name="Go to position bend_right" id="89" localization="8" tooltip="Robot will go to the position bend_right&lt;br/&gt;Position description : " x="3843" y="742">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -20764,7 +20746,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position bend_left" id="90" localization="8" tooltip="Robot will go to the position bend_left&lt;br/&gt;Position description : " x="3158" y="702">
+            <Box name="Go to position bend_left" id="90" localization="8" tooltip="Robot will go to the position bend_left&lt;br/&gt;Position description : " x="3969" y="727">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -20857,7 +20839,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position left_shoulder_up" id="91" localization="8" tooltip="Robot will go to the position left_shoulder_up&lt;br/&gt;Position description : " x="2629" y="831">
+            <Box name="Go to position left_shoulder_up" id="91" localization="8" tooltip="Robot will go to the position left_shoulder_up&lt;br/&gt;Position description : " x="3440" y="856">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -20950,7 +20932,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position right_shoulder_up" id="92" localization="8" tooltip="Robot will go to the position right_shoulder_up&lt;br/&gt;Position description : " x="2772" y="829">
+            <Box name="Go to position right_shoulder_up" id="92" localization="8" tooltip="Robot will go to the position right_shoulder_up&lt;br/&gt;Position description : " x="3583" y="854">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -21043,7 +21025,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position shoulders_up" id="93" localization="8" tooltip="Robot will go to the position shoulders_up&lt;br/&gt;Position description : " x="2904" y="828">
+            <Box name="Go to position shoulders_up" id="93" localization="8" tooltip="Robot will go to the position shoulders_up&lt;br/&gt;Position description : " x="3715" y="853">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -21136,7 +21118,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="play_pooh" id="94" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3185" y="841">
+            <Box name="play_pooh" id="94" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3996" y="866">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -21257,7 +21239,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_gena" id="95" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="2900" y="365">
+            <Box name="play_gena" id="95" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3711" y="390">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -21378,7 +21360,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_matroskin" id="96" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3036" y="384">
+            <Box name="play_matroskin" id="96" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3847" y="409">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -21499,7 +21481,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_lullaby" id="97" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3169" y="391">
+            <Box name="play_lullaby" id="97" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3980" y="416">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -21620,7 +21602,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="Set Speaker Vol." id="98" localization="8" tooltip="Set the sound volume between 0 (mute) and 100 (max).&#x0A;&#x0A;V1.1.0&#x0A;" x="3636" y="1447">
+            <Box name="Set Speaker Vol." id="98" localization="8" tooltip="Set the sound volume between 0 (mute) and 100 (max).&#x0A;&#x0A;V1.1.0&#x0A;" x="4447" y="1472">
               <bitmap>media/images/box/interaction/processing_sound.png</bitmap>
               <script language="4">
                 <content>
@@ -21777,7 +21759,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="All motors" type="Lock" timeout="0" />
             </Box>
-            <Box name="Eye LEDs Orange" id="101" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="2669" y="132">
+            <Box name="Eye LEDs Orange" id="101" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="3480" y="157">
               <bitmap>media/images/box/interaction/LED.png</bitmap>
               <script language="4">
                 <content>
@@ -21865,7 +21847,7 @@ class MyClass(GeneratedClass):
                 </BehaviorLayer>
               </Timeline>
             </Box>
-            <Box name="Eye LEDs Yellow" id="102" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="2807" y="133">
+            <Box name="Eye LEDs Yellow" id="102" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="3618" y="158">
               <bitmap>media/images/box/interaction/LED.png</bitmap>
               <script language="4">
                 <content>
@@ -21953,7 +21935,7 @@ class MyClass(GeneratedClass):
                 </BehaviorLayer>
               </Timeline>
             </Box>
-            <Box name="Eye LEDs Lightblue" id="103" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="2942" y="137">
+            <Box name="Eye LEDs Lightblue" id="103" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="3753" y="162">
               <bitmap>media/images/box/interaction/LED.png</bitmap>
               <script language="4">
                 <content>
@@ -22041,7 +22023,7 @@ class MyClass(GeneratedClass):
                 </BehaviorLayer>
               </Timeline>
             </Box>
-            <Box name="Eye LEDs Violet" id="104" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="3110" y="141">
+            <Box name="Eye LEDs Violet" id="104" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="3921" y="166">
               <bitmap>media/images/box/interaction/LED.png</bitmap>
               <script language="4">
                 <content>
@@ -22217,7 +22199,7 @@ class MyClass(GeneratedClass):
                 </BehaviorLayer>
               </Timeline>
             </Box>
-            <Box name="Eye LEDs Pink" id="106" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="3982" y="1099">
+            <Box name="Eye LEDs Pink" id="106" localization="8" tooltip="Set the LED color of the eyes. Note that you must open the box to enter the color." x="4793" y="1124">
               <bitmap>media/images/box/interaction/LED.png</bitmap>
               <script language="4">
                 <content>
@@ -22393,7 +22375,7 @@ class MyClass(GeneratedClass):
                 </BehaviorLayer>
               </Timeline>
             </Box>
-            <Box name="BreathOff" id="108" localization="8" tooltip="Activate or deactivate breathing animation on the desired Chain." x="3039" y="839">
+            <Box name="BreathOff" id="108" localization="8" tooltip="Activate or deactivate breathing animation on the desired Chain." x="3850" y="864">
               <bitmap>media/images/box/movement/animation_mode.png</bitmap>
               <script language="4">
                 <content>
@@ -22460,7 +22442,7 @@ class MyClass(GeneratedClass):
               <Parameter name="Amplitude" inherits_from_parent="0" content_type="2" value="0.5" default_value="0.5" min="0" max="1" tooltip="Amplitude of the breathing animation. At high frequencies, only low amplitudes are allowed. Input amplitude may be clipped." id="6" />
               <Parameter name="Bpm" inherits_from_parent="0" content_type="2" value="12" default_value="12" min="5" max="30" tooltip="Bpm is the breathing frequency in beat per minute." id="7" />
             </Box>
-            <Box name="Play Sound (19)" id="109" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="2390" y="1409">
+            <Box name="Play Sound (19)" id="109" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3201" y="1434">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -22581,7 +22563,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="Go to position hands_clap" id="110" localization="8" tooltip="Robot will go to the position hands_clap&lt;br/&gt;Position description : " x="2253" y="1404">
+            <Box name="Go to position hands_clap" id="110" localization="8" tooltip="Robot will go to the position hands_clap&lt;br/&gt;Position description : " x="3064" y="1429">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -22674,7 +22656,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Stand Up (5)" id="111" localization="8" tooltip="the robot tries to stand up from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="2520" y="1416">
+            <Box name="Stand Up (5)" id="111" localization="8" tooltip="the robot tries to stand up from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="3331" y="1441">
               <bitmap>media/images/box/movement/stand.png</bitmap>
               <script language="4">
                 <content>
@@ -22753,7 +22735,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="All motors" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_lullaby_2" id="112" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3303" y="379">
+            <Box name="play_lullaby_2" id="112" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="4114" y="404">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -22874,7 +22856,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_airplane_1" id="122" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="2411" y="1088">
+            <Box name="play_airplane_1" id="122" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3222" y="1113">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -22995,7 +22977,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_airplane_2" id="123" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="2540" y="1086">
+            <Box name="play_airplane_2" id="123" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3351" y="1111">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -23116,7 +23098,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_cat_eating" id="127" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="2811" y="1090">
+            <Box name="play_cat_eating" id="127" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3622" y="1115">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -23237,7 +23219,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_cat_meow" id="128" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3836" y="1157">
+            <Box name="play_cat_meow" id="128" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="4647" y="1182">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -23358,7 +23340,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_dog_bark" id="129" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3076" y="1100">
+            <Box name="play_dog_bark" id="129" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3887" y="1125">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -23479,7 +23461,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_dog_breathe" id="130" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3209" y="1100">
+            <Box name="play_dog_breathe" id="130" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="4020" y="1125">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -23600,7 +23582,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_dog_cry" id="131" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3348" y="1100">
+            <Box name="play_dog_cry" id="131" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="4159" y="1125">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -23721,7 +23703,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_parrot_1" id="132" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3486" y="1109">
+            <Box name="play_parrot_1" id="132" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="4297" y="1134">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -23842,7 +23824,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_parrot_2" id="133" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3619" y="1099">
+            <Box name="play_parrot_2" id="133" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="4430" y="1124">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -23963,7 +23945,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_car" id="134" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="2676" y="1087">
+            <Box name="play_car" id="134" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3487" y="1112">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -24084,7 +24066,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_zhel_logo_su_sa" id="135" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3615" y="1233">
+            <Box name="play_zhel_logo_su_sa" id="135" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="4426" y="1258">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -24205,7 +24187,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_zhel_logo_ku_gi" id="136" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3339" y="1246">
+            <Box name="play_zhel_logo_ku_gi" id="136" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="4150" y="1271">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -24326,7 +24308,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_zhel_logo_zha_zhu" id="137" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3211" y="1225">
+            <Box name="play_zhel_logo_zha_zhu" id="137" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="4022" y="1250">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -24447,7 +24429,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_zhel_logo_no" id="138" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3480" y="1229">
+            <Box name="play_zhel_logo_no" id="138" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="4291" y="1254">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -24568,7 +24550,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_zhel_zayka" id="139" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3064" y="1233">
+            <Box name="play_zhel_zayka" id="139" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3875" y="1258">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -24689,7 +24671,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_zhel_tuk_tok" id="140" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="2951" y="1213">
+            <Box name="play_zhel_tuk_tok" id="140" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3762" y="1238">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -24810,7 +24792,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_zhel_hands_up" id="141" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="2676" y="1211">
+            <Box name="play_zhel_hands_up" id="141" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3487" y="1236">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -24931,7 +24913,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_zhel_top_hlop" id="142" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="2823" y="1217">
+            <Box name="play_zhel_top_hlop" id="142" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3634" y="1242">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -25052,7 +25034,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_water" id="143" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="2553" y="1206">
+            <Box name="play_water" id="143" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3364" y="1231">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -25173,7 +25155,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="play_train" id="144" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="2416" y="1200">
+            <Box name="play_train" id="144" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="3227" y="1225">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -25294,7 +25276,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="Go to position dab (2)" id="145" localization="8" tooltip="Robot will go to the position dab&lt;br/&gt;Position description : " x="3700" y="1688">
+            <Box name="Go to position dab (2)" id="145" localization="8" tooltip="Robot will go to the position dab&lt;br/&gt;Position description : " x="4511" y="1713">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -25480,7 +25462,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position wave_2 (1)" id="147" localization="8" tooltip="Robot will go to the position wave_2&lt;br/&gt;Position description : " x="2258" y="1689">
+            <Box name="Go to position wave_2 (1)" id="147" localization="8" tooltip="Robot will go to the position wave_2&lt;br/&gt;Position description : " x="3069" y="1714">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -25573,7 +25555,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position wave_3 (1)" id="148" localization="8" tooltip="Robot will go to the position wave_3&lt;br/&gt;Position description : " x="2437" y="1687">
+            <Box name="Go to position wave_3 (1)" id="148" localization="8" tooltip="Robot will go to the position wave_3&lt;br/&gt;Position description : " x="3248" y="1712">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -25666,7 +25648,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position wave_4 (1)" id="149" localization="8" tooltip="Robot will go to the position wave_4&lt;br/&gt;Position description : " x="2590" y="1691">
+            <Box name="Go to position wave_4 (1)" id="149" localization="8" tooltip="Robot will go to the position wave_4&lt;br/&gt;Position description : " x="3401" y="1716">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -25759,7 +25741,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position wave_5 (1)" id="154" localization="8" tooltip="Robot will go to the position wave_5&lt;br/&gt;Position description : " x="2756" y="1686">
+            <Box name="Go to position wave_5 (1)" id="154" localization="8" tooltip="Robot will go to the position wave_5&lt;br/&gt;Position description : " x="3567" y="1711">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -25852,7 +25834,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position wave_6 (1)" id="155" localization="8" tooltip="Robot will go to the position wave_6&lt;br/&gt;Position description : " x="2925" y="1680">
+            <Box name="Go to position wave_6 (1)" id="155" localization="8" tooltip="Robot will go to the position wave_6&lt;br/&gt;Position description : " x="3736" y="1705">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -25945,7 +25927,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Go to position dab (3)" id="156" localization="8" tooltip="Robot will go to the position dab&lt;br/&gt;Position description : " x="3074" y="1683">
+            <Box name="Go to position dab (3)" id="156" localization="8" tooltip="Robot will go to the position dab&lt;br/&gt;Position description : " x="3885" y="1708">
               <script language="4">
                 <content>
                   <![CDATA[]]>
@@ -26038,7 +26020,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="bow (1)" id="157" localization="8" tooltip="This box is empty (contains a single motion layer with no motor position&#x0A;defined in it) and should be used to create any animation you would like." x="3976" y="1688">
+            <Box name="bow (1)" id="157" localization="8" tooltip="This box is empty (contains a single motion layer with no motor position&#x0A;defined in it) and should be used to create any animation you would like." x="4787" y="1713">
               <bitmap>media/images/box/movement/move.png</bitmap>
               <script language="4">
                 <content>
@@ -26336,7 +26318,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="Audio player" type="Lock" timeout="0" />
             </Box>
-            <Box name="Sit Down (2)" id="159" localization="8" tooltip="the robot tries to sit down from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="3829" y="321">
+            <Box name="Sit Down (2)" id="159" localization="8" tooltip="the robot tries to sit down from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="4640" y="346">
               <bitmap>media/images/box/movement/sit_ground.png</bitmap>
               <script language="4">
                 <content>
@@ -28622,22 +28604,22 @@ class MyClass(GeneratedClass):
         #self.onStopped() #activate the output of the box
 
         names = ["RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw", "LShoulderPitch", "LShoulderRoll", "LElbowRoll", "LElbowYaw"]
-        timeLists = [[0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [
-                 0.4]]
+        timeLists = [[0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4]]
         isAbsolute = True
         angleLists = []
 
         for angle in angleList:
             a = []
-            self.logger.info(type(float(angle)))
-            a.append(float(angle)*almath.TO_RAD)
+            #self.logger.info(type(float(angle)))
+            a.append(float(angle))#*almath.TO_RAD)
             angleLists.append(a)
+
+        self.logger.info ("angles:")
+        self.logger.info (angleList)
+
         self.motionProxy.angleInterpolation(names, angleLists, timeLists, isAbsolute)
-        self.logger.info(angleLists)
 
-
-        self.logger.info('')
-        pass
+        #pass
 
     def onInput_onStop(self):
         self.onUnload() #it is recommended to reuse the clean-up as the box is stopped
@@ -33236,7 +33218,7 @@ class MyClass(GeneratedClass):
               <Resource name="Head" type="Lock" timeout="0" />
               <Resource name="Arms" type="Lock" timeout="0" />
             </Box>
-            <Box name="Stand Up (6)" id="181" localization="8" tooltip="the robot tries to stand up from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="3214" y="1679">
+            <Box name="Stand Up (6)" id="181" localization="8" tooltip="the robot tries to stand up from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="4025" y="1704">
               <bitmap>media/images/box/movement/stand.png</bitmap>
               <script language="4">
                 <content>
@@ -33394,7 +33376,7 @@ class MyClass(GeneratedClass):
               </Timeline>
               <Resource name="All motors" type="Lock" timeout="0" />
             </Box>
-            <Box name="Stand Up (8)" id="184" localization="8" tooltip="the robot tries to stand up from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="2218" y="633">
+            <Box name="Stand Up (8)" id="184" localization="8" tooltip="the robot tries to stand up from any position for a number of tries.&#x0A;&#x0A;Note: The number of tries can be set in parameters." x="2370" y="649">
               <bitmap>media/images/box/movement/stand.png</bitmap>
               <script language="4">
                 <content>
