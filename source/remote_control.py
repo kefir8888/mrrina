@@ -19,7 +19,7 @@ def main():
     robots_list = {"simulated" : robots.Simulated_robot ()}
     
     if (AUTONOMOUS == False):
-        robots_list.update ({"physical" : robots.Real_robot ("10.0.0.103", "9569")})
+        robots_list.update ({"physical" : robots.Real_robot ("192.168.1.30", "9569")})
 
     fsm_processor = fsm.FSM_processor ()
 
@@ -43,7 +43,7 @@ def main():
             #print ("command: ", command)
 
             action = fsm_processor.handle_command (command)
-            print ("action", action)
+            #print ("action", action)
 
             for key in robots_list.keys ():
                 robots_list [key].add_action (action)

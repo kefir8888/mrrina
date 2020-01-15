@@ -15,7 +15,8 @@ class Computer_keyboard (Modality):
 
         self.key_to_command = {"z"        : ("/stand",   ["heh"]),
                                "c"        : ("/rest",    ["kek"]),
-                               "w"        : ("/increment_joint_angle", ["lefthand", "0.1"]),
+                               "w"        : ("/increment_joint_angle", ["lefthand", "5"]),
+                               "e"        : ("/set_joint_angle", ["lefthand", "15"]),
                                "n"        : ("next",     [""]),
                                "noaction" : ("noaction", [""])}
 
@@ -58,6 +59,6 @@ class Computer_keyboard (Modality):
     def draw (self, img):
         pass
 
-#class Video
+#class Video (Modality):
 #class Voice (Modality):
 #class Virtual_keyboard (Modality):
