@@ -15,8 +15,9 @@ class Computer_keyboard (Modality):
 
         self.key_to_command = {"z"        : ("/stand",   ["heh"]),
                                "c"        : ("/rest",    ["kek"]),
-                               "w"        : ("/increment_joint_angle", ["lefthand", "5"]),
-                               "e"        : ("/set_joint_angle", ["lefthand", "15"]),
+                               "w"        : ("/increment_joint_angle", ["lefthand", "0.4"]),
+                               "r"        : ("/increment_joint_angle", ["lefthand", "-0.4"]),
+                               "e"        : ("/increment_joint_angle", ["leftarm", "0.4"]),
                                "n"        : ("next",     [""]),
                                "noaction" : ("noaction", [""])}
 

@@ -205,8 +205,8 @@ class Real_robot(Robot):
 
         self.synchronized_joints = {"righthand" : "r_shoulderroll",
                                     "lefthand"  : "l_shoulderroll",
-                                    "righthand" : "r_elbowroll",
-                                    "lefthand"  : "l_elbowroll",}
+                                    "rightarm" : "r_elbowroll",
+                                    "leftarm"  : "l_elbowroll",}
 
     def _send_command (self, action):
         r = -1
