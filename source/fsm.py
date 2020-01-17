@@ -36,14 +36,14 @@ class FSM_processor:
     def handle_command (self, command):
         #print ("command to fsm proc: ", command)
 
-        if (command [0] [0] == "/"):
+        if (command [0] [0] [0] == "/"):
             return [command]
 
-        elif (command [0] == "noaction"):
+        elif (command [0] [0] == "noaction"):
             return [command]
 
         else:
-            if (command [0] == "next"):
+            if (command [0] [0] == "next"):
                 print ("command next")
                 curr_st = self.fsms [self.active_fsm] [self.current_state]
 

@@ -4,7 +4,7 @@ import robots
 from common import *
 
 def main():
-    AUTONOMOUS = False #without robot
+    AUTONOMOUS = True #without robot
 
     WIND_X = 800
     WIND_Y = 500
@@ -14,7 +14,8 @@ def main():
         
     #logfile = open ("log/" + str (curr_time) + ".txt", "w+")
     
-    inputs = {"computer keyboard" : modalities.Computer_keyboard ()}
+    inputs = {"computer keyboard" : modalities.Computer_keyboard (),
+              "archive skeleton"  : modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt")}
 
     robots_list = {}
 
@@ -22,7 +23,9 @@ def main():
         robots_list.update ({"simulated" : robots.Simulated_robot ()})
     
     if (AUTONOMOUS == False):
-        robots_list.update ({"physical" : robots.Real_robot ("192.168.1.30", "9569")})
+        #ip = "192.168.1.30"
+        ip = "10.0.0.101"
+        robots_list.update ({"physical" : robots.Real_robot (ip, "9569")})
 
     fsm_processor = fsm.FSM_processor ()
 
@@ -32,8 +35,6 @@ def main():
         keyboard_data = inputs ["computer keyboard"].get_read_data ()
         if (keyboard_data == ord ("q")):
             break
-
-        #change task, go to next question
 
         for modality in inputs.keys ():
             skip_reading_data = False
@@ -60,7 +61,7 @@ def main():
 
         cv2.imshow ("remote_controller", canvas)
         
-        time.sleep  (0.3)        
+        time.sleep  (0.02)        
             
     #logfile.close ()
     cv2.destroyAllWindows ()

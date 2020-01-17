@@ -4,6 +4,7 @@ class Robot:
     def __init__(self, timeout_ = 0):
         self.queue         = []
         self.commands_sent = 0
+        self.name = "base"
 
         self.available_commands = {"/rest"  : ("/action=/rest&text=", "a"),
                                    "/stand" : ("/action=/stand&text=", "a"),
@@ -21,21 +22,29 @@ class Robot:
 
     def on_idle (self):
         if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent)):
-            next_command = self.queue [self.commands_sent]
-            self.commands_sent += 1
+            while (len (self.queue) > self.commands_sent):
+                next_command = self.queue [self.commands_sent]
+                self.commands_sent += 1
 
-            #if (next_command [0] != "noaction"):
-            self._send_command (next_command)
+                if (next_command [0] != "noaction"):
+                    #print ("sending ", next_command)
+                    #print (self.queue)
+                    #print ("")
+                    self._send_command (next_command)
+
+                if (self.name == "real"):
+                    break
 
     def add_action (self, action):
         #print ("appending ", action)
         for act in action:
-            if (act [0] != "noaction"):
-                self.queue = self.queue + action
+            if (act [0] [0] != "noaction"):
+                self.queue.append (act)
 
 class Fake_robot(Robot):
     def __init__(self, timeout_ = 0.5):
         Robot.__init__ (self, timeout_)
+        self.name = "fake"
 
     def _send_command (self, action):
         if (action [0] in self.available_commands.keys ()):
@@ -95,7 +104,7 @@ class Joint:
         self.children.append (Joint (length, angle, angle_multiplier, self.col1, self.col2, name, min_angle, max_angle))
 
 class Simulated_robot(Robot):
-    def __init__(self, timeout_ = 0.5, path_ = ""):
+    def __init__(self, timeout_ = 0.1, path_ = ""):
         Robot.__init__ (self, timeout_)
 
         self.config_path = path_
@@ -106,6 +115,7 @@ class Simulated_robot(Robot):
         self.joints_to_track = ["righthand", "lefthand", "leftarm", "rightarm"]
 
         self.updated = False
+        self.name = "simulated"
 
     def load_configuration (self, path = ""):
         if (path == ""):
@@ -196,27 +206,28 @@ for instance the robot model is recursive. Aborting operation.")
 
         target_joint.add_child (new_joint_name, length, angle, angle_multiplier, min_angle, max_angle)
 
-    def _send_command (self, action):
-        if (action [0] in self.available_commands.keys ()):
-            #print ("sending command [simulated]: ", action)
+    def _send_command (self, actions):
+        for action in actions:
+            if (action [0] in self.available_commands.keys ()):
+                #print ("sending command [simulated]: ", action)
             
-            if (action [0] == "/increment_joint_angle"):
-                self.set_joint_angle (action [1] [0], float (action [1] [1]), increment = True)
+                if (action [0] == "/increment_joint_angle"):
+                    self.set_joint_angle (action [1] [0], float (action [1] [1]), increment = True)
 
-            if (action [0] == "/set_joint_angle"):
-                self.set_joint_angle (action [1] [0], float (action [1] [1]))
+                if (action [0] == "/set_joint_angle"):
+                    self.set_joint_angle (action [1] [0], float (action [1] [1]))
 
-            elif (action [0] == "/stand"):
-                #self.set_joint_angle ("righthand", -0.2)
-                self.base_point.children = []
-                self.load_configuration (self.config_path)
-                self.set_joint_angle ("base", 0)
+                elif (action [0] == "/stand"):
+                    #self.set_joint_angle ("righthand", -0.2)
+                    self.base_point.children = []
+                    self.load_configuration (self.config_path)
+                    self.set_joint_angle ("base", 0)
 
-            elif (action [0] == "/rest"):
-                self.set_joint_angle ("base", 5)
+                elif (action [0] == "/rest"):
+                    self.set_joint_angle ("base", 5)
 
-        else:
-            print ("action :", action, " is not supported")
+            else:
+                print ("action :", action, " is not supported")
 
     def plot_state (self, img, x, y, scale = 1):
         line_num = 0
@@ -269,6 +280,8 @@ class Real_robot(Robot):
                                "l_shoulderroll"  : 0,
                                "l_elbowroll"     : 0,
                                "l_elbowyaw"      : 0}
+
+        self.name = "real"
 
     def _send_command (self, action):
         r = -1

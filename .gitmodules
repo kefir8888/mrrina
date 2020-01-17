@@ -1,0 +1,4 @@
+[submodule "adelaida"]
+	path = adelaida
+	url = https://github.com/kefir8888/adelaida
+	branch = master
