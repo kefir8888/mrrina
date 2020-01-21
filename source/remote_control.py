@@ -15,7 +15,8 @@ def main():
     #logfile = open ("log/" + str (curr_time) + ".txt", "w+")
     
     inputs = {"computer keyboard" : modalities.Computer_keyboard (),
-              "archive skeleton"  : modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt")}
+              "video input" : modalities.Video()}
+              # "archive skeleton"  : modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt")}
 
     robots_list = {}
 
@@ -44,7 +45,7 @@ def main():
 
             command = inputs [modality].get_command (skip_reading_data)
 
-            #print ("command: ", command)
+            #print ("modality: ", modality)
 
             action = fsm_processor.handle_command (command)
             #print ("action", action)

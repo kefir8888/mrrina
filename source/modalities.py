@@ -1,4 +1,9 @@
 from common import *
+import torch
+from demo import VideoReader, infer_fast, run_demo
+from modules.load_state import load_state
+from models.with_mobilenet import PoseEstimationWithMobileNet
+
 
 class Modality:
     def __init__ (self):
@@ -130,6 +135,8 @@ class Skeleton (Modality):
         necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip", "r_sho", "r_elb", "r_wri", "r_hip", "neck"]
         kps = {}
 
+        print ("kps", kps)
+
         for kp in necessary_keypoints_names:
             ind = kpt_names.index (kp)
             kps.update ({kp : (self.read_data [ind * 2], self.read_data [ind * 2 + 1])})
@@ -169,6 +176,83 @@ class Skeleton (Modality):
     def draw (self, img):
         pass
 
-#class Video (Modality):
+class Video (Modality):
+    def __init__ (self, video_path_ = ""):
+        self.read_data        = []
+        self.interpreted_data = []
+        #self.all_data         = []
+
+        self.dataframe_num = 0
+
+        self.processed_data = {"righthand" : 0,
+                               "rightarm"  : 0,
+                               "lefthand"  : 0,
+                               "leftarm"   : 0}
+        # if video_path_ != '':
+        self.all_data = cv2.VideoCapture(0)
+
+        self.skel = Skeleton()
+        self.net = PoseEstimationWithMobileNet()
+        checkpoint = torch.load("models/checkpoint_iter_370000.pth", map_location='cpu')
+        load_state(self.net, checkpoint)
+
+    def name(self):
+        return "video"
+
+    def _read_data (self):
+        # if (self.dataframe_num >= len (self.all_data)):
+        #     read_data = 0
+        #     return
+        # self.frame_skel = run_demo(self.all_data)
+
+
+        _, img = self.all_data.read()
+
+
+        self.read_data = run_demo(self.net, img, 256, False, 1, 1) #self.all_data [self.dataframe_num]
+
+        # self.dataframe_num += 1
+
+    def _process_data(self):
+        if sum (self.read_data) != -36 and self.read_data != []:
+            # print ("hehm", self.read_data)
+            self.skel.read_data = self.read_data
+            self.skel._process_data()
+            self.processed_data = self.skel.processed_data
+            print(self.processed_data)
+
+        else:
+            return
+
+    def _interpret_data(self):
+        self.interpreted_data = self.processed_data
+
+    def _get_command(self):
+        commands = []
+
+        for key in self.processed_data.keys():
+            commands.append(("/set_joint_angle", [key, str(self.processed_data[key])]))
+
+        print ("com", commands)
+
+        return commands
+
+    def get_command(self, skip_reading_data=False):
+        if (skip_reading_data == False):
+            self._read_data()
+
+        self._process_data()
+        self._interpret_data()
+
+        return self._get_command()
+
+    def draw(self, img):
+        pass
+
+
+
+
+
+
 #class Voice (Modality):
 #class Virtual_keyboard (Modality):
