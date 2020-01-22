@@ -4,7 +4,7 @@ import robots
 from common import *
 
 def main():
-    AUTONOMOUS = True #without robot
+    AUTONOMOUS = False #without robot
 
     WIND_X = 800
     WIND_Y = 500
@@ -25,7 +25,7 @@ def main():
     
     if (AUTONOMOUS == False):
         #ip = "192.168.1.30"
-        ip = "10.0.0.101"
+        ip = "10.0.0.104"
         robots_list.update ({"physical" : robots.Real_robot (ip, "9569")})
 
     fsm_processor = fsm.FSM_processor ()
@@ -62,7 +62,7 @@ def main():
 
         cv2.imshow ("remote_controller", canvas)
         
-        time.sleep  (0.02)        
+        time.sleep  (0.2)        
             
     #logfile.close ()
     cv2.destroyAllWindows ()

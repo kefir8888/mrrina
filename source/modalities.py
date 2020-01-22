@@ -250,9 +250,5 @@ class Video (Modality):
         pass
 
 
-
-
-
-
 #class Voice (Modality):
 #class Virtual_keyboard (Modality):

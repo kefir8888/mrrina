@@ -291,8 +291,13 @@ class Real_robot(Robot):
 
         self.simulated._send_command (action)
 
-        if (action [0] == "/increment_joint_angle" or
-            action [0] == "/set_joint_angle"):
+        print ("lalala")
+        print (action [0])
+        print (self.available_commands.keys())
+
+
+        if (action [0] [0] == "/increment_joint_angle" or
+            action [0] [0] == "/set_joint_angle"):
             action_str = "/raise_hands"
             text_str   = ""
 
@@ -302,16 +307,16 @@ class Real_robot(Robot):
                 init_angle = self.init_positions [robot_joint]
                 text_str += "&" + robot_joint + "=" + str (joint.angle * joint.angle_multiplier + init_angle)
         
-        elif (action [0] in self.available_commands.keys ()):
-            action_str = action [0]
-            text_str   = str(action [1])
+        elif (action [0] [0] in self.available_commands.keys ()):
+            action_str = action [0] [0]
+            text_str   = str (action [1])
 
         else:
             print ("action :", action, " is not implemented")
             return -1
 
         if (self.simulated.updated == True or action [0] == "/free"):
-            if (action [0] != "/free"):
+            if (action [0] [0] != "/free"):
                 print ("sending command [physical]: ", action)
 
             r = requests.get (self.ip + self.port + "/?" + "action="
@@ -325,7 +330,7 @@ class Real_robot(Robot):
             r = self._send_command (["/free", "a"])
             #print ("resp", r)
 
-            free = int (str (r) [13:14]) #6 free, 7 not free; don't ask, don't tell
+            free = 6#int (str (r) [13:14]) #6 free, 7 not free; don't ask, don't tell
 
             if (free == 6):
                 self.free = True
@@ -340,7 +345,7 @@ class Real_robot(Robot):
             self.free == True):
             command = self.queue [self.commands_sent]
 
-            #print ("azaz", command)
+            print ("azaz", command)
 
             self._send_command (command)
             self.commands_sent += 1

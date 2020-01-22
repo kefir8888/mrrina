@@ -1,11 +1,11 @@
 base leftshoulder 15 0 1 10 20
 base rightshoulder 15 3.14 1 10 20
-leftshoulder lefthand 40 1.57 -1 -4 4
-rightshoulder righthand 40 -1.57 -1 -4 4
+leftshoulder lefthand 40 1.57 -1 -1.57 0
+rightshoulder righthand 40 -1.57 -1 0 1.57
 base head 20 -1.4 1 10 20
 base body 50 -4.7 1 10 20
-lefthand leftarm 35 0 -1 -4 4
-righthand rightarm 35 -0 -1 -4 4
+lefthand leftarm 35 0 -1 0 1.57
+righthand rightarm 35 -0 -1 -1.57 0
 body leftleg 50 -0.18 1 10 20
 body rightleg 50 0.18 1 10 20
 leftleg leftfoot 40 0.13 1 10 20
