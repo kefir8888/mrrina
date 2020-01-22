@@ -135,7 +135,7 @@ class Skeleton (Modality):
         necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip", "r_sho", "r_elb", "r_wri", "r_hip", "neck"]
         kps = {}
 
-        print ("kps", kps)
+        #print ("kps", kps)
 
         for kp in necessary_keypoints_names:
             ind = kpt_names.index (kp)
@@ -150,8 +150,8 @@ class Skeleton (Modality):
 
         self.processed_data ["righthand"] = -self.angle_2_vec (neck_hip, sh_r_elb)
         self.processed_data ["lefthand"]  = -self.angle_2_vec (neck_hip, sh_l_elb)
-        self.processed_data ["rightarm"]  = -self.angle_2_vec (sh_r_elb, elb_r_wri)
-        self.processed_data ["leftarm"]   = -self.angle_2_vec (sh_l_elb, elb_l_wri)
+        self.processed_data ["rightarm"]  = self.angle_2_vec (sh_r_elb, elb_r_wri)
+        self.processed_data ["leftarm"]   = self.angle_2_vec (sh_l_elb, elb_l_wri)
 
     def _interpret_data (self):
         self.interpreted_data = self.processed_data

@@ -15,8 +15,8 @@ def main():
     #logfile = open ("log/" + str (curr_time) + ".txt", "w+")
     
     inputs = {"computer keyboard" : modalities.Computer_keyboard (),
-              "video input" : modalities.Video()}
-              # "archive skeleton"  : modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt")}
+              #"video input" : modalities.Video()}
+              "archive skeleton"  : modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt")}
 
     robots_list = {}
 
