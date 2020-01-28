@@ -120,8 +120,8 @@ class Skeleton (Modality):
     def angle_2_vec_ (self, x1, y1, x2, y2):
         dot = x1*x2 + y1*y2
         det = x1*y2 - y1*x2
-        angle = math.atan(det/dot)
-        print(angle)
+        angle = math.atan2(det,dot)
+        # print(angle)
 
         return angle
 
@@ -150,8 +150,8 @@ class Skeleton (Modality):
         elb_l_wri = (kps ["l_wri"] [0] - kps ["l_elb"] [0], kps ["l_wri"] [1] - kps ["l_elb"] [1])
 
 
-        self.processed_data ["righthand"] = -self.angle_2_vec (neck_hip, sh_r_elb)
-        self.processed_data ["lefthand"]  = -self.angle_2_vec (neck_hip, sh_l_elb)
+        self.processed_data ["righthand"] = self.angle_2_vec (neck_hip, sh_r_elb)
+        self.processed_data ["lefthand"]  = self.angle_2_vec (neck_hip, sh_l_elb)
         self.processed_data ["rightarm"]  = self.angle_2_vec (sh_r_elb, elb_r_wri)
         self.processed_data ["leftarm"]   = self.angle_2_vec (sh_l_elb, elb_l_wri)
 

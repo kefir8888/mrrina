@@ -16,7 +16,7 @@ def main():
     
     inputs = {"computer keyboard" : modalities.Computer_keyboard (),
               "video input" : modalities.Video()}
-              # "archive skeleton"  : modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt")}
+              # "archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
 
     robots_list = {}
 
