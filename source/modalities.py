@@ -1,6 +1,6 @@
 from common import *
 import torch
-from demo import VideoReader, infer_fast, run_demo
+from skel_proc import VideoReader, infer_fast, get_skel_coords
 from modules.load_state import load_state
 from models.with_mobilenet import PoseEstimationWithMobileNet
 
@@ -120,7 +120,8 @@ class Skeleton (Modality):
     def angle_2_vec_ (self, x1, y1, x2, y2):
         dot = x1*x2 + y1*y2
         det = x1*y2 - y1*x2
-        angle = math.atan2(det, dot)
+        angle = math.atan(det/dot)
+        print(angle)
 
         return angle
 
@@ -142,11 +143,12 @@ class Skeleton (Modality):
             kps.update ({kp : (self.read_data [ind * 2], self.read_data [ind * 2 + 1])})
 
         hips_mid  = ((kps ["r_hip"] [0] + kps ["l_hip"] [0]) / 2, (kps ["r_hip"] [1] + kps ["l_hip"] [1]) / 2)
-        neck_hip  = (kps ["neck"]  [0] - hips_mid      [0], kps ["neck"]  [1] - hips_mid      [1])
+        neck_hip  = (kps ["neck"]  [0] - hips_mid      [0], kps ["neck"]  [1] - hips_mid      [1]) #????????
         sh_r_elb  = (kps ["r_elb"] [0] - kps ["r_sho"] [0], kps ["r_elb"] [1] - kps ["r_sho"] [1])
         sh_l_elb  = (kps ["l_elb"] [0] - kps ["l_sho"] [0], kps ["l_elb"] [1] - kps ["l_sho"] [1])
         elb_r_wri = (kps ["r_wri"] [0] - kps ["r_elb"] [0], kps ["r_wri"] [1] - kps ["r_elb"] [1])
         elb_l_wri = (kps ["l_wri"] [0] - kps ["l_elb"] [0], kps ["l_wri"] [1] - kps ["l_elb"] [1])
+
 
         self.processed_data ["righthand"] = -self.angle_2_vec (neck_hip, sh_r_elb)
         self.processed_data ["lefthand"]  = -self.angle_2_vec (neck_hip, sh_l_elb)
@@ -176,6 +178,20 @@ class Skeleton (Modality):
     def draw (self, img):
         pass
 
+
+def get_available_cameras(upper_bound=10, lower_bound=0):
+    available = []
+
+    for i in range(lower_bound, upper_bound):
+        cap = cv2.VideoCapture(i)
+
+        if (cap.isOpened()):
+            available.append(i)
+
+        cap.release()
+
+    return available
+
 class Video (Modality):
     def __init__ (self, video_path_ = ""):
         self.read_data        = []
@@ -189,12 +205,19 @@ class Video (Modality):
                                "lefthand"  : 0,
                                "leftarm"   : 0}
         # if video_path_ != '':
-        self.all_data = cv2.VideoCapture(0)
+
+
+
+        get_available_cameras()
+        self.available_cameras = get_available_cameras(upper_bound=10, lower_bound=0)
+        self.all_data = cv2.VideoCapture(self.available_cameras[-1])
 
         self.skel = Skeleton()
         self.net = PoseEstimationWithMobileNet()
-        checkpoint = torch.load("models/checkpoint_iter_370000.pth", map_location='cpu')
+        checkpoint = torch.load("models/checkpoint_iter_370000.pth", map_location='cuda')
         load_state(self.net, checkpoint)
+
+
 
     def name(self):
         return "video"
@@ -209,7 +232,7 @@ class Video (Modality):
         _, img = self.all_data.read()
 
 
-        self.read_data = run_demo(self.net, img, 256, False, 1, 1) #self.all_data [self.dataframe_num]
+        self.read_data = get_skel_coords(self.net, img, 256, False, 1, 1) #self.all_data [self.dataframe_num]
 
         # self.dataframe_num += 1
 
@@ -219,7 +242,7 @@ class Video (Modality):
             self.skel.read_data = self.read_data
             self.skel._process_data()
             self.processed_data = self.skel.processed_data
-            print(self.processed_data)
+            # print(self.processed_data)
 
         else:
             return

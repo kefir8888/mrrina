@@ -75,7 +75,7 @@ def infer_fast(net, img, net_input_height_size, stride, upsample_ratio, cpu,
 
     return heatmaps, pafs, scale, pad
 
-def run_demo(net, image_provider, height_size=256, cpu=False, track=1, smooth=1):
+def get_skel(net, image_provider, height_size=256, cpu=False, track=1, smooth=1):
     # text_file = open("skel/"+ args.save_txt, "w")
     net = net.eval()
     if not cpu:
