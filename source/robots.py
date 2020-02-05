@@ -10,7 +10,15 @@ class Robot:
                                    "/stand" : ("/action=/stand&text=", "a"),
                                    "/free"  : ("/action=/free&text=", "a"),
                                    "/increment_joint_angle" : (),
-                                   "/set_joint_angle" : ()}
+                                   "/set_joint_angle" : (),
+                                   "/walk_20" : (),
+                                   "/walk_m30" : (),
+                                   "/rot_20" : (),
+                                   "/rot_m30" : (),
+                                   "/right_hand_right" : (),
+                                   "/left_hand_left" : (),
+                                   "/right_hand_up" : (),
+                                   "/play_mp3" : ()}
 
         self.timeout_module = Timeout_module (timeout_)
 
@@ -36,10 +44,10 @@ class Robot:
                     break
 
     def add_action (self, action):
-        #print ("appending ", action)
-        for act in action:
-            if (act [0] [0] != "noaction"):
-                self.queue.append (act)
+        print ("appending ", action)
+        for act in action [0]:
+            if (act [0] != "noaction"):
+                self.queue.append ([act])
 
 class Fake_robot(Robot):
     def __init__(self, timeout_ = 0.5):
@@ -208,7 +216,9 @@ for instance the robot model is recursive. Aborting operation.")
 
     def _send_command (self, actions):
         for action in actions:
+            print ("action [0]: ", action [0])
             if (action [0] in self.available_commands.keys ()):
+                self.updated = True
                 #print ("sending command [simulated]: ", action)
             
                 if (action [0] == "/increment_joint_angle"):
@@ -292,9 +302,8 @@ class Real_robot(Robot):
         self.simulated._send_command (action)
 
         print ("lalala")
-        print (action [0])
-        print (self.available_commands.keys())
-
+        print (action [0] [0])
+        #print (self.available_commands.keys())
 
         if (action [0] [0] == "/increment_joint_angle" or
             action [0] [0] == "/set_joint_angle"):
@@ -306,10 +315,11 @@ class Real_robot(Robot):
                 robot_joint = self.synchronized_joints [key]
                 init_angle = self.init_positions [robot_joint]
                 text_str += "&" + robot_joint + "=" + str (joint.angle * joint.angle_multiplier + init_angle)
-        
+
         elif (action [0] [0] in self.available_commands.keys ()):
             action_str = action [0] [0]
-            text_str   = str (action [1])
+            text_str   = str (action [0] [1] [0])
+            print ("text_str", text_str, "act", action [0])
 
         else:
             print ("action :", action, " is not implemented")
@@ -327,7 +337,7 @@ class Real_robot(Robot):
 
     def on_idle (self):
         if (self.free_timeout_module.timeout_passed ()):
-            r = self._send_command (["/free", "a"])
+            r = self._send_command ([["/free", "a"]])
             #print ("resp", r)
 
             free = 6#int (str (r) [13:14]) #6 free, 7 not free; don't ask, don't tell

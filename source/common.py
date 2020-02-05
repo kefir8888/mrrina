@@ -49,3 +49,8 @@ class Timeout_module:
 
         else:
             return False
+
+def rus_line_to_eng (line):
+    out = cyrtranslit.to_latin (line, 'ru')
+    out = "".join (c for c in out if c not in ['!', '.', '#', ':', "'", '?', ' ', '-', '\'', ',', '\n'])
+    return out

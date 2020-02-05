@@ -3,7 +3,7 @@ import torch
 from skel_proc import VideoReader, infer_fast, get_skel_coords
 from modules.load_state import load_state
 from models.with_mobilenet import PoseEstimationWithMobileNet
-
+import io
 
 class Modality:
     def __init__ (self):
@@ -12,24 +12,93 @@ class Modality:
     def name (self):
         return "not specified"
 
+    def draw (self):
+        return np.array ((1, 1, 1), np.uint8)
+
 class Computer_keyboard (Modality):
-    def __init__ (self, key_to_command_ = {"z" : "empty"}):
+    def __init__ (self, phrases_path = "", key_to_command_ = {"z" : "empty"}):
         self.read_data        = 0x00
         self.processed_data   = 0x00
         self.interpreted_data = 0x00
 
-        self.key_to_command = {"z"        : ("/stand",   ["heh"]),
-                               "c"        : ("/rest",    ["kek"]),
-                               "w"        : ("/increment_joint_angle", ["lefthand", "0.21"]),
-                               "e"        : ("/increment_joint_angle", ["lefthand", "-0.21"]),
-                               "r"        : ("/increment_joint_angle", ["leftarm", "0.21"]),
-                               "t"        : ("/increment_joint_angle", ["leftarm", "-0.21"]),
-                               "s"        : ("/increment_joint_angle", ["righthand", "0.21"]),
-                               "d"        : ("/increment_joint_angle", ["righthand", "-0.21"]),
-                               "f"        : ("/increment_joint_angle", ["rightarm", "0.21"]),
-                               "g"        : ("/increment_joint_angle", ["rightarm", "-0.21"]),
-                               "n"        : ("next",     [""]),
-                               "noaction" : ("noaction", [""])}
+        self.curr_mode = 0
+
+        self.all_keys = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l", "v", "b", "m", "z", "x", "c", "n"]
+
+        self.common_commands = {"z"        : [("/stand",    ["heh"])],
+                                "c"        : [("/rest",     ["kek"])],
+                                #"n"        : [("next",      [""])],
+                                "x"        : [("/sit",      [""])],
+                                "noaction" : [("noaction",  [""])],
+                                "v"        : [("/play_mp3", ["Molodec.mp3"])],
+                                "b"        : [("/play_mp3", ["Horosho.mp3"])],}
+
+        self.exceptional = {"f"        : [("/play_mp3", ["Posmotrinapravo.mp3"]),
+                                          ("/right_hand_right", [""])],
+                            "g"        : [("/play_mp3", ["Posmotrinalevo.mp3"]),
+                                          ("/left_hand_left", [""])],
+                            "h"        : [("/play_mp3", ["Posmotrivverh.mp3"]),
+                                          ("/right_hand_up", [""])],
+                            "j"        : [("/left_hand_left", ["Horosho.mp3"])],
+                            "k"        : [("/right_hand_right", ["Horosho.mp3"])],
+
+                            "w"        : [("/walk_20", ["Horosho.mp3"])],
+                            "a"        : [("/rot_20", ["Horosho.mp3"])],
+                            "s"        : [("/rot_m20", ["Horosho.mp3"])],
+                            "d"        : [("/walk_m30", ["Horosho.mp3"])],
+                            "noaction" : [("noaction",  [""])]}
+
+#        self.key_to_command = {"z"        : ("/stand",   ["heh"]),
+#                               "c"        : ("/rest",    ["kek"]),
+#                               "w"        : ("/increment_joint_angle", ["lefthand", "0.21"]),
+#                               "e"        : ("/increment_joint_angle", ["lefthand", "-0.21"]),
+#                               "r"        : ("/increment_joint_angle", ["leftarm", "0.21"]),
+#                               "t"        : ("/increment_joint_angle", ["leftarm", "-0.21"]),
+#                               "s"        : ("/increment_joint_angle", ["righthand", "0.21"]),
+#                               "d"        : ("/increment_joint_angle", ["righthand", "-0.21"]),
+#                               "f"        : ("/increment_joint_angle", ["rightarm", "0.21"]),
+#                               "g"        : ("/increment_joint_angle", ["rightarm", "-0.21"]),
+#                               "n"        : ("next",     [""]),
+#                               "noaction" : ("noaction", [""])}
+#
+
+        self.key_to_command = []
+        self.key_to_command.append (self.exceptional)
+
+        if (phrases_path != ""):
+            f = io.open (phrases_path, "r", encoding='utf-8')
+            f1 = f.readlines()
+    
+            available_keys = [x for x in self.all_keys if x not in self.common_commands.keys ()]
+
+            phrase_name = []
+
+            for line in f1:
+                out = rus_line_to_eng (line)
+                filename = out [:26] + '.mp3'
+
+                phrase_name.append ((line, filename))
+
+            #print (phrase_name)
+
+            new_list = self.common_commands.copy ()
+
+            while (len (phrase_name) != 0):
+                for key in available_keys:
+                    if (len (phrase_name) == 0):
+                        break
+
+                    el = phrase_name [0]
+
+                    new_list.update ({key : [("/play_mp3", [el [1], el [0]])]})
+
+                    phrase_name.pop (0)
+
+                self.key_to_command.append (new_list)
+                new_list = self.common_commands.copy ()
+
+        else:
+            self.key_to_command = [self.common_commands]
 
         if (key_to_command_ ["z"] != "empty"):
             self.key_to_command = key_to_command_
@@ -53,10 +122,14 @@ class Computer_keyboard (Modality):
         if (self.interpreted_data >= 0):
             key = str (chr (self.interpreted_data))
 
-            if (key in self.key_to_command.keys ()):
-                return self.key_to_command [key]
+            if (key in self.key_to_command [self.curr_mode].keys ()):
+                return self.key_to_command [self.curr_mode] [key]
 
-        return [self.key_to_command ["noaction"]]
+            if (key in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]):
+                self.curr_mode = int (key) % len (self.key_to_command)
+                #print ("curr mode ", self.curr_mode)
+
+        return self.key_to_command [self.curr_mode] ["noaction"]
 
     def get_command (self, skip_reading_data = False):
         if (skip_reading_data == False):
@@ -67,8 +140,23 @@ class Computer_keyboard (Modality):
 
         return self._get_command ()
 
-    def draw (self, img):
-        pass
+    def draw (self):
+        result = np.ones ((700, 700, 3), np.uint8) * 220
+
+        cv2.putText (result, "curr mode: " + str (self.curr_mode), (30, 30),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 50, 31), 1, cv2.LINE_AA)
+
+        str_num = 0
+
+        for key in self.key_to_command [self.curr_mode].keys ():
+            text = key + str (self.key_to_command [self.curr_mode] [key])
+
+            cv2.putText (result, text, (30, 60 + 20 * str_num),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 50, 31), 1, cv2.LINE_AA)
+
+            str_num += 1
+
+        return result
 
 class Skeleton (Modality):
     def __init__ (self, skeleton_path_ = ""):
