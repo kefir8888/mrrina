@@ -5,7 +5,7 @@ from common import *
 from time import time, sleep
 
 def main():
-    AUTONOMOUS = False #without robot
+    AUTONOMOUS = False #without physical robot
 
     WIND_X = 800
     WIND_Y = 500
@@ -27,8 +27,7 @@ def main():
         robots_list.update ({"simulated" : robots.Simulated_robot ()})
     
     if (AUTONOMOUS == False):
-        ip = "192.168.43.117"
-        #ip = "10.0.0.104"
+        ip = "192.168.43.65"
         robots_list.update ({"physical" : robots.Real_robot (ip, "9569")})
 
     fsm_processor = fsm.FSM_processor ()

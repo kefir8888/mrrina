@@ -30,23 +30,100 @@ class Computer_keyboard (Modality):
                                 #"n"        : [("next",      [""])],
                                 "x"        : [("/sit",      [""])],
                                 "noaction" : [("noaction",  [""])],
-                                "v"        : [("/play_mp3", ["Molodec.mp3"])],
-                                "b"        : [("/play_mp3", ["Horosho.mp3"])],}
+                                "w"        : [("/play_mp3", ["Molodec.mp3"])],
+                                "e"        : [("/play_mp3", ["Otlichnopoluchaetsja.mp3"])],
+                                "r"        : [("/play_mp3", ["Zdorovo.mp3"])],
+                                "t"        : [("/play_mp3", ["Zamechatelno.mp3"])],
+                                "y"        : [("/play_mp3", ["Poluchilos.mp3"])],
+                                "u"        : [("/play_mp3", ["Prekrasno.mp3"])],
+                                "i"        : [("/play_mp3", ["Molodec.mp3"])],
+                                "o"        : [("/play_mp3", ["Molodec.mp3"])],
+                                "p"        : [("/play_mp3", ["Horosho.mp3"])],}
 
-        self.exceptional = {"f"        : [("/play_mp3", ["Posmotrinapravo.mp3"]),
-                                          ("/right_hand_right", [""])],
+        self.repeating =   {"z"        : [("/stand",    ["heh"])],
+                            "c"        : [("/rest",     ["kek"])],
+                            "x"        : [("/sit",      [""])],
+                            "noaction" : [("noaction",  [""])],
+                            "w"        : [("/play_mp3", ["Molodec.mp3"])],
+                            "e"        : [("/play_mp3", ["Povtorjajzamnoj.mp3"])],
+                            "r"        : [("/play_mp3", ["Zdorovo.mp3"])],
+                            "o"        : [("/bend_right", [""])],
+                            "p"        : [("/bend_left", [""])],
+                            "v"        : [("/hands_sides", [""])],
+                            "b"        : [("/hands_front", [""])],
+                            "n"        : [("/left_shoulder_up", [""])],
+                            "m"        : [("/right_shoulder_up", [""])],
+
+                            "l"        : [("/play_mp3", ["Poprobujeszeraz.mp3"])],
+
+                            "f"        : [("/play_mp3", ["Posmotrinapravo.mp3"]),
+                                          ("/play_airplane_1", [""])],
                             "g"        : [("/play_mp3", ["Posmotrinalevo.mp3"]),
-                                          ("/left_hand_left", [""])],
+                                          ("/play_airplane_2", [""])],
                             "h"        : [("/play_mp3", ["Posmotrivverh.mp3"]),
-                                          ("/right_hand_up", [""])],
+                                          ("/play_car", [""])],
                             "j"        : [("/left_hand_left", ["Horosho.mp3"])],
                             "k"        : [("/right_hand_right", ["Horosho.mp3"])],
 
-                            "w"        : [("/walk_20", ["Horosho.mp3"])],
-                            "a"        : [("/rot_20", ["Horosho.mp3"])],
-                            "s"        : [("/rot_m20", ["Horosho.mp3"])],
-                            "d"        : [("/walk_m30", ["Horosho.mp3"])],
+                            "w"        : [("/walk_20", [""])],
+                            "a"        : [("/rot_20", [""])],
+                            "s"        : [("/rot_m20", [""])],
+                            "d"        : [("/walk_m30", [""])],
                             "noaction" : [("noaction",  [""])]}
+
+        self.exceptional = {"z"        : [("/stand",    ["heh"])],
+                                "c"        : [("/rest",     ["kek"])],
+                                #"n"        : [("next",      [""])],
+                                "x"        : [("/sit",      [""])],
+                                "noaction" : [("noaction",  [""])],
+                                "w"        : [("/play_mp3", ["Molodec.mp3"])],
+                                "e"        : [("/play_mp3", ["Otlichnopoluchaetsja.mp3"])],
+                                "r"        : [("/play_mp3", ["Zdorovo.mp3"])],
+                                "t"        : [("/play_mp3", ["Zamechatelno.mp3"])],
+                                "y"        : [("/play_mp3", ["Poluchilos.mp3"])],
+                                "u"        : [("/play_mp3", ["Prekrasno.mp3"])],
+                                "i"        : [("/play_mp3", ["Molodec.mp3"])],
+                                "o"        : [("/play_mp3", ["Molodec.mp3"])],
+                                "p"        : [("/play_mp3", ["Horosho.mp3"])],
+                            "a" : [("/play_mp3", ["am_nyam.mp3"])],
+                            "s" : [("/play_mp3", ["Privet.mp3"])],
+                            "d" : [("/play_mp3", ["Privetik.mp3"])],
+                            "f" : [("/play_mp3", ["Pokauvidimsja.mp3"])],
+                            "g" : [("/play_mp3", ["Najdinakakujufigurupohozhe.mp3"])],
+                            "h" : [("/stop", [""])],
+                            "j" : [("/play_mp3", ["am_nyam.mp3"])],
+                            "k" : [("/play_mp3", ["am_nyam.mp3"])],
+                            "l" : [("/play_mp3", ["am_nyam.mp3"])],
+
+                            "m"        : [("/play_mp3", ["Poprobujeszeraz.mp3"])],
+
+                            "noaction" : [("noaction",  [""])]}
+
+        self.eyes = {"z" : [("/stand",    ["heh"])],
+                     "c" : [("/rest",     ["kek"])],
+                     "x" : [("/sit",      [""])],
+                     "w" : [("/play_mp3", ["Molodec.mp3"])],
+                     "e" : [("/play_mp3", ["Otlichnopoluchaetsja.mp3"])],
+                     "r" : [("/play_mp3", ["Zdorovo.mp3"])],
+                     "t" : [("/play_mp3", ["Zamechatelno.mp3"])],
+                     "y" : [("/play_mp3", ["Poluchilos.mp3"])],
+                     "u" : [("/play_mp3", ["Prekrasno.mp3"])],
+                     "i" : [("/play_mp3", ["Molodec.mp3"])],
+                     "o" : [("/play_mp3", ["Molodec.mp3"])],
+                     "p" : [("/play_mp3", ["Horosho.mp3"])],
+                     "a" : [("/red",    [""])],
+                     "s" : [("/green",  [""])],
+                     "d" : [("/blue",   [""])],
+                     "f" : [("/orange", [""])],
+                     "g" : [("/yellow", [""])],
+                     "h" : [("/white",  [""])],
+                     "j" : [("/lightblue", [""])],
+                     "k" : [("/violet", [""])],
+                     "l" : [("/play_mp3", ["Posmotrinaglazainajdikarti.mp3"])],
+
+                     "n"        : [("/play_mp3", ["Poprobujeszeraz.mp3"])],
+
+                     "noaction" : [("noaction",  [""])]}
 
 #        self.key_to_command = {"z"        : ("/stand",   ["heh"]),
 #                               "c"        : ("/rest",    ["kek"]),
@@ -64,6 +141,8 @@ class Computer_keyboard (Modality):
 
         self.key_to_command = []
         self.key_to_command.append (self.exceptional)
+        self.key_to_command.append (self.repeating)
+        self.key_to_command.append (self.eyes)
 
         if (phrases_path != ""):
             f = io.open (phrases_path, "r", encoding='utf-8')

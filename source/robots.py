@@ -18,7 +18,26 @@ class Robot:
                                    "/right_hand_right" : (),
                                    "/left_hand_left" : (),
                                    "/right_hand_up" : (),
-                                   "/play_mp3" : ()}
+                                   "/right_shoulder_up" : (),
+                                   "/left_shoulder_up" : (),
+                                   "/play_mp3" : (),
+                                   "/play_airplane_1" : (),
+                                   "/play_airplane_2" : (),
+                                   "/play_car" : (),
+                                   "/red" : (),
+                                   "/green" : (),
+                                   "/blue" : (),
+                                   "/orange" : (),
+                                   "/yellow" : (),
+                                   "/lightblue" : (),
+                                   "/violet" : (),
+                                   "/pink" : (),
+                                   "/brown" : (),
+                                   "/white" : (),
+                                   "/wipe_forehead" : (),
+                                   "/hands_clap" : (),
+                                   "/bend_right" : (),
+                                   "/bend_left" : ()}
 
         self.timeout_module = Timeout_module (timeout_)
 

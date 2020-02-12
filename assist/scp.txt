@@ -1,0 +1,1 @@
+scp -r sounds nao@192.168.43.117:/home/nao
