@@ -6,7 +6,7 @@ import pickle
 
 import cv2
 import numpy as np
-import pycocotools
+#import pycocotools
 
 from torch.utils.data.dataset import Dataset
 

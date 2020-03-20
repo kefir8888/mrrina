@@ -3,8 +3,8 @@ import cv2
 import json
 import math
 import numpy as np
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
+#from pycocotools.coco import COCO
+#from pycocotools.cocoeval import COCOeval
 
 import torch
 

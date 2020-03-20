@@ -1,0 +1,40 @@
+{   "name" : "function",
+    "required_modalities": ["computer keyboard"]
+    "required_processors": ["online keyboard control"]
+    "states":
+    [
+         {
+         "in":
+         [{"type": "phrase",
+           "parameter": "Покажи мне то, из чего пьёшь"}],
+         "out":
+         [{"type": "phrase",
+           "parameter": "Молодец!"}],
+         "criterion":
+         [{"type": "key",
+           "parameter": "n"}]
+         },
+         {
+         "in":
+         [{"type": "phrase",
+           "parameter": "Покажи мне то, чем ты ешь"}],
+         "out":
+         [{"type": "phrase",
+           "parameter": "Молодец!"}],
+         "criterion":
+         [{"type": "key",
+           "parameter": "n"}]
+         },
+         {
+         "in":
+         [{"type": "phrase",
+           "parameter": "Покажи мне то, что ты читаешь"}],
+         "out":
+         [{"type": "phrase",
+           "parameter": "Молодец!"}],
+         "criterion":
+         [{"type": "key",
+           "parameter": "n"}]
+         }         
+    ]
+}

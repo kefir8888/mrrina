@@ -1,4 +1,2 @@
-/noaction
-Pjat
-/noaction
-Потрогай мою левую руку
+in say Покажи мне то, из чего пьёшь
+condition 

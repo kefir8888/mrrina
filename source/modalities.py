@@ -12,7 +12,7 @@ class Modality:
     def name (self):
         return "not specified"
 
-    def draw (self):
+    def draw (self, img):
         return np.array ((1, 1, 1), np.uint8)
 
 class Computer_keyboard (Modality):
@@ -23,7 +23,7 @@ class Computer_keyboard (Modality):
 
         self.curr_mode = 0
 
-        self.all_keys = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l", "v", "b", "m", "z", "x", "c", "n"]
+        self.all_keys = ["w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l", "v", "b", "m", "z", "x", "c", "n"]
 
         self.common_commands = {"z"        : [("/stand",    ["heh"])],
                                 "c"        : [("/rest",     ["kek"])],
@@ -58,6 +58,37 @@ class Computer_keyboard (Modality):
 
                             "f"        : [("/play_mp3", ["Posmotrinapravo.mp3"]),
                                           ("/play_airplane_1", [""])],
+                            "g"        : [("/play_mp3", ["Posmotrinalevo.mp3"]),
+                                          ("/play_airplane_2", [""])],
+                            "h"        : [("/play_mp3", ["Posmotrivverh.mp3"]),
+                                          ("/play_car", [""])],
+                            "j"        : [("/left_hand_left", ["Horosho.mp3"])],
+                            "k"        : [("/right_hand_right", ["Horosho.mp3"])],
+
+                            "w"        : [("/walk_20", [""])],
+                            "a"        : [("/rot_20", [""])],
+                            "s"        : [("/rot_m20", [""])],
+                            "d"        : [("/walk_m30", [""])],
+                            "noaction" : [("noaction",  [""])]}
+
+        self.repeating2 =  {"z"        : [("/stand",    ["heh"])],
+                            "c"        : [("/rest",     ["kek"])],
+                            "x"        : [("/sit",      [""])],
+                            "noaction" : [("noaction",  [""])],
+                            "w"        : [("/play_mp3", ["Molodec.mp3"])],
+                            "e"        : [("/play_mp3", ["Povtorjajzamnoj.mp3"])],
+                            "r"        : [("/play_mp3", ["Zdorovo.mp3"])],
+                            "o"        : [("/right_hand_right", [""])],
+                            "p"        : [("/right_hand_front", [""])],
+                            "v"        : [("/left_hand_left", [""])],
+                            "b"        : [("/left_hand_front", [""])],
+                            "n"        : [("/right_hand_up", [""])],
+                            "m"        : [("/left_hand_up", [""])],
+
+                            "l"        : [("/play_mp3", ["Poprobujeszeraz.mp3"])],
+
+                            "f"        : [("/play_mp3", ["Dajpjat.mp3"]),
+                                          ("/right_hand_front", [""])],
                             "g"        : [("/play_mp3", ["Posmotrinalevo.mp3"]),
                                           ("/play_airplane_2", [""])],
                             "h"        : [("/play_mp3", ["Posmotrivverh.mp3"]),
@@ -142,6 +173,7 @@ class Computer_keyboard (Modality):
         self.key_to_command = []
         self.key_to_command.append (self.exceptional)
         self.key_to_command.append (self.repeating)
+        self.key_to_command.append (self.repeating2)
         self.key_to_command.append (self.eyes)
 
         if (phrases_path != ""):
@@ -219,8 +251,11 @@ class Computer_keyboard (Modality):
 
         return self._get_command ()
 
-    def draw (self):
-        result = np.ones ((700, 700, 3), np.uint8) * 220
+    def draw (self, canvas = np.ones ((700, 700, 3), np.uint8) * 220):
+        result = canvas.copy ()
+
+        #if (canvas is None):
+        #    result = np.ones ((700, 700, 3), np.uint8) * 220
 
         cv2.putText (result, "curr mode: " + str (self.curr_mode), (30, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 50, 31), 1, cv2.LINE_AA)
@@ -341,9 +376,9 @@ class Skeleton (Modality):
         self._interpret_data ()
 
         return self._get_command ()
-
-    def draw (self, img):
-        pass
+    #
+    # def draw (self, img):
+    # return
 
 
 def get_available_cameras(upper_bound=10, lower_bound=0):
@@ -363,7 +398,7 @@ class Video (Modality):
     def __init__ (self, video_path_ = ""):
         self.read_data        = []
         self.interpreted_data = []
-        #self.all_data         = []
+        #self.all_data        = []
 
         self.dataframe_num = 0
 
@@ -383,8 +418,6 @@ class Video (Modality):
         self.net = PoseEstimationWithMobileNet()
         checkpoint = torch.load("models/checkpoint_iter_370000.pth", map_location='cuda')
         load_state(self.net, checkpoint)
-
-
 
     def name(self):
         return "video"
