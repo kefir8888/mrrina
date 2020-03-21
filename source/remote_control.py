@@ -10,7 +10,7 @@ sys.path.append("/Users/elijah/Dropbox/Programming/robotics_course/modules/")
 import input_output
 
 def main():
-    AUTONOMOUS = True #without physical robot
+    AUTONOMOUS = False #without physical robot
 
     WIND_X = 800
     WIND_Y = 500
@@ -22,9 +22,10 @@ def main():
     logfile = open ("log/" + str (curr_time) + ".txt", "w+")
     
     inputs = {"computer keyboard" : modalities.Computer_keyboard ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt"),
-              #"video input" : modalities.Video()}
-               #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
-               "archive skeleton"  : modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt")}
+              "markov chain" : modalities.Markov_chain()}
+              # "video input" : modalities.Video()}
+              #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
+              #"archive skeleton"  : modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt")}
 
     robots_list = {}
 
@@ -32,7 +33,7 @@ def main():
         robots_list.update ({"simulated" : robots.Simulated_robot ()})
     
     if (AUTONOMOUS == False):
-        ip = "192.168.43.127"
+        ip = "192.168.43.7"
         #ip = "10.6.255.230"
         #ip = "10.0.0.103"
 

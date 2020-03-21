@@ -408,8 +408,6 @@ class Video (Modality):
                                "leftarm"   : 0}
         # if video_path_ != '':
 
-
-
         get_available_cameras()
         self.available_cameras = get_available_cameras(upper_bound=10, lower_bound=0)
         self.all_data = cv2.VideoCapture(self.available_cameras[-1])
@@ -472,6 +470,56 @@ class Video (Modality):
     def draw(self, img):
         pass
 
+class Markov_chain (Modality):
+    def __init__ (self, video_path_ = ""):
+        self.read_data        = []
+        self.interpreted_data = []
+
+        self.timeout = Timeout_module (1)
+        self.tick = 0
+
+        self.commands = {"noaction": [("noaction", [""])],
+                         "1": [("/play_mp3", ["Molodec.mp3"])],
+                         "2": [("/left_shoulder_up", ["Otlichnopoluchaetsja.mp3"])],
+                         "3": [("/right_shoulder_up", ["Zdorovo.mp3"])],
+                         "4": [("/left_shoulder_up", ["Zamechatelno.mp3"])],
+                         "5": [("/stand", ["Poluchilos.mp3"])],
+                         "6": [("/play_mp3", ["Horosho.mp3"])], }
+
+    def name(self):
+        return "Markov chain"
+
+    def _read_data (self):
+        pass
+
+    def _process_data(self):
+        pass
+
+    def _interpret_data(self):
+        pass
+
+    def _get_command(self):
+        comm = self.commands ["noaction"]
+
+        if (self.timeout.timeout_passed ()):
+            l = len (self.commands)
+
+            comm = self.commands[str (self.tick % (l - 1) + 1)]
+            self.tick += 1
+
+        print ("com", comm)
+
+        return comm
+
+    def get_command(self, skip_reading_data=False):
+        self._read_data()
+        self._process_data()
+        self._interpret_data()
+
+        return self._get_command()
+
+    # def draw(self, img):
+    #     pass
 
 #class Voice (Modality):
 #class Virtual_keyboard (Modality):
