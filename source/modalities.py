@@ -319,17 +319,6 @@ class Skeleton (Modality):
     def get_read_data (self):
         return self.read_data
 
-    def angle_2_vec_ (self, x1, y1, x2, y2):
-        dot = x1*x2 + y1*y2
-        det = x1*y2 - y1*x2
-        angle = math.atan2(det,dot)
-        # print(angle)
-
-        return angle
-
-    def angle_2_vec (self, vec1, vec2):
-        return self.angle_2_vec_ (vec1 [0], vec1 [1], vec2 [0], vec2 [1])
-
     def _process_data (self):
         kpt_names = ['nose', 'neck', 'r_sho', 'r_elb', 'r_wri', 'l_sho',
                      'l_elb', 'l_wri', 'r_hip', 'r_knee', 'r_ank', 'l_hip',
@@ -352,10 +341,10 @@ class Skeleton (Modality):
         elb_l_wri = (kps ["l_wri"] [0] - kps ["l_elb"] [0], kps ["l_wri"] [1] - kps ["l_elb"] [1])
 
 
-        self.processed_data ["righthand"] = self.angle_2_vec (neck_hip, sh_r_elb)
-        self.processed_data ["lefthand"]  = self.angle_2_vec (neck_hip, sh_l_elb)
-        self.processed_data ["rightarm"]  = self.angle_2_vec (sh_r_elb, elb_r_wri)
-        self.processed_data ["leftarm"]   = self.angle_2_vec (sh_l_elb, elb_l_wri)
+        self.processed_data ["righthand"] = angle_2_vec (neck_hip, sh_r_elb)
+        self.processed_data ["lefthand"]  = angle_2_vec (neck_hip, sh_l_elb)
+        self.processed_data ["rightarm"]  = angle_2_vec (sh_r_elb, elb_r_wri)
+        self.processed_data ["leftarm"]   = angle_2_vec (sh_l_elb, elb_l_wri)
 
     def _interpret_data (self):
         self.interpreted_data = self.processed_data
@@ -534,17 +523,22 @@ class Markov_chain (Modality):
     #     pass
 
 class Response_to_skeleton (Modality):
-    def __init__ (self, video_path_ = ""):
+    def __init__ (self, skeleton_path_ = ""):
         self.read_data        = []
         self.interpreted_data = []
 
-        self.timeout = Timeout_module (0.7)
+        self.timeout = Timeout_module (1)
 
         self.dataframe_num = 0
 
         self.commands = {"noaction": [("noaction", [""])],
                          "1": [("/stand", [""])],
                          "2": [("/hands_sides", [""])]}
+
+        self.processed_data = {"righthand": 0,
+                               "rightarm": 0,
+                               "lefthand": 0,
+                               "leftarm": 0}
 
         if (skeleton_path_ != ""):
             self.all_data = self.read_data_from_file(skeleton_path_)
@@ -580,6 +574,97 @@ class Response_to_skeleton (Modality):
     def get_read_data(self):
         return self.read_data
 
+    def _process_data (self):
+        kpt_names = ['nose', 'neck', 'r_sho', 'r_elb', 'r_wri', 'l_sho',
+                     'l_elb', 'l_wri', 'r_hip', 'r_knee', 'r_ank', 'l_hip',
+                     'l_knee', 'l_ank', 'r_eye', 'l_eye', 'r_ear', 'l_ear']
+
+        necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip", "r_sho", "r_elb", "r_wri", "r_hip", "neck"]
+        kps = {}
+
+        #print ("kps", kps)
+
+        for kp in necessary_keypoints_names:
+            ind = kpt_names.index (kp)
+            kps.update ({kp : (self.read_data [ind * 2], self.read_data [ind * 2 + 1])})
+
+        hips_mid  = ((kps ["r_hip"] [0] + kps ["l_hip"] [0]) / 2, (kps ["r_hip"] [1] + kps ["l_hip"] [1]) / 2)
+        neck_hip  = (kps ["neck"]  [0] - hips_mid      [0], kps ["neck"]  [1] - hips_mid      [1]) #????????
+        sh_r_elb  = (kps ["r_elb"] [0] - kps ["r_sho"] [0], kps ["r_elb"] [1] - kps ["r_sho"] [1])
+        sh_l_elb  = (kps ["l_elb"] [0] - kps ["l_sho"] [0], kps ["l_elb"] [1] - kps ["l_sho"] [1])
+        elb_r_wri = (kps ["r_wri"] [0] - kps ["r_elb"] [0], kps ["r_wri"] [1] - kps ["r_elb"] [1])
+        elb_l_wri = (kps ["l_wri"] [0] - kps ["l_elb"] [0], kps ["l_wri"] [1] - kps ["l_elb"] [1])
+
+        self.processed_data ["righthand"] = angle_2_vec (neck_hip, sh_r_elb)
+        self.processed_data ["lefthand"]  = angle_2_vec (neck_hip, sh_l_elb)
+        self.processed_data ["rightarm"]  = angle_2_vec (sh_r_elb, elb_r_wri)
+        self.processed_data ["leftarm"]   = angle_2_vec (sh_l_elb, elb_l_wri)
+
+    def _interpret_data(self):
+        pass
+
+    def _get_command(self):
+        comm = self.commands ["noaction"]
+
+        if (self.timeout.timeout_passed ()):
+            movement = 1
+
+            print ("aa", self.processed_data ["righthand"])
+            if (self.processed_data ["righthand"] > -1):
+                movement = 2
+
+            comm = self.commands[str(movement)]
+
+            #self.tick += 1
+
+        print ("com", comm)
+
+        return comm
+
+    def get_command(self, skip_reading_data=False):
+        self._read_data()
+        self._process_data()
+        self._interpret_data()
+
+        return self._get_command()
+
+    # def draw(self, img):
+    #     pass
+
+class Music (Modality):
+    def __init__ (self, music_path_ = ""):
+        self.read_data        = []
+        self.interpreted_data = []
+
+        self.timeout = Timeout_module (0.7)
+        self.tick = 0
+
+        self.commands = {"noaction": [("noaction", [""])],
+                         "1": [("/stand", [""])],
+                         "2": [("/left_shoulder_up", [""])],
+                         "3": [("/right_shoulder_up", [""])],
+                         "4": [("/left_shoulder_up", [""])],
+                         "5": [("/stand", [""])],
+                         "6": [("/left_hand_left", [""])],
+                         "7": [("/stand", [""])],
+                         "8": [("/right_hand_right", [""])],
+                         "9": [("/stand", [""])],
+                         "10": [("/bend_right", [""])],
+                         "11": [("/bend_left", [""])],
+                         "12": [("/stand", [""])],
+                         "13": [("/play_airplane_1", [""])],
+                         "14": [("/play_airplane_2", [""])],
+                         "15": [("/play_airplane_1", [""])],
+                         "16": [("/hands_sides", [""])],
+
+                         }
+
+    def name(self):
+        return "Markov chain"
+
+    def _read_data (self):
+        pass
+
     def _process_data(self):
         pass
 
@@ -590,10 +675,9 @@ class Response_to_skeleton (Modality):
         comm = self.commands ["noaction"]
 
         if (self.timeout.timeout_passed ()):
-            movement = classifier.classify (self.read_data)
+            l = len (self.commands)
 
-            comm = self.commands[str(1)]
-
+            comm = self.commands[str (self.tick % (l - 1) + 1)]
             self.tick += 1
 
         print ("com", comm)

@@ -263,6 +263,9 @@ for instance the robot model is recursive. Aborting operation.")
                 elif (action [0] == "/rest"):
                     self.set_joint_angle ("base", 5)
 
+                elif (action [0] == "/hands_sides"):
+                    self.set_joint_angle ("righthand", 1)
+
             else:
                 print ("action :", action, " is not supported")
 
