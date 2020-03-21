@@ -22,14 +22,18 @@ def main():
     logfile = open ("log/" + str (curr_time) + ".txt", "w+")
     
     inputs = {"computer keyboard" : (modalities.Computer_keyboard ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt"),
-                                     ["simulated1", "simulated2", "physical"]),
+                                     ["physical", "simulated2"]),
 
-              "response" : (modalities.Response_to_skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
-                            ["simulated1", "physical"]),
-              # "video input" : modalities.Video()}
+              #"response" : (modalities.Response_to_skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
+              #              ["simulated1", "physical"]),
+              #"music": (modalities.Music(
+              #    "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/music/gorillaz_collar_part.mp3"),
+              #             ["simulated1", "physical"])}
+
+              "video input" : (modalities.Video(), ["simulated2", "physical"])}
               #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
-              "archive skeleton"  : (modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
-                                     ["simulated2"])}
+              #"archive skeleton"  : (modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
+              #                       ["simulated2"])}
 
     robots_list = {}
 
@@ -42,7 +46,7 @@ def main():
         #ip = "10.0.0.103"
 
         robots_list.update ({"physical" : robots.Real_robot (ip, "9569")})
-        robots_list.update({"simulated1": robots.Simulated_robot()})
+        #robots_list.update({"simulated1": robots.Simulated_robot()})
 
     fsm_processor = fsm.FSM_processor ()
 
@@ -73,12 +77,13 @@ def main():
             #print ("action", action)
 
             for key in inputs [modality] [1]:
-                robots_list [key].add_action (action)
+                if (key in robots_list.keys ()):
+                    robots_list [key].add_action (action)
 
             canvas = np.ones((WIND_Y, WIND_X, 3), np.uint8) * 200
 
             modality_frame = inputs [modality] [0].draw (canvas)
-            print (modality, "mod")
+            #print (modality, "mod")
             if (modality_frame.shape [0] > 1):
                 #cv2.imshow (modality, modality_frame)
                 output_images.append (modality_frame)
@@ -93,10 +98,9 @@ def main():
         output_images.append (canvas)
         output_names.append ("remote controller")
 
-        cv2.imshow ("remote_controller", input_output.form_grid (output_images +
-            [output_images [-1]], 1200, -1, output_names + [output_names [-1]]))
+        cv2.imshow ("remote_controller", input_output.form_grid (output_images, 1200, -1, output_names + [output_names [-1]]))
         
-        sleep  (0.2)        
+        sleep  (0.02)
             
     #logfile.close ()
     cv2.destroyAllWindows ()

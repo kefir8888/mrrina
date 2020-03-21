@@ -5,6 +5,11 @@ from modules.load_state import load_state
 from models.with_mobilenet import PoseEstimationWithMobileNet
 import io
 
+import pydub
+from pydub import AudioSegment
+from pydub.playback import play
+import scipy.fftpack
+
 class Modality:
     def __init__ (self):
         pass
@@ -156,22 +161,24 @@ class Computer_keyboard (Modality):
 
                      "noaction" : [("noaction",  [""])]}
 
-#        self.key_to_command = {"z"        : ("/stand",   ["heh"]),
-#                               "c"        : ("/rest",    ["kek"]),
-#                               "w"        : ("/increment_joint_angle", ["lefthand", "0.21"]),
-#                               "e"        : ("/increment_joint_angle", ["lefthand", "-0.21"]),
-#                               "r"        : ("/increment_joint_angle", ["leftarm", "0.21"]),
-#                               "t"        : ("/increment_joint_angle", ["leftarm", "-0.21"]),
-#                               "s"        : ("/increment_joint_angle", ["righthand", "0.21"]),
-#                               "d"        : ("/increment_joint_angle", ["righthand", "-0.21"]),
-#                               "f"        : ("/increment_joint_angle", ["rightarm", "0.21"]),
-#                               "g"        : ("/increment_joint_angle", ["rightarm", "-0.21"]),
-#                               "n"        : ("next",     [""]),
-#                               "noaction" : ("noaction", [""])}
-#
+        self.direct_control =  {"z"        : [("/stand",   ["heh"])],
+                                "c"        : [("/rest",    ["kek"])],
+                                "w"        : [("/increment_joint_angle", ["lefthand", "0.21"])],
+                                "e"        : [("/increment_joint_angle", ["lefthand", "-0.21"])],
+                                "r"        : [("/increment_joint_angle", ["leftarm", "0.21"])],
+                                "t"        : [("/increment_joint_angle", ["leftarm", "-0.21"])],
+                                "s"        : [("/increment_joint_angle", ["righthand", "0.21"])],
+                                "d"        : [("/increment_joint_angle", ["righthand", "-0.21"])],
+                                "f"        : [("/increment_joint_angle", ["rightarm", "0.21"])],
+                                "g"        : [("/increment_joint_angle", ["rightarm", "-0.21"])],
+                                "n"        : [("next",     [""])],
+                                "noaction" : [("noaction", [""])]}
+
 
         self.key_to_command = []
-        self.key_to_command.append (self.exceptional)
+
+        self.key_to_command.append(self.direct_control)
+        self.key_to_command.append(self.exceptional)
         self.key_to_command.append (self.repeating)
         self.key_to_command.append (self.repeating2)
         self.key_to_command.append (self.eyes)
@@ -388,6 +395,7 @@ class Video (Modality):
         self.read_data        = []
         self.interpreted_data = []
         #self.all_data        = []
+        self.timeout = Timeout_module (3)
 
         self.dataframe_num = 0
 
@@ -397,13 +405,13 @@ class Video (Modality):
                                "leftarm"   : 0}
         # if video_path_ != '':
 
-        get_available_cameras()
-        self.available_cameras = get_available_cameras(upper_bound=10, lower_bound=0)
-        self.all_data = cv2.VideoCapture(self.available_cameras[-1])
+        #get_available_cameras()
+        #self.available_cameras = get_available_cameras(upper_bound=10, lower_bound=0)
+        self.all_data = cv2.VideoCapture(0)#self.available_cameras[-1])
 
         self.skel = Skeleton()
         self.net = PoseEstimationWithMobileNet()
-        checkpoint = torch.load("models/checkpoint_iter_370000.pth", map_location='cuda')
+        checkpoint = torch.load("models/checkpoint_iter_370000.pth", map_location=torch.device('cpu'))
         load_state(self.net, checkpoint)
 
     def name(self):
@@ -419,7 +427,7 @@ class Video (Modality):
         _, img = self.all_data.read()
 
 
-        self.read_data = get_skel_coords(self.net, img, 256, False, 1, 1) #self.all_data [self.dataframe_num]
+        self.read_data = get_skel_coords(self.net, img, 50, True, 1, 1) #self.all_data [self.dataframe_num]
 
         # self.dataframe_num += 1
 
@@ -440,10 +448,16 @@ class Video (Modality):
     def _get_command(self):
         commands = []
 
-        for key in self.processed_data.keys():
-            commands.append(("/set_joint_angle", [key, str(self.processed_data[key])]))
+        if (self.timeout.timeout_passed ()):
+            for key in self.processed_data.keys():
+                commands.append(("/set_joint_angle", [key, str(self.processed_data[key])]))
 
-        print ("com", commands)
+            print ("app joints")
+
+        else:
+            commands.append (("noaction", [""]))
+
+        #print ("com", commands)
 
         return commands
 
@@ -456,8 +470,8 @@ class Video (Modality):
 
         return self._get_command()
 
-    def draw(self, img):
-        pass
+    #def draw(self, img):
+    #    pass
 
 class Markov_chain (Modality):
     def __init__ (self, video_path_ = ""):
@@ -508,7 +522,7 @@ class Markov_chain (Modality):
             comm = self.commands[str (self.tick % (l - 1) + 1)]
             self.tick += 1
 
-        print ("com", comm)
+        #print ("com", comm)
 
         return comm
 
@@ -609,7 +623,7 @@ class Response_to_skeleton (Modality):
         if (self.timeout.timeout_passed ()):
             movement = 1
 
-            print ("aa", self.processed_data ["righthand"])
+            #print ("aa", self.processed_data ["righthand"])
             if (self.processed_data ["righthand"] > -1):
                 movement = 2
 
@@ -617,7 +631,7 @@ class Response_to_skeleton (Modality):
 
             #self.tick += 1
 
-        print ("com", comm)
+        #print ("com", comm)
 
         return comm
 
@@ -636,17 +650,16 @@ class Music (Modality):
         self.read_data        = []
         self.interpreted_data = []
 
-        self.timeout = Timeout_module (0.7)
         self.tick = 0
 
         self.commands = {"noaction": [("noaction", [""])],
                          "1": [("/stand", [""])],
                          "2": [("/left_shoulder_up", [""])],
                          "3": [("/right_shoulder_up", [""])],
-                         "4": [("/left_shoulder_up", [""])],
-                         "5": [("/stand", [""])],
+                         "4": [("/head_yes", [""])],
+                         "5": [("/right_hand_front", [""])],
                          "6": [("/left_hand_left", [""])],
-                         "7": [("/stand", [""])],
+                         "7": [("/left_hand_front", [""])],
                          "8": [("/right_hand_right", [""])],
                          "9": [("/stand", [""])],
                          "10": [("/bend_right", [""])],
@@ -655,12 +668,53 @@ class Music (Modality):
                          "13": [("/play_airplane_1", [""])],
                          "14": [("/play_airplane_2", [""])],
                          "15": [("/play_airplane_1", [""])],
-                         "16": [("/hands_sides", [""])],
-
+                         "16": [("/hands_sides", [""])]
                          }
 
+        rate, audio = self.read(music_path_)
+        N = 2000
+        an_part = audio[:2000, 1]
+        x = np.linspace(0, 2 * np.pi, N)
+        #print("sh", an_part.shape)
+
+        w = scipy.fftpack.rfft(an_part)
+        f = scipy.fftpack.rfftfreq(N, x[1] - x[0])
+        spectrum = w ** 2
+
+        cutoff_idx = spectrum > (spectrum.max() / 15)
+        w2 = w.copy()
+        w2[cutoff_idx] = 0
+
+        #print(f[1])
+
+        self.timeout = Timeout_module(1 / f[1] / 8)
+
+        #song = AudioSegment.from_mp3 (music_path_)
+        #play (song)
+
+    def read(self, f, normalized=False):
+        """MP3 to numpy array"""
+        a = pydub.AudioSegment.from_mp3(f)
+        y = np.array(a.get_array_of_samples())
+        if a.channels == 2:
+            y = y.reshape((-1, 2))
+        if normalized:
+            return a.frame_rate, np.float32(y) / 2 ** 15
+        else:
+            return a.frame_rate, y
+
+    def write(self, f, sr, x, normalized=False):
+        """numpy array to MP3"""
+        channels = 2 if (x.ndim == 2 and x.shape[1] == 2) else 1
+        if normalized:  # normalized array - each item should be a float in [-1, 1)
+            y = np.int16(x * 2 ** 15)
+        else:
+            y = np.int16(x)
+        song = pydub.AudioSegment(y.tobytes(), frame_rate=sr, sample_width=2, channels=channels)
+        song.export(f, format="mp3", bitrate="320k")
+
     def name(self):
-        return "Markov chain"
+        return "Dance generation with audio input"
 
     def _read_data (self):
         pass
@@ -675,12 +729,12 @@ class Music (Modality):
         comm = self.commands ["noaction"]
 
         if (self.timeout.timeout_passed ()):
-            l = len (self.commands)
+            l     = len (self.commands)
 
-            comm = self.commands[str (self.tick % (l - 1) + 1)]
+            comm = self.commands[str (np.random.randint (1, l))]
             self.tick += 1
 
-        print ("com", comm)
+        #print ("com", comm)
 
         return comm
 

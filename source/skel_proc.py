@@ -89,7 +89,7 @@ def get_skel_coords(net, image_provider, height_size=256, cpu=False, track=1, sm
 
     img = image_provider
     # for img in image_provider:
-    print(img.shape)
+    #print(img.shape)
     orig_img = img.copy()
     heatmaps, pafs, scale, pad = infer_fast(net, img, height_size, stride, upsample_ratio, cpu)
 
