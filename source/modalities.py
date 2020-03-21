@@ -475,16 +475,28 @@ class Markov_chain (Modality):
         self.read_data        = []
         self.interpreted_data = []
 
-        self.timeout = Timeout_module (1)
+        self.timeout = Timeout_module (0.7)
         self.tick = 0
 
         self.commands = {"noaction": [("noaction", [""])],
-                         "1": [("/play_mp3", ["Molodec.mp3"])],
-                         "2": [("/left_shoulder_up", ["Otlichnopoluchaetsja.mp3"])],
-                         "3": [("/right_shoulder_up", ["Zdorovo.mp3"])],
-                         "4": [("/left_shoulder_up", ["Zamechatelno.mp3"])],
-                         "5": [("/stand", ["Poluchilos.mp3"])],
-                         "6": [("/play_mp3", ["Horosho.mp3"])], }
+                         "1": [("/stand", [""])],
+                         "2": [("/left_shoulder_up", [""])],
+                         "3": [("/right_shoulder_up", [""])],
+                         "4": [("/left_shoulder_up", [""])],
+                         "5": [("/stand", [""])],
+                         "6": [("/left_hand_left", [""])],
+                         "7": [("/stand", [""])],
+                         "8": [("/right_hand_right", [""])],
+                         "9": [("/stand", [""])],
+                         "10": [("/bend_right", [""])],
+                         "11": [("/bend_left", [""])],
+                         "12": [("/stand", [""])],
+                         "13": [("/play_airplane_1", [""])],
+                         "14": [("/play_airplane_2", [""])],
+                         "15": [("/play_airplane_1", [""])],
+                         "16": [("/hands_sides", [""])],
+
+                         }
 
     def name(self):
         return "Markov chain"
@@ -505,6 +517,83 @@ class Markov_chain (Modality):
             l = len (self.commands)
 
             comm = self.commands[str (self.tick % (l - 1) + 1)]
+            self.tick += 1
+
+        print ("com", comm)
+
+        return comm
+
+    def get_command(self, skip_reading_data=False):
+        self._read_data()
+        self._process_data()
+        self._interpret_data()
+
+        return self._get_command()
+
+    # def draw(self, img):
+    #     pass
+
+class Response_to_skeleton (Modality):
+    def __init__ (self, video_path_ = ""):
+        self.read_data        = []
+        self.interpreted_data = []
+
+        self.timeout = Timeout_module (0.7)
+
+        self.dataframe_num = 0
+
+        self.commands = {"noaction": [("noaction", [""])],
+                         "1": [("/stand", [""])],
+                         "2": [("/hands_sides", [""])]}
+
+        if (skeleton_path_ != ""):
+            self.all_data = self.read_data_from_file(skeleton_path_)
+
+    def read_data_from_file(self, path):
+        with open(path, 'r') as file:
+            data = file.read()
+            cleared_data = ''
+            for let in data:
+                if let.isdigit() or let == '-':
+                    cleared_data += let
+                else:
+                    cleared_data += ','
+
+            cleared_data = cleared_data.split(',')
+            data = [int(i) for i in cleared_data if i]
+            data = np.asarray(data)
+            data = data.reshape(-1, 36)
+
+        return data
+
+    def name(self):
+        return "response to skeleton"
+
+    def _read_data(self):
+        if (self.dataframe_num >= len(self.all_data)):
+            read_data = 0
+            return
+
+        self.read_data = self.all_data[self.dataframe_num]
+        self.dataframe_num += 1
+
+    def get_read_data(self):
+        return self.read_data
+
+    def _process_data(self):
+        pass
+
+    def _interpret_data(self):
+        pass
+
+    def _get_command(self):
+        comm = self.commands ["noaction"]
+
+        if (self.timeout.timeout_passed ()):
+            movement = classifier.classify (self.read_data)
+
+            comm = self.commands[str(1)]
+
             self.tick += 1
 
         print ("com", comm)
