@@ -1,14 +1,16 @@
-from common import *
+import numpy as np
+import common
 import torch
-from skel_proc import VideoReader, infer_fast, get_skel_coords
-from modules.load_state import load_state
-from models.with_mobilenet import PoseEstimationWithMobileNet
+# from skel_proc import VideoReader, infer_fast, get_skel_coords
+# from test.load_state import load_state
+# from test.with_mobilenet import PoseEstimationWithMobileNet
 import io
-
+from test.demo import draww
 import pydub
 from pydub import AudioSegment
 from pydub.playback import play
 import scipy.fftpack
+import cv2
 
 class Modality:
     def __init__ (self):
@@ -171,6 +173,10 @@ class Computer_keyboard (Modality):
                                 "d"        : [("/increment_joint_angle", ["righthand", "-0.21"])],
                                 "f"        : [("/increment_joint_angle", ["rightarm", "0.21"])],
                                 "g"        : [("/increment_joint_angle", ["rightarm", "-0.21"])],
+                                "p"        : [("/increment_joint_angle", ["nose_x", "0.1"])],
+                                "l"        : [("/increment_joint_angle", ["nose_x", "-0.1"])],
+                                "o"        : [("/increment_joint_angle", ["nose_y", "0.1"])],
+                                "k"        : [("/increment_joint_angle", ["nose_y", "-0.1"])],
                                 "n"        : [("next",     [""])],
                                 "noaction" : [("noaction", [""])]}
 
@@ -186,13 +192,13 @@ class Computer_keyboard (Modality):
         if (phrases_path != ""):
             f = io.open (phrases_path, "r", encoding='utf-8')
             f1 = f.readlines()
-    
+
             available_keys = [x for x in self.all_keys if x not in self.common_commands.keys ()]
 
             phrase_name = []
 
             for line in f1:
-                out = rus_line_to_eng (line)
+                out = common.rus_line_to_eng (line)
                 filename = out [:26] + '.mp3'
 
                 phrase_name.append ((line, filename))
@@ -226,7 +232,7 @@ class Computer_keyboard (Modality):
 
     def _read_data (self):
         self.read_data = cv2.waitKey (1)
-        
+
     def get_read_data (self):
         return self.read_data
 
@@ -235,7 +241,7 @@ class Computer_keyboard (Modality):
 
     def _interpret_data (self):
         self.interpreted_data = self.processed_data
-        
+
     def _get_command (self):
         if (self.interpreted_data >= 0):
             key = str (chr (self.interpreted_data))
@@ -290,7 +296,8 @@ class Skeleton (Modality):
         self.processed_data = {"righthand" : 0,
                                "rightarm"  : 0,
                                "lefthand"  : 0,
-                               "leftarm"   : 0}
+                               "leftarm"   : 0,
+                               "nose_x"      : 0}
 
         if (skeleton_path_ != ""):
             self.all_data = self.read_data_from_file (skeleton_path_)
@@ -306,7 +313,7 @@ class Skeleton (Modality):
                     cleared_data+=','
 
             cleared_data = cleared_data.split(',')
-            data = [int(i) for i in cleared_data if i] 
+            data = [int(i) for i in cleared_data if i]
             data = np.asarray(data)
             data = data.reshape(-1,36)
 
@@ -322,7 +329,7 @@ class Skeleton (Modality):
 
         self.read_data = self.all_data [self.dataframe_num]
         self.dataframe_num += 1
-        
+
     def get_read_data (self):
         return self.read_data
 
@@ -331,7 +338,7 @@ class Skeleton (Modality):
                      'l_elb', 'l_wri', 'r_hip', 'r_knee', 'r_ank', 'l_hip',
                      'l_knee', 'l_ank', 'r_eye', 'l_eye', 'r_ear', 'l_ear']
 
-        necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip", "r_sho", "r_elb", "r_wri", "r_hip", "neck"]
+        necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip", "r_sho", "r_elb", "r_wri", "r_hip", "neck", "nose", 'r_eye', 'l_eye', "r_ear", "l_ear"]
         kps = {}
 
         #print ("kps", kps)
@@ -339,23 +346,55 @@ class Skeleton (Modality):
         for kp in necessary_keypoints_names:
             ind = kpt_names.index (kp)
             kps.update ({kp : (self.read_data [ind * 2], self.read_data [ind * 2 + 1])})
-
+        # print("Head rotation", (round((kps["l_eye"][0] - kps["nose"][0])/(kps["l_eye"][0] - kps["r_eye"][0]),3)))
+        # head_pose = (round((kps["l_eye"][0] - kps["nose"][0])/(kps["l_eye"][0] - kps["r_eye"][0]),3))
         hips_mid  = ((kps ["r_hip"] [0] + kps ["l_hip"] [0]) / 2, (kps ["r_hip"] [1] + kps ["l_hip"] [1]) / 2)
-        neck_hip  = (kps ["neck"]  [0] - hips_mid      [0], kps ["neck"]  [1] - hips_mid      [1]) #????????
+        neck_hip  = (  hips_mid[0] - kps ["neck"]  [0],  hips_mid[1] - kps ["neck"]  [0])
+
+        neck_nose = (kps ["nose"]  [0] - kps ["neck"][0], kps ["nose"]  [1] - kps ["neck"][1])
+        # should_mid = (abs(kps ["r_sho"]  [0] - kps ["l_sho"][0])//2, abs(kps ["r_sho"]  [1] - kps ["l_sho"][1])//2)
+        #
+        # should_neck =
+
         sh_r_elb  = (kps ["r_elb"] [0] - kps ["r_sho"] [0], kps ["r_elb"] [1] - kps ["r_sho"] [1])
         sh_l_elb  = (kps ["l_elb"] [0] - kps ["l_sho"] [0], kps ["l_elb"] [1] - kps ["l_sho"] [1])
         elb_r_wri = (kps ["r_wri"] [0] - kps ["r_elb"] [0], kps ["r_wri"] [1] - kps ["r_elb"] [1])
         elb_l_wri = (kps ["l_wri"] [0] - kps ["l_elb"] [0], kps ["l_wri"] [1] - kps ["l_elb"] [1])
 
+        print("Kak tak, Rektor Kudryavsev", -common.angle_2_vec (neck_hip, sh_r_elb))#angle_2_vec_head (-1*neck_hip[0],-1*neck_hip[1], neck_nose[0],neck_nose[1]))
+        self.processed_data ["nose_x"] = (kps["neck"][0] - kps["nose"][0])/40
 
-        self.processed_data ["righthand"] = angle_2_vec (neck_hip, sh_r_elb)
-        self.processed_data ["lefthand"]  = angle_2_vec (neck_hip, sh_l_elb)
-        self.processed_data ["rightarm"]  = angle_2_vec (sh_r_elb, elb_r_wri)
-        self.processed_data ["leftarm"]   = angle_2_vec (sh_l_elb, elb_l_wri)
+        print ("vectors", neck_hip, sh_r_elb)
+
+        self.processed_data ["righthand"] = -common.angle_2_vec (neck_hip, sh_r_elb)
+        self.processed_data ["lefthand"]  = common.angle_2_vec (neck_hip, sh_l_elb)
+        self.processed_data ["rightarm"]  = common.angle_2_vec (sh_r_elb, elb_r_wri)
+        self.processed_data ["leftarm"]   = - common.angle_2_vec (sh_l_elb, elb_l_wri)
+        self.processed_data ["leftleg"] = -abs(common.angle_2_vec (neck_hip, sh_r_elb))
+        # self.processed_data ["righthand"] = -(angle_2_vec (neck_hip, sh_r_elb)  + 1.57)
+        # self.processed_data ["lefthand"]  = angle_2_vec (neck_hip, sh_l_elb) #+ 1.57
+        #
+        #
+        # self.processed_data ["rightarm"]  =  angle_2_vec (sh_l_elb, elb_l_wri)
+        # # self.processed_data ["rightarm"]  = -2.0
+        # if - angle_2_vec (sh_r_elb, elb_r_wri)  < -1.2:
+        #     self.processed_data ["leftarm"] = -1.2
+        # else:
+        #     self.processed_data ["leftarm"]   =  - angle_2_vec (sh_r_elb, elb_r_wri)
+        #
+        # # print((- angle_2_vec (sh_r_elb, elb_r_wri) ) )
+        #
+        # print("rightarm angle: ", self.processed_data ["righthand"])
+        # print(self.processed_data ["lefthand"])
+        # print(self.processed_data ["rightarm"])
+        # print(self.processed_data ["leftarm"])
+
+
+        # self.processed_data ["head"] = head_rotation (head_pose) #, kps["l_ear"],kps["r_ear"])
 
     def _interpret_data (self):
         self.interpreted_data = self.processed_data
-        
+
     def _get_command (self):
         commands = []
 
@@ -372,10 +411,6 @@ class Skeleton (Modality):
         self._interpret_data ()
 
         return self._get_command ()
-    #
-    # def draw (self, img):
-    # return
-
 
 def get_available_cameras(upper_bound=10, lower_bound=0):
     available = []
@@ -395,24 +430,29 @@ class Video (Modality):
         self.read_data        = []
         self.interpreted_data = []
         #self.all_data        = []
-        self.timeout = Timeout_module (3)
+        self.timeout = common.Timeout_module (3.5)
 
         self.dataframe_num = 0
 
         self.processed_data = {"righthand" : 0,
+                             "lefttleg" : 0,
                                "rightarm"  : 0,
                                "lefthand"  : 0,
-                               "leftarm"   : 0}
+                               "leftarm"   : 0,
+                               "nose_x"    : 0}
         # if video_path_ != '':
 
         #get_available_cameras()
         #self.available_cameras = get_available_cameras(upper_bound=10, lower_bound=0)
+        # self.all_data = cv2.VideoCapture("/home/kompaso/DEBUG/Debug/remote control/data/video/testt.mp4")#self.available_cameras[-1])
         self.all_data = cv2.VideoCapture(0)#self.available_cameras[-1])
 
         self.skel = Skeleton()
-        self.net = PoseEstimationWithMobileNet()
-        checkpoint = torch.load("models/checkpoint_iter_370000.pth", map_location=torch.device('cpu'))
-        load_state(self.net, checkpoint)
+
+        self.read = False
+        # self.net = PoseEstimationWithMobileNet()
+        # checkpoint = torch.load("models/checkpoint_iter_370000.pth", map_location=torch.device('cpu'))
+        # load_state(self.net, checkpoint)
 
     def name(self):
         return "video"
@@ -423,11 +463,14 @@ class Video (Modality):
         #     return
         # self.frame_skel = run_demo(self.all_data)
 
+        if (self.read == False):
+            _, img = self.all_data.read()
+            self.img = img
+            #self.read = True
 
-        _, img = self.all_data.read()
-
-
-        self.read_data = get_skel_coords(self.net, img, 50, True, 1, 1) #self.all_data [self.dataframe_num]
+        # self.read_data = get_skel_coords(self.net, img, 50, True, 1, 1) #self.all_data [self.dataframe_num]
+        # print(get_skel_coords(self.net, img, 50, True, 1, 1))
+        self.read_data, _ = draww(self.img)
 
         # self.dataframe_num += 1
 
@@ -437,10 +480,11 @@ class Video (Modality):
             self.skel.read_data = self.read_data
             self.skel._process_data()
             self.processed_data = self.skel.processed_data
-            # print(self.processed_data)
+            # return self.processed_data
+            # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", self.processed_data)
 
-        else:
-            return
+        # else:
+        #     return
 
     def _interpret_data(self):
         self.interpreted_data = self.processed_data
@@ -452,13 +496,12 @@ class Video (Modality):
             for key in self.processed_data.keys():
                 commands.append(("/set_joint_angle", [key, str(self.processed_data[key])]))
 
-            print ("app joints")
+            # print ("app joints", commands)
 
         else:
             commands.append (("noaction", [""]))
 
-        #print ("com", commands)
-
+        # print ("COMMANDS: ", commands)
         return commands
 
     def get_command(self, skip_reading_data=False):
@@ -467,7 +510,7 @@ class Video (Modality):
 
         self._process_data()
         self._interpret_data()
-
+        #print("МЯК", self._get_command())
         return self._get_command()
 
     #def draw(self, img):
@@ -478,7 +521,7 @@ class Markov_chain (Modality):
         self.read_data        = []
         self.interpreted_data = []
 
-        self.timeout = Timeout_module (0.7)
+        self.timeout = common.Timeout_module (0.2)
         self.tick = 0
 
         self.commands = {"noaction": [("noaction", [""])],
@@ -536,12 +579,12 @@ class Markov_chain (Modality):
     # def draw(self, img):
     #     pass
 
-class Response_to_skeleton (Modality):
+
     def __init__ (self, skeleton_path_ = ""):
         self.read_data        = []
         self.interpreted_data = []
 
-        self.timeout = Timeout_module (1)
+        self.timeout = common.Timeout_module (1)
 
         self.dataframe_num = 0
 
@@ -609,7 +652,7 @@ class Response_to_skeleton (Modality):
         elb_r_wri = (kps ["r_wri"] [0] - kps ["r_elb"] [0], kps ["r_wri"] [1] - kps ["r_elb"] [1])
         elb_l_wri = (kps ["l_wri"] [0] - kps ["l_elb"] [0], kps ["l_wri"] [1] - kps ["l_elb"] [1])
 
-        self.processed_data ["righthand"] = angle_2_vec (neck_hip, sh_r_elb)
+        self.processed_data ["righthand"] = -angle_2_vec (neck_hip, sh_r_elb)
         self.processed_data ["lefthand"]  = angle_2_vec (neck_hip, sh_l_elb)
         self.processed_data ["rightarm"]  = angle_2_vec (sh_r_elb, elb_r_wri)
         self.processed_data ["leftarm"]   = angle_2_vec (sh_l_elb, elb_l_wri)
@@ -687,7 +730,7 @@ class Music (Modality):
 
         #print(f[1])
 
-        self.timeout = Timeout_module(1 / f[1] / 8)
+        self.timeout = common.Timeout_module(1 / f[1] / 8)
 
         #song = AudioSegment.from_mp3 (music_path_)
         #play (song)

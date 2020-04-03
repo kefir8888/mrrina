@@ -1,7 +1,7 @@
 from common import *
 
 class Robot:
-    def __init__(self, timeout_ = 0):
+    def __init__(self, timeout_ = 0.1):
         self.queue         = []
         self.commands_sent = 0
         self.name = "base"
@@ -56,13 +56,21 @@ class Robot:
         pass
 
     def on_idle (self):
+        #If the robot is simulated, it is supposed to perform all the available
+        #actions from the queue. If the robot is real, it (to this date)
+        #performs only one action
+
+        # print ("on_idle, ", len (self.queue), self.commands_sent)
+
         if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent)):
+            # print ("TIMEOUT_PASSED")
             while (len (self.queue) > self.commands_sent):
+                # print ("len >")
                 next_command = self.queue [self.commands_sent]
                 self.commands_sent += 1
 
                 if (next_command [0] != "noaction"):
-                    #print ("sending ", next_command)
+                    # print ("sending ", next_command)
                     #print (self.queue)
                     #print ("")
                     self._send_command (next_command)
@@ -86,14 +94,15 @@ class Fake_robot(Robot):
         self.name = "fake"
 
     def _send_command (self, action):
-        if (action [0] in self.available_commands.keys ()):
-            print ("sending command [fake]: ", action)
-
-        else:
-            print ("action :", action, " is not implemented")
+        action=action
+        # if (action [0] in self.available_commands.keys ()):
+        #     # print ("sending command [fake]: ", action)
+        #
+        # else:
+        #     print ("action :", action, " is not implemented")
 
 class Joint:
-    def __init__(self, length_, angle_, angle_multiplier_, col1_, col2_, name_, min_angle_, max_angle_):
+    def __init__(self, length_, angle_, angle_multiplier_, col1_, col2_, name_, min_angle_, max_angle_, angle_shift_):
         self.length     = length_
         self.init_angle = angle_
         self.angle      = 0
@@ -103,6 +112,7 @@ class Joint:
         self.col1       = col1_
         self.col2       = col2_
         self.joint_name = name_
+        self.angle_shift = angle_shift_
 
         self.children = []
 
@@ -111,7 +121,7 @@ class Joint:
 
     def draw (self, img, x, y, parent_angle, scale = 1):
         #print ("joint: ", self.length, self.angle)
-        angle = self.init_angle + self.angle + parent_angle
+        angle = self.init_angle - self.angle + parent_angle
 
         x1 = x + self.length * math.cos (angle)
         y1 = y + self.length * math.sin (angle)
@@ -139,8 +149,8 @@ class Joint:
 
         return self.angle
 
-    def add_child (self, name, length, angle, angle_multiplier, min_angle, max_angle):
-        self.children.append (Joint (length, angle, angle_multiplier, self.col1, self.col2, name, min_angle, max_angle))
+    def add_child (self, name, length, angle, angle_multiplier, min_angle, max_angle, angle_shift):
+        self.children.append (Joint (length, angle, angle_multiplier, self.col1, self.col2, name, min_angle, max_angle, angle_shift))
 
 class Simulated_robot(Robot):
     def __init__(self, timeout_ = 0.01, path_ = ""):
@@ -148,17 +158,18 @@ class Simulated_robot(Robot):
 
         self.config_path = path_
 
-        self.base_point = Joint (0, 0, 1, (10, 100, 200), (230, 121, 2), "base", -10, 10)
+        self.base_point = Joint (0, 0, 1, (10, 100, 200), (230, 121, 2), "base", -10, 10, 69*420)
+        #(self, length_, angle_, angle_multiplier_, col1_, col2_, name_, min_angle_, max_angle_)
         self.load_configuration (self.config_path)
 
-        self.joints_to_track = ["righthand", "lefthand", "leftarm", "rightarm"]
+        self.joints_to_track = ["righthand", "lefthand", "leftarm", "rightarm", "nose_x", "nose_y"]
 
         self.updated = False
         self.name = "simulated"
 
     def load_configuration (self, path = ""):
         if (path == ""):
-            path = "/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/robot_configuration.txt"
+            path = "/home/kompaso/DEBUG/Debug/remote control/source/robot_configuration.txt"
 
         config = open (path, "r")
 
@@ -176,8 +187,9 @@ class Simulated_robot(Robot):
             angle_multiplier = float (data [4])
             min_angle = float (data [5])
             max_angle = float (data [6])
+            shift_angle = float (data [7])
 
-            self.add_joint (parent, name, length, angle, angle_multiplier, min_angle, max_angle)
+            self.add_joint (parent, name, length, angle, angle_multiplier, min_angle, max_angle, shift_angle)
 
             string = config.readline ()
 
@@ -198,7 +210,7 @@ for instance the robot model is recursive. Aborting operation.")
                 break
 
             curr = stack [0]
-            
+
             if (joint_name != ""):
                 if (curr.name () == joint_name):
                     target = curr
@@ -229,6 +241,7 @@ for instance the robot model is recursive. Aborting operation.")
 
         if (increment == True):
             new_angle += target_joint.angle
+            # print(new_angle)
 
         set_angle = target_joint.set_angle (new_angle)
 
@@ -237,23 +250,24 @@ for instance the robot model is recursive. Aborting operation.")
 
         return set_angle
 
-    def add_joint (self, parent_name, new_joint_name, length, angle, angle_multiplier, min_angle, max_angle):
+    def add_joint (self, parent_name, new_joint_name, length, angle, angle_multiplier, min_angle, max_angle, angle_shift):
         target_joint, succ = self.find_joint (parent_name)
 
         if (succ == False):
             print ("Unable to add child ", new_joint_name, " to ", parent_name, ": no such joint")
 
-        target_joint.add_child (new_joint_name, length, angle, angle_multiplier, min_angle, max_angle)
+        target_joint.add_child (new_joint_name, length, angle, angle_multiplier, min_angle, max_angle, angle_shift)
 
     def _send_command (self, actions):
         for action in actions:
             #print ("action [0]: ", action [0])
             if (action [0] in self.available_commands.keys ()):
                 self.updated = True
-                #print ("sending command [simulated]: ", action)
-            
+                # print ("sending command [simulated]: ", action)
+
                 if (action [0] == "/increment_joint_angle"):
                     self.set_joint_angle (action [1] [0], float (action [1] [1]), increment = True)
+                    print((action [1] [0], float (action [1] [1])))
 
                 if (action [0] == "/set_joint_angle"):
                     self.set_joint_angle (action [1] [0], float (action [1] [1]))
@@ -288,11 +302,10 @@ for instance the robot model is recursive. Aborting operation.")
                 cv2.FONT_HERSHEY_SIMPLEX, 0.4, (200, 50, 231), 1, cv2.LINE_AA)
 
             line_num += 1
-
         self.base_point.draw (img, x, y, 0, scale)
 
 class Real_robot(Robot):
-    def __init__(self, ip_num, port_ = 9559, timeout_ = 0.3):
+    def __init__(self, ip_num, port_ = 9559, timeout_ = 0.4):
         Robot.__init__ (self, timeout_)
 
         self.ip_prefix = "http://"
@@ -310,20 +323,25 @@ class Real_robot(Robot):
                                     "rightarm"  : "r_elbowroll",
                                     "lefthand"  : "l_shoulderroll",
                                     "leftarm"   : "l_elbowroll",
-                                    
+
                                     "leftleg"   : "r_shoulderpitch",
                                     "rightleg"  : "r_elbowyaw",
                                     "leftfoot"  : "l_shoulderpitch",
-                                    "rightfoot" : "l_elbowyaw"}
+                                    "rightfoot" : "l_elbowyaw",
 
-        self.init_positions = {"r_shoulderpitch" : 1.57,
+                                    "nose_x" : "head_Yaw",
+                                    "nose_y" : "head_Pitch"}
+
+        self.init_positions = {"r_shoulderpitch" : 1.1,
                                "r_shoulderroll"  : 0,
                                "r_elbowroll"     : 0,
                                "r_elbowyaw"      : 0,
-                               "l_shoulderpitch" : 1.57,
-                               "l_shoulderroll"  : 3.14,
+                               "l_shoulderpitch" : 1.1,
+                               "l_shoulderroll"  : 0,
                                "l_elbowroll"     : 0,
-                               "l_elbowyaw"      : 0}
+                               "l_elbowyaw"      : 0,
+                               "head_Yaw"        : 0,
+                               "head_Pitch"      : -0.3}
 
         self.name = "real"
 
@@ -345,17 +363,39 @@ class Real_robot(Robot):
             text_str   = ""
 
             for key in self.synchronized_joints.keys ():
+                # print ("кий", key)
                 joint, _ = self.simulated.find_joint (key)
                 robot_joint = self.synchronized_joints [key]
                 init_angle = self.init_positions [robot_joint]
+                angle_shift = joint.angle_shift
+                min_angle = joint.min_angle
+                max_angle = joint.max_angle
 
-                if (key == "righthand"):
-                    print ("hand", joint.angle, joint.angle_multiplier, init_angle)
-                    text_str += "&" + robot_joint + "=" + str(abs(joint.angle) * joint.angle_multiplier + init_angle)
+                # print("PIRKOVA ZA CHTO: ", robot_joint)
 
-                else:
-                    text_str += "&" + robot_joint + "=" + str(abs(joint.angle) * joint.angle_multiplier + init_angle)
+                angle = joint.angle * joint.angle_multiplier + init_angle + angle_shift
+                if key == "righthand":
+                    print("SHANKOV ZA CHTO: ", joint.angle, angle)
+                if (angle < min_angle):
+                    angle = min_angle
 
+                if (angle > max_angle):
+                    angle = max_angle
+                # print("Send_commsnd posle:", angle)
+
+                # if (key == "righthand"):
+                    # print ("hand", joint.angle, joint.angle_multiplier, init_angle)
+                    # ang_ = joint.angle * (joint.angle_multiplier) - 1.57
+                    # ang = ang_
+
+                    # ang = -0.6 + ang_ / 3
+                    # print ("ANG", ang)
+
+                # text_str += "&" + robot_joint + "=" + str(angle)
+
+                #else:
+                text_str += "&" + robot_joint + "=" + str(angle)
+                #print(text_str)
         elif (action [0] [0] in self.available_commands.keys ()):
             action_str = action [0] [0]
             text_str   = str (action [0] [1] [0])
@@ -366,11 +406,15 @@ class Real_robot(Robot):
             return -1
 
         if (self.simulated.updated == True or action [0] == "/free"):
-            if (action [0] [0] != "/free"):
-                print ("sending command [physical]: ", action)
+            #if (action [0] [0] != "/free"):
+            #    print ("sending command [physical]: ", action)
 
-            r = requests.get (self.ip + self.port + "/?" + "action="
-                + action_str + "&" + "text=" + text_str)
+            request_str = self.ip + self.port + "/?" + "action="\
+                + action_str + "&" + "text=" + text_str
+
+            # print ("Final", request_str)
+
+            r = requests.get (request_str)
             self.simulated.updated = False
 
         return r
@@ -391,7 +435,7 @@ class Real_robot(Robot):
         #print ("queue", self.queue [self.commands_sent:])
         #print (len (self.queue), self.commands_sent, self.free)
 
-        print ("len and sent", len (self.queue), self.commands_sent)
+        # print ("len and sent", len (self.queue), self.commands_sent)
 
         if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent) and
             self.free == True):

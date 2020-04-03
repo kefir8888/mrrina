@@ -5,7 +5,7 @@ from common import *
 from time import time, sleep
 import sys
 
-sys.path.append("/Users/elijah/Dropbox/Programming/robotics_course/modules/")
+sys.path.append("/home/kompaso/DEBUG/Debug/remote control/robotics_course/modules/")
 
 import input_output
 
@@ -20,9 +20,9 @@ def main():
 
     curr_time = time ()
     logfile = open ("log/" + str (curr_time) + ".txt", "w+")
-    
-    inputs = {"computer keyboard" : (modalities.Computer_keyboard ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt"),
-                                     ["physical", "simulated2"]),
+
+    inputs = {"computer keyboard" : (modalities.Computer_keyboard ("/home/kompaso/DEBUG/Debug/remote control/data/sounds/phrases.txt"),
+                                     ["physical", "simulated2"]),#}
 
               #"response" : (modalities.Response_to_skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
               #              ["simulated1", "physical"]),
@@ -30,7 +30,7 @@ def main():
               #    "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/music/gorillaz_collar_part.mp3"),
               #             ["simulated1", "physical"])}
 
-              "video input" : (modalities.Video(), ["simulated2", "physical"])}
+              "video input" : (modalities.Video(), ["physical", "simulated2"])}
               #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
               #"archive skeleton"  : (modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
               #                       ["simulated2"])}
@@ -39,11 +39,11 @@ def main():
 
     #if (AUTONOMOUS == True):
     robots_list.update ({"simulated2" : robots.Simulated_robot ()})
-    
+
     if (AUTONOMOUS == False):
-        ip = "192.168.43.7"
+        # ip = "192.168.1.70"
         #ip = "10.6.255.230"
-        #ip = "10.0.0.103"
+        ip = "10.0.0.105"
 
         robots_list.update ({"physical" : robots.Real_robot (ip, "9569")})
         #robots_list.update({"simulated1": robots.Simulated_robot()})
@@ -62,6 +62,8 @@ def main():
         output_images = []
         output_names  = []
 
+        # print ("keys", inputs.keys ())
+
         for modality in inputs.keys ():
             skip_reading_data = False
 
@@ -70,11 +72,12 @@ def main():
 
             command = inputs [modality] [0].get_command (skip_reading_data)
 
-            #print ("modality: ", modality)
+            print ("modality: ", modality)
+            print(command)
             logfile.write (str (curr_time) + str (command))
 
             action = fsm_processor.handle_command (command)
-            #print ("action", action)
+            #print ("ACTION)0))))0)))=========|-)", action)
 
             for key in inputs [modality] [1]:
                 if (key in robots_list.keys ()):
@@ -85,23 +88,25 @@ def main():
             modality_frame = inputs [modality] [0].draw (canvas)
             #print (modality, "mod")
             if (modality_frame.shape [0] > 1):
-                #cv2.imshow (modality, modality_frame)
+                # cv2.imshow (modality, modality_frame)
                 output_images.append (modality_frame)
                 output_names.append  (modality)
 
         for key in robots_list.keys ():
             robots_list [key].on_idle ()
-        
+
         list (robots_list.items ()) [0] [1].plot_state (canvas, 150, 40, 2.5)
 
-        #cv2.imshow ("remote_controller", canvas)
+        # cv2.imshow ("remote_controller", canvas)
         output_images.append (canvas)
+
+
         output_names.append ("remote controller")
 
-        cv2.imshow ("remote_controller", input_output.form_grid (output_images, 1200, -1, output_names + [output_names [-1]]))
-        
+        cv2.imshow ("remote_controller", input_output.form_grid (output_images, 1800, -1))
+
         sleep  (0.02)
-            
+
     #logfile.close ()
     cv2.destroyAllWindows ()
 

@@ -1,12 +1,14 @@
-base leftshoulder 15 0 1 10 20
-base rightshoulder 15 3.14 1 10 20
-leftshoulder lefthand 40 -1.57 -1 -5 5
-rightshoulder righthand 40 -1.57 -1 -5 5
-base head 20 -1.4 1 10 20
-base body 50 -4.7 1 10 20
-lefthand leftarm 35 0 -1 -5 5
-righthand rightarm 35 0 -1 -5 5
-body leftleg 50 -0.18 1 10 20
-body rightleg 50 0.18 1 10 20
-leftleg leftfoot 40 0.13 1 10 20
-rightleg rightfoot 40 -0.13 1 10 20
+base leftshoulder 15 0 1 10 20 0
+base rightshoulder 15 3.14 1 10 20 0
+leftshoulder lefthand 40 1.57 1 -0.1 1.6 0
+rightshoulder righthand 40 -1.57 1 -1.6 0.1 0
+base head 20 -1.57 1 -30 30 0
+head nose_x 10 0 1 -2.086017 2.086017 0
+nose_x nose_y 5 0 1 -0.3 0.2 0
+base body 50 -4.7 1 10 20 0
+lefthand leftarm 35 0 1 -1.5 0 0
+righthand rightarm 35 0 1 0 1.5 0
+body leftleg 50 -0.18 1 -10 20 0
+body rightleg 50 0.18 1 -10 20 0
+leftleg leftfoot 40 0.13 1 -2.0 2.0 0
+rightleg rightfoot 40 -0.13 1 -10 20 0
