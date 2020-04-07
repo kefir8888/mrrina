@@ -407,8 +407,12 @@ class Video (Modality):
 
         #get_available_cameras()
         #self.available_cameras = get_available_cameras(upper_bound=10, lower_bound=0)
-        self.all_data = cv2.VideoCapture(0)#self.available_cameras[-1])
-
+        if (video_path_ == ""):
+            self.all_data = cv2.VideoCapture(0)#self.available_cameras[-1])
+        
+        else:
+            self.all_data = cv2.VideoCapture(video_path_)
+        
         self.skel = Skeleton()
         self.net = PoseEstimationWithMobileNet()
         checkpoint = torch.load("models/checkpoint_iter_370000.pth", map_location=torch.device('cpu'))
@@ -423,11 +427,9 @@ class Video (Modality):
         #     return
         # self.frame_skel = run_demo(self.all_data)
 
-
         _, img = self.all_data.read()
 
-
-        self.read_data = get_skel_coords(self.net, img, 50, True, 1, 1) #self.all_data [self.dataframe_num]
+        self.read_data, self.drawing_frame = get_skel_coords(self.net, img, 50, True, 1, 1) #self.all_data [self.dataframe_num]
 
         # self.dataframe_num += 1
 
@@ -440,7 +442,7 @@ class Video (Modality):
             # print(self.processed_data)
 
         else:
-            return
+            return self.drawing_frame
 
     def _interpret_data(self):
         self.interpreted_data = self.processed_data
@@ -470,8 +472,8 @@ class Video (Modality):
 
         return self._get_command()
 
-    #def draw(self, img):
-    #    pass
+    def draw(self, img):
+        return self.drawing_frame
 
 class Markov_chain (Modality):
     def __init__ (self, video_path_ = ""):

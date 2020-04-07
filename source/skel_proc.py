@@ -136,12 +136,14 @@ def get_skel_coords(net, image_provider, height_size=256, cpu=False, track=1, sm
                         cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255))
     # break
 
-    cv2.imshow('Lightweight Human Pose Estimation Python Demo', img)
+    #cv2.imshow('Lightweight Human Pose Estimation Python Demo', img)
 
     if len(current_poses) != 0:
-        return  current_poses[0].return_coords()
+        #print ("not zero", img)
+        return  current_poses[0].return_coords(), img
     else:
-        return []
+        #print ("zero")
+        return [], np.array ((1, 1, 1), np.uint8)
 
     key = cv2.waitKey(delay)
     if key == 27:  # esc

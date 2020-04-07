@@ -10,7 +10,7 @@ sys.path.append("/Users/elijah/Dropbox/Programming/robotics_course/modules/")
 import input_output
 
 def main():
-    AUTONOMOUS = False #without physical robot
+    AUTONOMOUS = True #without physical robot
 
     WIND_X = 800
     WIND_Y = 500
@@ -30,7 +30,7 @@ def main():
               #    "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/music/gorillaz_collar_part.mp3"),
               #             ["simulated1", "physical"])}
 
-              "video input" : (modalities.Video(), ["simulated2", "physical"])}
+              "video input" : (modalities.Video("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/dance2.mp4"), ["simulated2", "physical"])}
               #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
               #"archive skeleton"  : (modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
               #                       ["simulated2"])}
@@ -98,7 +98,7 @@ def main():
         output_images.append (canvas)
         output_names.append ("remote controller")
 
-        cv2.imshow ("remote_controller", input_output.form_grid (output_images, 1200, -1, output_names + [output_names [-1]]))
+        cv2.imshow ("remote_controller", input_output.form_grid (output_images, 1600, -1, output_names + [output_names [-1]]))
         
         sleep  (0.02)
             
