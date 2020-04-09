@@ -5,15 +5,8 @@ from common import *
 from time import time, sleep
 import sys
 
-#sys.path.append("/home/kompaso/DEBUG/Debug/remote control/robotics_course/modules/")
-sys.path.append("/Users/elijah/Dropbox/Programming/robotics_course/modules/")
-
-import input_output
-
 #class Manager:
 #    def __init__ (self, config_ = ""):
-
-#names
 
 class Value_tracker:
     def __init__ (self):
@@ -36,6 +29,20 @@ class Value_tracker:
 
         return [result]
 
+paths = {"kompaso" : {"model_path"   : "",
+                      "phrases_path" : "",
+                      "vision_path"  : "/home/kompaso/DEBUG/Debug/remote control/robotics_course/modules/"},
+
+         "elijah"  : {"model_path"   : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/test/human-pose-estimation-3d.pth",
+                      "phrases_path" : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt",
+                      "vision_path"  : "/Users/elijah/Dropbox/Programming/robotics_course/modules/"}}
+
+#user = "kompaso"
+user = "elijah"
+
+sys.path.append (paths [user] ["vision_path"])
+import input_output
+
 def main():
     AUTONOMOUS = True #without physical robot
 
@@ -48,7 +55,7 @@ def main():
     curr_time = time ()
     logfile = open ("log/" + str (curr_time) + ".txt", "w+")
 
-    inputs = {"computer keyboard" : (modalities.Computer_keyboard ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt"),
+    inputs = {"computer keyboard" : (modalities.Computer_keyboard (paths [user] ["phrases_path"]),
                                      ["physical", "simulated2"]), #}
 
               #"response" : (modalities.Response_to_skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
@@ -57,8 +64,10 @@ def main():
               #    "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/music/gorillaz_collar_part.mp3"),
               #             ["simulated1", "physical"])}
 
-              "video input" : (modalities.Video(), ["physical", "simulated2"])}
-              #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
+              #"video input" : (modalities.Video(), ["physical", "simulated2"])}
+              "video input": (modalities.Video(model_path_ = paths [user] ["model_path"]), ["physical", "simulated2"])}
+
+    #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
               #"archive skeleton"  : (modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
               #                       ["simulated2"])}
 

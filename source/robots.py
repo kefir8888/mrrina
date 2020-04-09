@@ -169,7 +169,7 @@ class Simulated_robot(Robot):
 
     def load_configuration (self, path = ""):
         if (path == ""):
-            path = "//Users/elijah/Dropbox/Programming/RoboCup/remote control/source/robot_configuration.txt"
+            path = "robot_configuration.txt"
 
         config = open (path, "r")
 
