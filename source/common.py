@@ -17,6 +17,19 @@ from gtts import gTTS
 #.mp3 files playing
 #from pygame import mixer
 
+def get_available_cameras(upper_bound=10, lower_bound=0):
+    available = []
+
+    for i in range(lower_bound, upper_bound):
+        cap = cv2.VideoCapture(i)
+
+        if (cap.isOpened()):
+            available.append(i)
+
+        cap.release()
+
+    return available
+
 class Timeout_module:
     def __init__ (self, timeout_):
         self.curr_time = 0

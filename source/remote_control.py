@@ -10,11 +10,13 @@ sys.path.append("/Users/elijah/Dropbox/Programming/robotics_course/modules/")
 
 import input_output
 
-class Manager:
-    def __init__ (self, config_ = ""):
+#class Manager:
+#    def __init__ (self, config_ = ""):
+
+#names
 
 def main():
-    AUTONOMOUS = False #without physical robot
+    AUTONOMOUS = True #without physical robot
 
     WIND_X = 800
     WIND_Y = 500
@@ -89,11 +91,11 @@ def main():
 
             canvas = np.ones((WIND_Y, WIND_X, 3), np.uint8) * 200
 
-            modality_frame = inputs [modality] [0].draw (canvas)
+            modality_frames = inputs [modality] [0].draw (canvas)
             #print (modality, "mod")
-            if (modality_frame.shape [0] > 1):
+            if (modality_frames [0].shape [0] > 1):
                 # cv2.imshow (modality, modality_frame)
-                output_images.append (modality_frame)
+                output_images += modality_frames
                 output_names.append  (modality)
 
         for key in robots_list.keys ():
@@ -106,7 +108,7 @@ def main():
 
         output_names.append ("remote controller")
 
-        cv2.imshow ("remote_controller", input_output.form_grid (output_images, 1400, -1))
+        cv2.imshow ("remote_controller", input_output.form_grid (output_images, 1200, -1))
 
         sleep  (0.02)
 
