@@ -15,6 +15,27 @@ import input_output
 
 #names
 
+class Value_tracker:
+    def __init__ (self):
+        self.tracked = {}
+
+    def name (self):
+        return "value_tracker"
+
+    def update (self, value_name, value):
+        self.tracked.update ({value_name : value})
+
+    def draw (self, img):
+        result = np.array (img)
+
+        i = 0
+        for k, v in self.tracked.items():
+            result = cv2.putText (result, k + ": " + str (v), (30, 30 * (i + 1)), cv2.FONT_HERSHEY_SIMPLEX,
+                                 1, (100, 25, 130), 2, cv2.LINE_AA)
+            i += 1
+
+        return [result]
+
 def main():
     AUTONOMOUS = True #without physical robot
 
@@ -56,14 +77,24 @@ def main():
 
     fsm_processor = fsm.FSM_processor ()
 
+    silent_mode = False
+
+    tracker = Value_tracker ()
+
+    tracker.update ("asda", 5)
+
     while (True):
         curr_time = time ()
+        tracker.update("time", curr_time)
 
         inputs ["computer keyboard"] [0]._read_data ()
 
         keyboard_data = inputs ["computer keyboard"] [0].get_read_data ()
         if (keyboard_data == ord ("q")):
             break
+
+        if (keyboard_data == ord ("-")):
+            silent_mode = not silent_mode
 
         output_images = []
         output_names  = []
@@ -85,11 +116,13 @@ def main():
             action = fsm_processor.handle_command (command)
             #print ("ACTION)0))))0)))=========|-)", action)
 
-            for key in inputs [modality] [1]:
-                if (key in robots_list.keys ()):
-                    robots_list [key].add_action (action)
+            if (silent_mode == False):
+                for key in inputs [modality] [1]:
+                    if (key in robots_list.keys ()):
+                        robots_list [key].add_action (action)
 
             canvas = np.ones((WIND_Y, WIND_X, 3), np.uint8) * 200
+            output_images += tracker.draw (canvas)
 
             modality_frames = inputs [modality] [0].draw (canvas)
             #print (modality, "mod")
@@ -98,17 +131,22 @@ def main():
                 output_images += modality_frames
                 output_names.append  (modality)
 
-        for key in robots_list.keys ():
-            robots_list [key].on_idle ()
+        if (silent_mode == False):
+            for key in robots_list.keys ():
+                robots_list [key].on_idle ()
 
         list (robots_list.items ()) [0] [1].plot_state (canvas, 150, 40, 2.5)
+
+        if (silent_mode == True):
+            canvas = cv2.putText (canvas, "silent mode", (30, 100), cv2.FONT_HERSHEY_SIMPLEX,
+                   1, (0, 255, 0), 2, cv2.LINE_AA)
 
         # cv2.imshow ("remote_controller", canvas)
         output_images.append (canvas)
 
         output_names.append ("remote controller")
 
-        cv2.imshow ("remote_controller", input_output.form_grid (output_images, 1200, -1))
+        cv2.imshow ("remote_controller", input_output.form_grid (output_images, 1400, -1))
 
         sleep  (0.02)
 
