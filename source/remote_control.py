@@ -5,9 +5,13 @@ from common import *
 from time import time, sleep
 import sys
 
-sys.path.append("/home/kompaso/DEBUG/Debug/remote control/robotics_course/modules/")
+#sys.path.append("/home/kompaso/DEBUG/Debug/remote control/robotics_course/modules/")
+sys.path.append("/Users/elijah/Dropbox/Programming/robotics_course/modules/")
 
 import input_output
+
+class Manager:
+    def __init__ (self, config_ = ""):
 
 def main():
     AUTONOMOUS = False #without physical robot
@@ -21,8 +25,8 @@ def main():
     curr_time = time ()
     logfile = open ("log/" + str (curr_time) + ".txt", "w+")
 
-    inputs = {"computer keyboard" : (modalities.Computer_keyboard ("/home/kompaso/DEBUG/Debug/remote control/data/sounds/phrases.txt"),
-                                     ["physical", "simulated2"]),#}
+    inputs = {"computer keyboard" : (modalities.Computer_keyboard ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt"),
+                                     ["physical", "simulated2"]), #}
 
               #"response" : (modalities.Response_to_skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
               #              ["simulated1", "physical"]),
@@ -72,8 +76,8 @@ def main():
 
             command = inputs [modality] [0].get_command (skip_reading_data)
 
-            print ("modality: ", modality)
-            print(command)
+            #print ("modality: ", modality)
+            #print(command)
             logfile.write (str (curr_time) + str (command))
 
             action = fsm_processor.handle_command (command)
@@ -100,10 +104,9 @@ def main():
         # cv2.imshow ("remote_controller", canvas)
         output_images.append (canvas)
 
-
         output_names.append ("remote controller")
 
-        cv2.imshow ("remote_controller", input_output.form_grid (output_images, 1800, -1))
+        cv2.imshow ("remote_controller", input_output.form_grid (output_images, 1400, -1))
 
         sleep  (0.02)
 

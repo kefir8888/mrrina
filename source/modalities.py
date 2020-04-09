@@ -361,10 +361,10 @@ class Skeleton (Modality):
         elb_r_wri = (kps ["r_wri"] [0] - kps ["r_elb"] [0], kps ["r_wri"] [1] - kps ["r_elb"] [1])
         elb_l_wri = (kps ["l_wri"] [0] - kps ["l_elb"] [0], kps ["l_wri"] [1] - kps ["l_elb"] [1])
 
-        print("Kak tak, Rektor Kudryavsev", -common.angle_2_vec (neck_hip, sh_r_elb))#angle_2_vec_head (-1*neck_hip[0],-1*neck_hip[1], neck_nose[0],neck_nose[1]))
+        #print("Kak tak, Rektor Kudryavsev", -common.angle_2_vec (neck_hip, sh_r_elb))#angle_2_vec_head (-1*neck_hip[0],-1*neck_hip[1], neck_nose[0],neck_nose[1]))
         self.processed_data ["nose_x"] = (kps["neck"][0] - kps["nose"][0])/40
 
-        print ("vectors", neck_hip, sh_r_elb)
+        #print ("vectors", neck_hip, sh_r_elb)
 
         self.processed_data ["righthand"] = -common.angle_2_vec (neck_hip, sh_r_elb)
         self.processed_data ["lefthand"]  = common.angle_2_vec (neck_hip, sh_l_elb)
@@ -435,7 +435,7 @@ class Video (Modality):
         self.dataframe_num = 0
 
         self.processed_data = {"righthand" : 0,
-                             "lefttleg" : 0,
+                               "lefttleg"  : 0,
                                "rightarm"  : 0,
                                "lefthand"  : 0,
                                "leftarm"   : 0,

@@ -19,15 +19,13 @@ def rotate_poses(poses_3d, R, t):
 
     return poses_3d
 
-
 def draww(frame):
-
-
-
     stride = 8
 
     from test.inference_engine_pytorch import InferenceEnginePyTorch
-    net = InferenceEnginePyTorch("/home/kompaso/DEBUG/Debug/remote control/source/test/human-pose-estimation-3d.pth", "GPU")
+
+    #net = InferenceEnginePyTorch("/home/kompaso/DEBUG/Debug/remote control/source/test/human-pose-estimation-3d.pth", "GPU")
+    net = InferenceEnginePyTorch("/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/test/human-pose-estimation-3d.pth", "GPU")
 
     canvas_3d = np.zeros((720, 1280, 3), dtype=np.uint8)
     plotter = Plotter3d(canvas_3d.shape[:2])
@@ -48,7 +46,7 @@ def draww(frame):
     # if args.video != '':
     #     frame_provider = VideoReader(args.video)
     is_video = True
-    base_height = 256
+    base_height = 50 #256
     fx = -1
 
     delay = 1

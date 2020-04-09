@@ -169,7 +169,7 @@ class Simulated_robot(Robot):
 
     def load_configuration (self, path = ""):
         if (path == ""):
-            path = "/home/kompaso/DEBUG/Debug/remote control/source/robot_configuration.txt"
+            path = "//Users/elijah/Dropbox/Programming/RoboCup/remote control/source/robot_configuration.txt"
 
         config = open (path, "r")
 
@@ -345,13 +345,25 @@ class Real_robot(Robot):
 
         self.name = "real"
 
-    def _send_command (self, action):
+    def _send_command (self):#, action):
         r = -1
 
         #if (action [0] == "noaction"):
         #    pass
 
-        self.simulated._send_command (action)
+        #print ("command to simulated: ", action)
+        action = self.queue [self.commands_sent]
+        self.commands_sent += 1
+        action_ = action
+
+        while ((action [0] [0] == "/increment_joint_angle" or
+                action [0] [0] == "/set_joint_angle") and
+                action [0] [0] == action_ [0] [0] and
+                len (self.queue) > self.commands_sent):
+            self.simulated._send_command (action_)
+
+            action_ = self.queue [self.commands_sent]
+            self.commands_sent += 1
 
         #print ("lalala")
         #print (action [0] [0])
@@ -374,8 +386,8 @@ class Real_robot(Robot):
                 # print("PIRKOVA ZA CHTO: ", robot_joint)
 
                 angle = joint.angle * joint.angle_multiplier + init_angle + angle_shift
-                if key == "righthand":
-                    print("SHANKOV ZA CHTO: ", joint.angle, angle)
+                #if key == "righthand":
+                #    print("SHANKOV ZA CHTO: ", joint.angle, angle)
                 if (angle < min_angle):
                     angle = min_angle
 
@@ -414,7 +426,14 @@ class Real_robot(Robot):
 
             # print ("Final", request_str)
 
-            r = requests.get (request_str)
+            r = 5
+
+            try:
+                r = requests.get (request_str)
+
+            except:
+                print ("Request", request_str, " failed, skipping. Check if the robot's behaviour is alive")
+
             self.simulated.updated = False
 
         return r
@@ -439,16 +458,12 @@ class Real_robot(Robot):
 
         if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent) and
             self.free == True):
-            command = self.queue [self.commands_sent]
+            #command = self.queue [self.commands_sent]
 
-            #while (command == "/noaction" and len (self.queue) > self.commands_sent):
-            #    self.commands_sent += 1
-            #    command = self.queue[self.commands_sent]
+            #print ("command", command)
 
-            print ("command", command)
-
-            self._send_command (command)
-            self.commands_sent += 1
+            self._send_command ()#command)
+            #self.commands_sent += 1
 
             #self.commands_sent = len (self.queue)
 

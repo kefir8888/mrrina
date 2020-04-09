@@ -28614,7 +28614,9 @@ class MyClass(GeneratedClass):
         #self.onStopped() #activate the output of the box
 
         names = ["RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw", "LShoulderPitch", "LShoulderRoll", "LElbowRoll", "LElbowYaw", "HeadYaw", "HeadPitch"]
-        timeLists = [[0.3], [0.3], [0.3], [0.3], [0.3], [0.3], [0.3], [0.3], [0.3], [0.3]]
+
+        t = 0.4
+        timeLists = [[t], [t], [t], [t], [t], [t], [t], [t], [t], [t]]
         isAbsolute = True
         angleLists = []
 
