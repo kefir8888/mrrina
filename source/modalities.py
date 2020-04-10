@@ -24,7 +24,7 @@ import cv2
 from common import get_available_cameras
 
 class Modality:
-    def __init__ (self):
+    def __init__ (self, logger = 0):
         pass
 
     def name (self):
@@ -34,7 +34,9 @@ class Modality:
         return [np.array ((1, 1, 1), np.uint8)]
 
 class Computer_keyboard (Modality):
-    def __init__ (self, phrases_path = "", key_to_command_ = {"z" : "empty"}):
+    def __init__ (self, phrases_path = "", key_to_command_ = {"z" : "empty"}, logger_ = 0):
+        self.logger = logger_
+
         self.read_data        = 0x00
         self.processed_data   = 0x00
         self.interpreted_data = 0x00
@@ -297,7 +299,9 @@ class Computer_keyboard (Modality):
         return [result]
 
 class Skeleton (Modality):
-    def __init__ (self, skeleton_path_ = ""):
+    def __init__ (self, skeleton_path_ = "", logger_ = 0):
+        self.logger = logger_
+
         self.read_data        = []
         self.interpreted_data = []
         self.all_data         = []
@@ -308,7 +312,8 @@ class Skeleton (Modality):
                                "rightarm"  : 0,
                                "lefthand"  : 0,
                                "leftarm"   : 0,
-                               "nose_x"      : 0}
+                               "nose_x"    : 0,
+                               "leftleg"   : 0}
 
         if (skeleton_path_ != ""):
             self.all_data = self.read_data_from_file (skeleton_path_)
@@ -344,7 +349,21 @@ class Skeleton (Modality):
     def get_read_data (self):
         return self.read_data
 
-    def _process_data (self):
+    def hand_up_angles(self, angle):
+        hand_roll  = angle
+        hand_pitch = 0
+
+        if (angle <= -1.3 and angle > -1.8):
+            hand_roll = -1.3
+            hand_pitch = (2.04 + 3.14 / 5) / 0.5 * (angle + 1.3)
+
+        elif (angle <= -1.8):
+            hand_roll = -1.3 - (angle + 1.8)
+            hand_pitch = - (2.04 + 3.14 / 5)
+
+        return hand_roll, hand_pitch
+
+    def _process_data (self, frame = None):
         kpt_names = ['nose', 'neck', 'r_sho', 'r_elb', 'r_wri', 'l_sho',
                      'l_elb', 'l_wri', 'r_hip', 'r_knee', 'r_ank', 'l_hip',
                      'l_knee', 'l_ank', 'r_eye', 'l_eye', 'r_ear', 'l_ear']
@@ -360,7 +379,7 @@ class Skeleton (Modality):
         # print("Head rotation", (round((kps["l_eye"][0] - kps["nose"][0])/(kps["l_eye"][0] - kps["r_eye"][0]),3)))
         # head_pose = (round((kps["l_eye"][0] - kps["nose"][0])/(kps["l_eye"][0] - kps["r_eye"][0]),3))
         hips_mid  = ((kps ["r_hip"] [0] + kps ["l_hip"] [0]) / 2, (kps ["r_hip"] [1] + kps ["l_hip"] [1]) / 2)
-        neck_hip  = (  hips_mid[0] - kps ["neck"]  [0],  hips_mid[1] - kps ["neck"]  [0])
+        neck_hip  = (  hips_mid[0] - kps ["neck"]  [0],  hips_mid[1] - kps ["neck"]  [1])
 
         neck_nose = (kps ["nose"]  [0] - kps ["neck"][0], kps ["nose"]  [1] - kps ["neck"][1])
         # should_mid = (abs(kps ["r_sho"]  [0] - kps ["l_sho"][0])//2, abs(kps ["r_sho"]  [1] - kps ["l_sho"][1])//2)
@@ -377,11 +396,25 @@ class Skeleton (Modality):
 
         #print ("vectors", neck_hip, sh_r_elb)
 
-        self.processed_data ["righthand"] = -common.angle_2_vec (neck_hip, sh_r_elb)
+        if (frame is not None):
+            cv2.arrowedLine (frame, (int (hips_mid[0]), int (hips_mid[1])),
+                (int (kps ["neck"]  [0]), int (kps ["neck"][1])),
+                (100, 10, 200), thickness=2)
+
+        skel_angle = -(common.angle_2_vec (neck_hip, sh_r_elb))
+
+        roll, pitch = self.hand_up_angles (skel_angle)
+
+        self.processed_data ["righthand"] = roll
         self.processed_data ["lefthand"]  = common.angle_2_vec (neck_hip, sh_l_elb)
         self.processed_data ["rightarm"]  = common.angle_2_vec (sh_r_elb, elb_r_wri)
         self.processed_data ["leftarm"]   = - common.angle_2_vec (sh_l_elb, elb_l_wri)
-        self.processed_data ["leftleg"] = -abs(common.angle_2_vec (neck_hip, sh_r_elb))
+        #self.processed_data ["leftleg"] = -abs(common.angle_2_vec (neck_hip, sh_r_elb))
+        self.processed_data ["leftleg"] = pitch
+
+        self.logger.update ("rh roll", roll)
+        self.logger.update ("rh pitch", pitch)
+
         # self.processed_data ["righthand"] = -(angle_2_vec (neck_hip, sh_r_elb)  + 1.57)
         # self.processed_data ["lefthand"]  = angle_2_vec (neck_hip, sh_l_elb) #+ 1.57
         #
@@ -424,16 +457,19 @@ class Skeleton (Modality):
         return self._get_command ()
 
 class Video (Modality):
-    def __init__ (self, video_path_ = "", model_path_ = "", mode_ = "GPU"):
+    def __init__ (self, video_path_ = "", model_path_ = "", mode_ = "GPU", base_height_ = 60, logger_ = 0):
+        self.logger = logger_
+
         self.read_data        = []
         self.interpreted_data = []
         #self.all_data        = []
-        self.timeout = common.Timeout_module (3.5)
+        self.timeout = common.Timeout_module (0.35)
+        self.base_height = base_height_
 
         self.dataframe_num = 0
 
         self.processed_data = {"righthand" : 0,
-                               "lefttleg"  : 0,
+                               "leftleg"   : 0,
                                "rightarm"  : 0,
                                "lefthand"  : 0,
                                "leftarm"   : 0,
@@ -445,9 +481,9 @@ class Video (Modality):
         # self.all_data = cv2.VideoCapture("/home/kompaso/DEBUG/Debug/remote control/data/video/testt.mp4")#self.available_cameras[-1])
 
         if (video_path_ == ""):
-            self.all_data = cv2.VideoCapture(0)#self.available_cameras[-1])
+            self.all_data = cv2.VideoCapture(1)#self.available_cameras[-1])
 
-        self.skel = Skeleton()
+        self.skel = Skeleton(logger_ = self.logger)
 
         self.read = False
 
@@ -490,7 +526,7 @@ class Video (Modality):
         # if args.video != '':
         #     frame_provider = VideoReader(args.video)
         is_video = True
-        base_height = 50  # 256
+        base_height = self.base_height
         fx = -1
 
         delay = 1
@@ -572,7 +608,7 @@ class Video (Modality):
         if sum (self.read_data) != -36 and self.read_data != []:
             # print ("hehm", self.read_data)
             self.skel.read_data = self.read_data
-            self.skel._process_data()
+            self.skel._process_data(self.frame)
             self.processed_data = self.skel.processed_data
             # return self.processed_data
             # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", self.processed_data)
@@ -611,7 +647,8 @@ class Video (Modality):
         return [self.canvas_3d, self.frame]
 
 class Markov_chain (Modality):
-    def __init__ (self, video_path_ = ""):
+    def __init__ (self, video_path_ = "", logger_ = 0):
+        self.logger = logger_
         self.read_data        = []
         self.interpreted_data = []
 
@@ -635,7 +672,6 @@ class Markov_chain (Modality):
                          "14": [("/play_airplane_2", [""])],
                          "15": [("/play_airplane_1", [""])],
                          "16": [("/hands_sides", [""])],
-
                          }
 
     def name(self):
@@ -672,7 +708,6 @@ class Markov_chain (Modality):
 
     # def draw(self, img):
     #     pass
-
 
     def __init__ (self, skeleton_path_ = ""):
         self.read_data        = []
@@ -783,7 +818,9 @@ class Markov_chain (Modality):
     #     pass
 
 class Music (Modality):
-    def __init__ (self, music_path_ = ""):
+    def __init__ (self, music_path_ = "", logger_ = 0):
+        self.logger = logger_
+
         self.read_data        = []
         self.interpreted_data = []
 

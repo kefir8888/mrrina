@@ -1,10 +1,12 @@
 from common import *
 
 class Robot:
-    def __init__(self, timeout_ = 0.1):
+    def __init__(self, timeout_ = 0.1, logger_ = 0):
         self.queue         = []
         self.commands_sent = 0
         self.name = "base"
+
+        self.logger = logger_
 
         self.available_commands = {"/rest"  : ("/action=/rest&text=", "a"),
                                    "/stand" : ("/action=/stand&text=", "a"),
@@ -128,8 +130,8 @@ class Joint:
 
         x_  = int (x * scale)
         y_  = int (y * scale)
-        x1_ = int (x1 * scale)
-        y1_ = int (y1 * scale)
+        x1_ = int (float (x1 * scale))
+        y1_ = int (float (y1 * scale))
 
         cv2.line (img, (int (x_), int (y_)), (int (x1_), int (y1_)), self.col1, 3)
         cv2.circle (img, (int (x1_), int (y1_)), 5, self.col2, -1)
@@ -140,12 +142,22 @@ class Joint:
             child.draw (img, x1, y1, angle, scale)
 
     def set_angle (self, new_angle):
-        if (new_angle >= self.min_angle and new_angle <= self.max_angle):
-            self.angle = new_angle
-
-        else:
+        if (new_angle < self.min_angle):
+            self.angle = self.min_angle
             print ("warning: cannot set joint " + self.joint_name + " to " + str (new_angle) +\
-                ": the constraints are [" + str (self.min_angle) + ", " + str (self.max_angle) + "]")
+                     ": the constraints are [" + str (self.min_angle) + ", " + str (self.max_angle) + "]")
+        elif (new_angle > self.max_angle):
+            self.angle=self.max_angle
+            print ("warning: cannot set joint " + self.joint_name + " to " + str (new_angle) +\
+                     ": the constraints are [" + str (self.min_angle) + ", " + str (self.max_angle) + "]")
+        else:
+            self.angle = new_angle
+        # if (new_angle >= self.min_angle and new_angle <= self.max_angle):
+        #     self.angle = new_angle
+        #
+        # else:
+        #     print ("warning: cannot set joint " + self.joint_name + " to " + str (new_angle) +\
+        #         ": the constraints are [" + str (self.min_angle) + ", " + str (self.max_angle) + "]")
 
         return self.angle
 
@@ -153,16 +165,17 @@ class Joint:
         self.children.append (Joint (length, angle, angle_multiplier, self.col1, self.col2, name, min_angle, max_angle, angle_shift))
 
 class Simulated_robot(Robot):
-    def __init__(self, timeout_ = 0.01, path_ = ""):
+    def __init__(self, timeout_ = 0.01, path_ = "", logger_ = 0):
         Robot.__init__ (self, timeout_)
 
         self.config_path = path_
+        self.logger = logger_
 
         self.base_point = Joint (0, 0, 1, (10, 100, 200), (230, 121, 2), "base", -10, 10, 69*420)
         #(self, length_, angle_, angle_multiplier_, col1_, col2_, name_, min_angle_, max_angle_)
         self.load_configuration (self.config_path)
 
-        self.joints_to_track = ["righthand", "lefthand", "leftarm", "rightarm", "nose_x", "nose_y"]
+        self.joints_to_track = ["righthand", "lefthand", "leftarm", "rightarm", "nose_x", "leftleg"]
 
         self.updated = False
         self.name = "simulated"
@@ -245,6 +258,11 @@ for instance the robot model is recursive. Aborting operation.")
 
         set_angle = target_joint.set_angle (new_angle)
 
+        print ("joint: ", joint_name, set_angle)
+
+        if (joint_name == "leftleg"):
+            self.logger.update ("leftleg set", set_angle)
+
         if (set_angle == new_angle):
             self.updated = True
 
@@ -305,8 +323,9 @@ for instance the robot model is recursive. Aborting operation.")
         self.base_point.draw (img, x, y, 0, scale)
 
 class Real_robot(Robot):
-    def __init__(self, ip_num, port_ = 9559, timeout_ = 0.4):
+    def __init__(self, ip_num, port_ = 9559, timeout_ = 0.04, logger_ = 0):
         Robot.__init__ (self, timeout_)
+        self.logger = logger_
 
         self.ip_prefix = "http://"
         self.ip_postfix = ":"
@@ -317,7 +336,7 @@ class Real_robot(Robot):
         self.free = False
         self.free_timeout_module = Timeout_module (0.3)
 
-        self.simulated = Simulated_robot ()
+        self.simulated = Simulated_robot (logger_ = self.logger)
 
         self.synchronized_joints = {"righthand" : "r_shoulderroll",
                                     "rightarm"  : "r_elbowroll",
@@ -353,17 +372,23 @@ class Real_robot(Robot):
 
         #print ("command to simulated: ", action)
         action = self.queue [self.commands_sent]
-        self.commands_sent += 1
+        #self.commands_sent += 1
         action_ = action
 
-        while ((action [0] [0] == "/increment_joint_angle" or
-                action [0] [0] == "/set_joint_angle") and
-                action [0] [0] == action_ [0] [0] and
-                len (self.queue) > self.commands_sent):
-            self.simulated._send_command (action_)
+        print ("queue", self.queue [self.commands_sent :])
 
+        while (True):
             action_ = self.queue [self.commands_sent]
             self.commands_sent += 1
+
+            self.simulated._send_command (action_)
+            print ("action: ", action_)
+
+            if (not ((action [0] [0] == "/increment_joint_angle" or
+                 action [0] [0] == "/set_joint_angle") and
+                 action [0] [0] == action_ [0] [0] and
+                 len (self.queue) > self.commands_sent)):
+                break
 
         #print ("lalala")
         #print (action [0] [0])
@@ -385,14 +410,19 @@ class Real_robot(Robot):
 
                 # print("PIRKOVA ZA CHTO: ", robot_joint)
 
+                if (joint.angle is None):
+                    joint.angle = 0
+
                 angle = joint.angle * joint.angle_multiplier + init_angle + angle_shift
+                if (key == "leftleg"):
+                    self.logger.update ("updated angle", joint.angle)
                 #if key == "righthand":
                 #    print("SHANKOV ZA CHTO: ", joint.angle, angle)
-                if (angle < min_angle):
-                    angle = min_angle
-
-                if (angle > max_angle):
-                    angle = max_angle
+                # if (angle < min_angle):
+                #     angle = min_angle
+                #
+                # if (angle > max_angle):
+                #     angle = max_angle
                 # print("Send_commsnd posle:", angle)
 
                 # if (key == "righthand"):

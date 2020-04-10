@@ -23,28 +23,28 @@ class Value_tracker:
 
         i = 0
         for k, v in self.tracked.items():
-            result = cv2.putText (result, k + ": " + str (v), (30, 30 * (i + 1)), cv2.FONT_HERSHEY_SIMPLEX,
-                                 1, (100, 25, 130), 2, cv2.LINE_AA)
+            result = cv2.putText (result, k + ": " + str (v) [:5], (30, 60 * (i + 1)), cv2.FONT_HERSHEY_SIMPLEX,
+                                 2, (100, 25, 130), 2, cv2.LINE_AA)
             i += 1
 
         return [result]
 
-paths = {"kompaso" : {"model_path"   : "",
-                      "phrases_path" : "",
+paths = {"kompaso" : {"model_path"   : "/home/kompaso/DEBUG/Debug/remote control/source/test/human-pose-estimation-3d.pth",
+                      "phrases_path" : "/home/kompaso/DEBUG/Debug//remote control/data/sounds/phrases.txt",
                       "vision_path"  : "/home/kompaso/DEBUG/Debug/remote control/robotics_course/modules/"},
 
          "elijah"  : {"model_path"   : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/test/human-pose-estimation-3d.pth",
                       "phrases_path" : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt",
                       "vision_path"  : "/Users/elijah/Dropbox/Programming/robotics_course/modules/"}}
 
-#user = "kompaso"
-user = "elijah"
+#user = "elijah"
+user = "kompaso"
 
 sys.path.append (paths [user] ["vision_path"])
 import input_output
 
 def main():
-    AUTONOMOUS = True #without physical robot
+    AUTONOMOUS = False #without physical robot
 
     WIND_X = 800
     WIND_Y = 500
@@ -55,8 +55,10 @@ def main():
     curr_time = time ()
     logfile = open ("log/" + str (curr_time) + ".txt", "w+")
 
-    inputs = {"computer keyboard" : (modalities.Computer_keyboard (paths [user] ["phrases_path"]),
-                                     ["physical", "simulated2"]), #}
+    tracker = Value_tracker ()
+
+    inputs = {"computer keyboard" : (modalities.Computer_keyboard (paths [user] ["phrases_path"],
+                                    logger_ = tracker), ["physical", "simulated2"]), #}
 
               #"response" : (modalities.Response_to_skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
               #              ["simulated1", "physical"]),
@@ -65,7 +67,8 @@ def main():
               #             ["simulated1", "physical"])}
 
               #"video input" : (modalities.Video(), ["physical", "simulated2"])}
-              "video input": (modalities.Video(model_path_ = paths [user] ["model_path"]), ["physical", "simulated2"])}
+              "video input": (modalities.Video(model_path_ = paths [user] ["model_path"],
+                base_height_ = 256, logger_ = tracker), ["physical", "simulated2"])}
 
     #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
               #"archive skeleton"  : (modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
@@ -74,27 +77,27 @@ def main():
     robots_list = {}
 
     #if (AUTONOMOUS == True):
-    robots_list.update ({"simulated2" : robots.Simulated_robot ()})
+
+    robots_list.update ({"simulated2" : robots.Simulated_robot (logger_ = tracker)})
 
     if (AUTONOMOUS == False):
         # ip = "192.168.1.70"
         #ip = "10.6.255.230"
-        ip = "10.0.0.105"
+        ip = "10.0.0.101"
 
-        robots_list.update ({"physical" : robots.Real_robot (ip, "9569")})
+        robots_list.update ({"physical" : robots.Real_robot (ip, "9569", logger_ = tracker)})
         #robots_list.update({"simulated1": robots.Simulated_robot()})
 
     fsm_processor = fsm.FSM_processor ()
 
-    silent_mode = False
+    silent_mode = True
 
-    tracker = Value_tracker ()
-
-    tracker.update ("asda", 5)
+    ###пример трекера
+    #tracker.update ("asda", 5)
 
     while (True):
         curr_time = time ()
-        tracker.update("time", curr_time)
+        #tracker.update("time", curr_time)
 
         inputs ["computer keyboard"] [0]._read_data ()
 
@@ -118,8 +121,8 @@ def main():
 
             command = inputs [modality] [0].get_command (skip_reading_data)
 
-            #print ("modality: ", modality)
-            #print(command)
+            print ("modality: ", modality)
+            print (command)
             logfile.write (str (curr_time) + str (command))
 
             action = fsm_processor.handle_command (command)
