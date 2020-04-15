@@ -313,7 +313,8 @@ class Skeleton (Modality):
                                "lefthand"  : 0,
                                "leftarm"   : 0,
                                "nose_x"    : 0,
-                               "leftleg"   : 0}
+                               "leftleg"   : 0,
+                               "leftfoot"  : 0}
 
         if (skeleton_path_ != ""):
             self.all_data = self.read_data_from_file (skeleton_path_)
@@ -349,19 +350,33 @@ class Skeleton (Modality):
     def get_read_data (self):
         return self.read_data
 
-    def hand_up_angles(self, angle):
+    def hand_up_angles(self, angle, hand):
         hand_roll  = angle
         hand_pitch = 0
 
-        if (angle <= -1.3 and angle > -1.8):
-            hand_roll = -1.3
-            hand_pitch = (2.04 + 3.14 / 5) / 0.5 * (angle + 1.3)
+        if hand == "righthand" :
+            k = 1
+            if (angle <= -1.3*k and angle > -1.8*k):
+                hand_roll = -1.3*k
+                hand_pitch = (2.04 + 3.14 / 5) / 0.5 * (angle + 1.3)
 
-        elif (angle <= -1.8):
-            hand_roll = -1.3 - (angle + 1.8)
+            elif (angle <= -1.8*k):
+                hand_roll = -1.3*k - (angle + 1.8*k)
+                hand_pitch = - (2.04 + 3.14 / 5)
+
+            return hand_roll, hand_pitch
+
+        if hand == "lefthand" :
+            k = -1
+        if (angle >= 1.3 and angle < 1.8):
+            hand_roll = -1.3*k
+            hand_pitch = (2.04 + 3.14 / 5) / 0.5 * (angle*k + 1.3)
+
+        elif (angle >= -1.8*k):
+            hand_roll = -1.3*k - (angle + 1.8*k)
             hand_pitch = - (2.04 + 3.14 / 5)
 
-        return hand_roll, hand_pitch
+            return hand_roll, hand_pitch
 
     def _process_data (self, frame = None):
         kpt_names = ['nose', 'neck', 'r_sho', 'r_elb', 'r_wri', 'l_sho',
@@ -402,11 +417,14 @@ class Skeleton (Modality):
                 (100, 10, 200), thickness=2)
 
         skel_angle = -(common.angle_2_vec (neck_hip, sh_r_elb))
+        skel_angle_ = common.angle_2_vec (neck_hip, sh_l_elb)
 
-        roll, pitch = self.hand_up_angles (skel_angle)
+        roll, pitch = self.hand_up_angles (skel_angle, "righthand")
+        roll_l, pitch_l = self.hand_up_angles (skel_angle_, "lefthand")
 
         self.processed_data ["righthand"] = roll
-        self.processed_data ["lefthand"]  = common.angle_2_vec (neck_hip, sh_l_elb)
+        self.processed_data ["lefthand"]  = roll_l
+        self.processed_data ["leftfoot" ] = pitch_l
         self.processed_data ["rightarm"]  = common.angle_2_vec (sh_r_elb, elb_r_wri)
         self.processed_data ["leftarm"]   = - common.angle_2_vec (sh_l_elb, elb_l_wri)
         #self.processed_data ["leftleg"] = -abs(common.angle_2_vec (neck_hip, sh_r_elb))
@@ -473,7 +491,8 @@ class Video (Modality):
                                "rightarm"  : 0,
                                "lefthand"  : 0,
                                "leftarm"   : 0,
-                               "nose_x"    : 0}
+                               "nose_x"    : 0,
+                               "leftfoot"  : 0}
         # if video_path_ != '':
 
         #get_available_cameras()
