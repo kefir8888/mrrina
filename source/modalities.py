@@ -441,14 +441,14 @@ class Skeleton (Modality):
 
         self.processed_data ["righthand"] = roll
         self.processed_data ["lefthand"]  = roll_l
-        self.processed_data ["leftfoot" ] = pitch_l
+        self.processed_data ["leftshoulder_pitch" ] = pitch_l
         self.processed_data ["rightarm"]  = common.angle_2_vec (sh_r_elb, elb_r_wri)
         self.processed_data ["leftarm"]   = - common.angle_2_vec (sh_l_elb, elb_l_wri)
         #self.processed_data ["leftleg"] = -abs(common.angle_2_vec (neck_hip, sh_r_elb))
-        self.processed_data ["leftleg"] = pitch
+        self.processed_data ["rightshoulder_pitch"] = pitch
 
-        self.logger.update ("rh roll", roll)
-        self.logger.update ("rh pitch", pitch)
+        # self.logger.update ("rh roll", roll)
+        # self.logger.update ("rh pitch", pitch)
 
         # self.processed_data ["righthand"] = -(angle_2_vec (neck_hip, sh_r_elb)  + 1.57)
         # self.processed_data ["lefthand"]  = angle_2_vec (neck_hip, sh_l_elb) #+ 1.57
@@ -492,7 +492,7 @@ class Skeleton (Modality):
         return self._get_command ()
 
 class Video (Modality):
-    def __init__ (self, video_path_ = "", model_path_ = "", mode_ = "GPU", base_height_ = 60, logger_ = 0):
+    def __init__ (self, video_path_ = "", model_path_ = "", mode_ = "GPU", base_height_ = 256, logger_ = 0):
         self.logger = logger_
 
         self.read_data        = []
@@ -531,7 +531,7 @@ class Video (Modality):
         # load_state(self.net, checkpoint)
 
         if (model_path_ == ""):
-            model_path_ = "/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/test/human-pose-estimation-3d.pth"
+            model_path_ = "/home/kompaso/NAO_PROJECT/wenhai/source/test/human-pose-estimation-3d.pth"
 
         self.net = InferenceEnginePyTorch (model_path_, mode_)
 
