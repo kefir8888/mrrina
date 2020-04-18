@@ -175,7 +175,7 @@ class Simulated_robot(Robot):
         #(self, length_, angle_, angle_multiplier_, col1_, col2_, name_, min_angle_, max_angle_)
         self.load_configuration (self.config_path)
 
-        self.joints_to_track = ["righthand", "lefthand", "leftarm", "rightarm", "nose_x", "leftleg", "leftshoulder_pitch"]
+        self.joints_to_track = ["righthand", "lefthand", "leftarm", "rightarm", "nose_x", "leftshoulder_pitch", "rightshoulder_pitch", "leftarm_yaw"]
 
         self.updated = False
         self.name = "simulated"
@@ -260,9 +260,6 @@ for instance the robot model is recursive. Aborting operation.")
 
         print ("joint: ", joint_name, set_angle)
 
-        if (joint_name == "leftleg"):
-            self.logger.update ("leftleg set", set_angle)
-
         if (set_angle == new_angle):
             self.updated = True
 
@@ -343,10 +340,10 @@ class Real_robot(Robot):
                                     "lefthand"  : "l_shoulderroll",
                                     "leftarm"   : "l_elbowroll",
 
-                                    "leftleg"   : "r_shoulderpitch",
-                                    "rightleg"  : "r_elbowyaw",
+                                    "rightshoulder_pitch"   : "r_shoulderpitch",
+                                    "rightarm_yaw"  : "r_elbowyaw",
                                     "leftshoulder_pitch"  : "l_shoulderpitch",
-                                    "rightfoot" : "l_elbowyaw", # ,
+                                    "leftarm_yaw" : "l_elbowyaw", # ,
 
                                     "nose_x" : "head_Yaw",
                                     "nose_y" : "head_Pitch"}
@@ -414,8 +411,6 @@ class Real_robot(Robot):
                     joint.angle = 0
 
                 angle = joint.angle * joint.angle_multiplier + init_angle + angle_shift
-                if (key == "leftleg"):
-                    self.logger.update ("updated angle", joint.angle)
                 #if key == "righthand":
                 #    print("SHANKOV ZA CHTO: ", joint.angle, angle)
                 # if (angle < min_angle):

@@ -177,22 +177,32 @@ class Computer_keyboard (Modality):
                      "noaction" : [("noaction",  [""])]}
 
         self.direct_control =  {"z"        : [("/stand",   ["heh"])],
-                                "c"        : [("/rest",    ["kek"])],
+                                "x"        : [("/rest",    ["kek"])],
                                 "w"        : [("/increment_joint_angle", ["lefthand", "0.21"])],
                                 "e"        : [("/increment_joint_angle", ["lefthand", "-0.21"])],
                                 "r"        : [("/increment_joint_angle", ["leftarm", "0.21"])],
                                 "t"        : [("/increment_joint_angle", ["leftarm", "-0.21"])],
+                                "y"        : [("/increment_joint_angle", ["leftshoulder_pitch", "0.21"])],
+                                "u"        : [("/increment_joint_angle", ["leftshoulder_pitch", "-0.21"])],
+                                "i"        : [("/increment_joint_angle", ["leftarm_yaw", "0.21"])],
+                                "o"        : [("/increment_joint_angle", ["leftarm_yaw", "-0.21"])],
+
                                 "s"        : [("/increment_joint_angle", ["righthand", "0.21"])],
                                 "d"        : [("/increment_joint_angle", ["righthand", "-0.21"])],
                                 "f"        : [("/increment_joint_angle", ["rightarm", "0.21"])],
                                 "g"        : [("/increment_joint_angle", ["rightarm", "-0.21"])],
-                                "p"        : [("/increment_joint_angle", ["nose_x", "0.1"])],
-                                "l"        : [("/increment_joint_angle", ["nose_x", "-0.1"])],
-                                "o"        : [("/increment_joint_angle", ["nose_y", "0.1"])],
-                                "k"        : [("/increment_joint_angle", ["nose_y", "-0.1"])],
-                                "v"        : [("/increment_joint_angle", ["leftshoulder_pitch", "0.21"])],
-                                "b"        : [("/increment_joint_angle", ["leftshoulder_pitch", "-0.21"])],
-                                # leftshoulder_yaw
+                                "h"        : [("/increment_joint_angle", ["rightshoulder_pitch", "0.21"])],
+                                "j"        : [("/increment_joint_angle", ["rightshoulder_pitch", "-0.21"])],
+                                "k"        : [("/increment_joint_angle", ["rightarm_yaw", "0.21"])],
+                                "l"        : [("/increment_joint_angle", ["rightarm_yaw", "-0.21"])],
+
+
+                                "c"        : [("/increment_joint_angle", ["nose_x", "0.1"])],
+                                "v"        : [("/increment_joint_angle", ["nose_x", "-0.1"])],
+                                "b"        : [("/increment_joint_angle", ["nose_y", "0.1"])],
+                                "n"        : [("/increment_joint_angle", ["nose_y", "-0.1"])],
+
+
                                 "n"        : [("next",     [""])],
                                 "noaction" : [("noaction", [""])]}
 
@@ -317,8 +327,11 @@ class Skeleton (Modality):
                                "leftarm"   : 0,
                                "nose_x"    : 0,
                                "nose_y"    : 0,
-                               "leftleg"   : 0,
-                               "leftshoulder_pitch"  : 0}
+
+                               "rightshoulder_pitch" : 0,
+                               "leftshoulder_pitch"  : 0,
+                               "leftarm_yaw"         : 0,
+                               "rightarm_yaw"        : 0}
 
         if (skeleton_path_ != ""):
             self.all_data = self.read_data_from_file (skeleton_path_)
@@ -491,13 +504,15 @@ class Video (Modality):
         self.dataframe_num = 0
 
         self.processed_data = {"righthand" : 0,
-                               "leftleg"   : 0,
+                               "rightshoulder_pitch"   : 0,
                                "rightarm"  : 0,
                                "lefthand"  : 0,
                                "leftarm"   : 0,
                                "nose_x"    : 0,
                                "nose_x"    : 0,
-                               "leftshoulder_pitch"  : 0}
+                               "leftshoulder_pitch"  : 0,
+                               "leftarm_yaw"         : 0,
+                               "rightarm_yaw"        : 0}
         # if video_path_ != '':
 
         #get_available_cameras()
