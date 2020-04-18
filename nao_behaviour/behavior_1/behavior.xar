@@ -33,8 +33,8 @@ import almath
 
 #ip = '0.0.0.0'
 #ip = '10.6.255.230'
-#ip = '192.168.1.70'
-ip = '10.0.0.105'
+ip = '192.168.1.66'
+#ip = '10.0.0.103'
 port = 9569
 
 class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -84,12 +84,10 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
         l_elbowyaw = (parsed_q['l_elbowyaw']) [0]
     except:
         pass
-
     try:
         head_Yaw = (parsed_q['head_Yaw']) [0]
     except:
         pass
-
     try:
         head_Pitch = (parsed_q['head_Pitch']) [0]
     except:
@@ -28613,10 +28611,8 @@ class MyClass(GeneratedClass):
     def onInput_onStart(self, angleList):
         #self.onStopped() #activate the output of the box
 
-        names = ["RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw", "LShoulderPitch", "LShoulderRoll", "LElbowRoll", "LElbowYaw", "HeadYaw", "HeadPitch"]
-
-        t = 0.4
-        timeLists = [[t], [t], [t], [t], [t], [t], [t], [t], [t], [t]]
+        names = ["RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw", "LShoulderPitch", "LShoulderRoll", "LElbowRoll", "LElbowYaw", "HeadYaw","HeadPitch"]
+        timeLists = [[0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4],[0.4]]
         isAbsolute = True
         angleLists = []
 
@@ -28629,11 +28625,7 @@ class MyClass(GeneratedClass):
         self.logger.info ("angles:")
         self.logger.info (angleList)
 
-
         self.motionProxy.angleInterpolation(names, angleLists, timeLists, isAbsolute)
-
-#        self.motionProxy.angleInterpolation("HeadYaw", 1.5, 1.0, isAbsolute)
-
 
         #pass
 
