@@ -23,6 +23,8 @@ import cv2
 
 from common import get_available_cameras
 
+# tracker = Value_tracker ()
+
 class Modality:
     def __init__ (self, logger = 0):
         pass
@@ -314,13 +316,12 @@ class Computer_keyboard (Modality):
 class Skeleton (Modality):
     def __init__ (self, skeleton_path_ = "", logger_ = 0):
         self.logger = logger_
-
         self.read_data        = []
         self.interpreted_data = []
         self.all_data         = []
+        self.poses_3d         = []
 
         self.dataframe_num = 0
-
         self.processed_data = {"righthand" : 0,
                                "rightarm"  : 0,
                                "lefthand"  : 0,
@@ -403,7 +404,14 @@ class Skeleton (Modality):
         necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip", "r_sho", "r_elb", "r_wri", "r_hip", "neck", "nose", 'r_eye', 'l_eye', "r_ear", "l_ear"]
         kps = {}
 
-        #print ("kps", kps)
+            # [[0, 1],  # neck - nose
+            #  [1, 16], [16, 18],  # nose - l_eye - l_ear
+            #  [1, 15], [15, 17],  # nose - r_eye - r_ear
+            #  [0, 3], [3, 4], [4, 5],     # neck - l_shoulder - l_elbow - l_wrist
+            #  [0, 9], [9, 10], [10, 11],  # neck - r_shoulder - r_elbow - r_wrist
+            #  [0, 6], [6, 7], [7, 8],        # neck - l_hip - l_knee - l_ankle
+            #  [0, 12], [12, 13], [13, 14]])  # neck - r_hip - r_knee - r_ankle
+
 
         for kp in necessary_keypoints_names:
             ind = kpt_names.index (kp)
@@ -414,9 +422,23 @@ class Skeleton (Modality):
         neck_hip  = (  hips_mid[0] - kps ["neck"]  [0],  hips_mid[1] - kps ["neck"]  [1])
 
         neck_nose = (kps ["nose"]  [0] - kps ["neck"][0], kps ["nose"]  [1] - kps ["neck"][1])
-        # should_mid = (abs(kps ["r_sho"]  [0] - kps ["l_sho"][0])//2, abs(kps ["r_sho"]  [1] - kps ["l_sho"][1])//2)
-        #
-        # should_neck =
+
+        ##########################################3d block#########################################################################
+        neck_hip_xy = (self.poses_3d[0][2][0] - self.poses_3d[0][0][0], self.poses_3d[0][2][2] - self.poses_3d[0][0][2])
+        neck_hip_xz = (self.poses_3d[0][2][0] - self.poses_3d[0][0][0], self.poses_3d[0][2][1] - self.poses_3d[0][0][1])
+        neck_hip_yz = (self.poses_3d[0][2][2] - self.poses_3d[0][0][2], self.poses_3d[0][2][1] - self.poses_3d[0][0][1])
+
+        sh_r_elb_xy = (self.poses_3d[0][10][0] - self.poses_3d[0][9][0], self.poses_3d[0][10][2] - self.poses_3d[0][9][2])
+        sh_r_elb_yz = (self.poses_3d[0][10][2] - self.poses_3d[0][9][2], self.poses_3d[0][10][1] - self.poses_3d[0][9][1])
+
+        # elb_r_wri
+
+        xy = common.angle_2_vec(neck_hip_xy,sh_r_elb_xy)
+        yz = -(common.angle_2_vec(neck_hip_yz,sh_r_elb_yz))
+
+        self.logger.update ("xy", xy)
+        self.logger.update ("yz", yz)
+        ##########################################################################################################################3
 
         sh_r_elb  = (kps ["r_elb"] [0] - kps ["r_sho"] [0], kps ["r_elb"] [1] - kps ["r_sho"] [1])
         sh_l_elb  = (kps ["l_elb"] [0] - kps ["l_sho"] [0], kps ["l_elb"] [1] - kps ["l_sho"] [1])
@@ -440,36 +462,18 @@ class Skeleton (Modality):
         roll_l, pitch_l = self.hand_up_angles (skel_angle_, "lefthand")
 
         self.processed_data ["righthand"] = roll
-        self.processed_data ["lefthand"]  = roll_l
-        self.processed_data ["leftshoulder_pitch" ] = pitch_l
-        self.processed_data ["rightarm"]  = common.angle_2_vec (sh_r_elb, elb_r_wri)
+        self.processed_data ["lefthand"]  = pitch
+        self.processed_data ["leftshoulder_pitch" ] = yz
         self.processed_data ["leftarm"]   = - common.angle_2_vec (sh_l_elb, elb_l_wri)
-        #self.processed_data ["leftleg"] = -abs(common.angle_2_vec (neck_hip, sh_r_elb))
-        self.processed_data ["rightshoulder_pitch"] = pitch
+        self.processed_data ["rightarm"]  = common.angle_2_vec (sh_r_elb, elb_r_wri)
 
-        # self.logger.update ("rh roll", roll)
-        # self.logger.update ("rh pitch", pitch)
+        # #self.processed_data ["leftleg"] = -abs(common.angle_2_vec (neck_hip, sh_r_elb))
+        # self.processed_data ["rightshoulder_pitch"] = pitch
 
-        # self.processed_data ["righthand"] = -(angle_2_vec (neck_hip, sh_r_elb)  + 1.57)
-        # self.processed_data ["lefthand"]  = angle_2_vec (neck_hip, sh_l_elb) #+ 1.57
-        #
-        #
-        # self.processed_data ["rightarm"]  =  angle_2_vec (sh_l_elb, elb_l_wri)
-        # # self.processed_data ["rightarm"]  = -2.0
-        # if - angle_2_vec (sh_r_elb, elb_r_wri)  < -1.2:
-        #     self.processed_data ["leftarm"] = -1.2
-        # else:
-        #     self.processed_data ["leftarm"]   =  - angle_2_vec (sh_r_elb, elb_r_wri)
-        #
-        # # print((- angle_2_vec (sh_r_elb, elb_r_wri) ) )
-        #
-        # print("rightarm angle: ", self.processed_data ["righthand"])
-        # print(self.processed_data ["lefthand"])
-        # print(self.processed_data ["rightarm"])
-        # print(self.processed_data ["leftarm"])
+        # self.logger.update ("rh roll", self.poses_3d[0])
 
 
-        # self.processed_data ["head"] = head_rotation (head_pose) #, kps["l_ear"],kps["r_ear"])
+
 
     def _interpret_data (self):
         self.interpreted_data = self.processed_data
@@ -492,12 +496,12 @@ class Skeleton (Modality):
         return self._get_command ()
 
 class Video (Modality):
-    def __init__ (self, video_path_ = "", model_path_ = "", mode_ = "GPU", base_height_ = 256, logger_ = 0):
+    def __init__ (self, video_path_ = "", model_path_ = "", mode_ = "GPU", base_height_ = 512, logger_ = 0):
         self.logger = logger_
 
         self.read_data        = []
         self.interpreted_data = []
-        #self.all_data        = []
+        self.poses_3d         = []
         self.timeout = common.Timeout_module (0.35)
         self.base_height = base_height_
 
@@ -520,7 +524,8 @@ class Video (Modality):
         # self.all_data = cv2.VideoCapture("/home/kompaso/DEBUG/Debug/remote control/data/video/testt.mp4")#self.available_cameras[-1])
 
         if (video_path_ == ""):
-            self.all_data = cv2.VideoCapture(0)#self.available_cameras[-1])
+            # self.all_data = cv2.VideoCapture("/home/kompaso/Desktop/hand_high.mp4")
+            self.all_data = cv2.VideoCapture(1)#self.available_cameras[-1]) #/home/kompaso/Desktop/hand_high.mp4
 
         self.skel = Skeleton(logger_ = self.logger)
 
@@ -612,6 +617,7 @@ class Video (Modality):
         #cv2.imshow(canvas_3d_window_name, canvas_3d)
         self.canvas_3d = canvas_3d
 
+
         x = draw_poses(frame, poses_2d)
         # print(x)
         current_time = (cv2.getTickCount() - current_time) / cv2.getTickFrequency()
@@ -623,6 +629,7 @@ class Video (Modality):
                     (40, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255))
         #cv2.imshow('ICV 3D Human Pose Estimation', frame)
         self.frame = frame
+        self.poses_3d = poses_3d
 
         return x, poses_3d
 
@@ -647,8 +654,11 @@ class Video (Modality):
         if sum (self.read_data) != -36 and self.read_data != []:
             # print ("hehm", self.read_data)
             self.skel.read_data = self.read_data
+            self.skel.poses_3d = self.poses_3d
             self.skel._process_data(self.frame)
             self.processed_data = self.skel.processed_data
+
+
             # return self.processed_data
             # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", self.processed_data)
 
@@ -764,6 +774,7 @@ class Markov_chain (Modality):
                                "rightarm": 0,
                                "lefthand": 0,
                                "leftarm": 0}
+
 
         if (skeleton_path_ != ""):
             self.all_data = self.read_data_from_file(skeleton_path_)
