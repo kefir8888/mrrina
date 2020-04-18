@@ -190,6 +190,9 @@ class Computer_keyboard (Modality):
                                 "l"        : [("/increment_joint_angle", ["nose_x", "-0.1"])],
                                 "o"        : [("/increment_joint_angle", ["nose_y", "0.1"])],
                                 "k"        : [("/increment_joint_angle", ["nose_y", "-0.1"])],
+                                "v"        : [("/increment_joint_angle", ["leftshoulder_pitch", "0.21"])],
+                                "b"        : [("/increment_joint_angle", ["leftshoulder_pitch", "-0.21"])],
+                                # leftshoulder_yaw
                                 "n"        : [("next",     [""])],
                                 "noaction" : [("noaction", [""])]}
 
@@ -313,8 +316,9 @@ class Skeleton (Modality):
                                "lefthand"  : 0,
                                "leftarm"   : 0,
                                "nose_x"    : 0,
+                               "nose_y"    : 0,
                                "leftleg"   : 0,
-                               "leftfoot"  : 0}
+                               "leftshoulder_pitch"  : 0}
 
         if (skeleton_path_ != ""):
             self.all_data = self.read_data_from_file (skeleton_path_)
@@ -376,7 +380,7 @@ class Skeleton (Modality):
             hand_roll = -1.3*k - (angle + 1.8*k)
             hand_pitch = - (2.04 + 3.14 / 5)
 
-            return hand_roll, hand_pitch
+        return hand_roll, hand_pitch
 
     def _process_data (self, frame = None):
         kpt_names = ['nose', 'neck', 'r_sho', 'r_elb', 'r_wri', 'l_sho',
@@ -492,7 +496,8 @@ class Video (Modality):
                                "lefthand"  : 0,
                                "leftarm"   : 0,
                                "nose_x"    : 0,
-                               "leftfoot"  : 0}
+                               "nose_x"    : 0,
+                               "leftshoulder_pitch"  : 0}
         # if video_path_ != '':
 
         #get_available_cameras()
@@ -500,7 +505,7 @@ class Video (Modality):
         # self.all_data = cv2.VideoCapture("/home/kompaso/DEBUG/Debug/remote control/data/video/testt.mp4")#self.available_cameras[-1])
 
         if (video_path_ == ""):
-            self.all_data = cv2.VideoCapture(1)#self.available_cameras[-1])
+            self.all_data = cv2.VideoCapture(0)#self.available_cameras[-1])
 
         self.skel = Skeleton(logger_ = self.logger)
 

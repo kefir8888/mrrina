@@ -175,7 +175,7 @@ class Simulated_robot(Robot):
         #(self, length_, angle_, angle_multiplier_, col1_, col2_, name_, min_angle_, max_angle_)
         self.load_configuration (self.config_path)
 
-        self.joints_to_track = ["righthand", "lefthand", "leftarm", "rightarm", "nose_x", "leftleg", "leftfoot"]
+        self.joints_to_track = ["righthand", "lefthand", "leftarm", "rightarm", "nose_x", "leftleg", "leftshoulder_pitch"]
 
         self.updated = False
         self.name = "simulated"
@@ -345,8 +345,8 @@ class Real_robot(Robot):
 
                                     "leftleg"   : "r_shoulderpitch",
                                     "rightleg"  : "r_elbowyaw",
-                                    "leftfoot"  : "l_shoulderpitch",
-                                    "rightfoot" : "l_elbowyaw",
+                                    "leftshoulder_pitch"  : "l_shoulderpitch",
+                                    "rightfoot" : "l_elbowyaw", # ,
 
                                     "nose_x" : "head_Yaw",
                                     "nose_y" : "head_Pitch"}

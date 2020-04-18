@@ -29,9 +29,9 @@ class Value_tracker:
 
         return [result]
 
-paths = {"kompaso" : {"model_path"   : "/home/kompaso/DEBUG/Debug/remote control/source/test/human-pose-estimation-3d.pth",
-                      "phrases_path" : "/home/kompaso/DEBUG/Debug//remote control/data/sounds/phrases.txt",
-                      "vision_path"  : "/home/kompaso/DEBUG/Debug/remote control/robotics_course/modules/"},
+paths = {"kompaso" : {"model_path"   : "/home/kompaso/NAO_PROJECT/wenhai/source/test/human-pose-estimation-3d.pth",
+                      "phrases_path" : "/home/kompaso/NAO_PROJECT/wenhai/data/sounds/phrases.txt",
+                      "vision_path"  : "/home/kompaso/NAO_PROJECT/wenhai/robotics_course/modules/"},
 
          "elijah"  : {"model_path"   : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/test/human-pose-estimation-3d.pth",
                       "phrases_path" : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt",
@@ -58,7 +58,7 @@ def main():
     tracker = Value_tracker ()
 
     inputs = {"computer keyboard" : (modalities.Computer_keyboard (paths [user] ["phrases_path"],
-                                    logger_ = tracker), ["physical", "simulated2"]), #}
+                                    logger_ = tracker), ["physical", "simulated2"])}
 
               #"response" : (modalities.Response_to_skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
               #              ["simulated1", "physical"]),
@@ -67,8 +67,8 @@ def main():
               #             ["simulated1", "physical"])}
 
               #"video input" : (modalities.Video(), ["physical", "simulated2"])}
-              "video input": (modalities.Video(model_path_ = paths [user] ["model_path"],
-                base_height_ = 256, logger_ = tracker), ["physical", "simulated2"])}
+              # "video input": (modalities.Video(model_path_ = paths [user] ["model_path"],
+              #   base_height_ = 256, logger_ = tracker), ["physical", "simulated2"])}
 
     #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
               #"archive skeleton"  : (modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
@@ -81,9 +81,9 @@ def main():
     robots_list.update ({"simulated2" : robots.Simulated_robot (logger_ = tracker)})
 
     if (AUTONOMOUS == False):
-        # ip = "192.168.1.70"
+        ip = "192.168.1.66"
         #ip = "10.6.255.230"
-        ip = "10.0.0.101"
+        # ip = "10.0.0.101"
 
         robots_list.update ({"physical" : robots.Real_robot (ip, "9569", logger_ = tracker)})
         #robots_list.update({"simulated1": robots.Simulated_robot()})
