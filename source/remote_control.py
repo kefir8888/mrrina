@@ -37,8 +37,8 @@ paths = {"kompaso" : {"model_path"   : "/home/kompaso/NAO_PROJECT/wenhai/source/
                       "phrases_path" : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt",
                       "vision_path"  : "/Users/elijah/Dropbox/Programming/robotics_course/modules/"}}
 
-#user = "elijah"
-user = "kompaso"
+user = "elijah"
+#user = "kompaso"
 
 sys.path.append (paths [user] ["vision_path"])
 import input_output
@@ -58,7 +58,7 @@ def main():
     tracker = Value_tracker ()
 
     inputs = {"computer keyboard" : (modalities.Computer_keyboard (paths [user] ["phrases_path"],
-                                    logger_ = tracker), ["physical", "simulated2"])}
+                                    logger_ = tracker), ["physical", "simulated2"]), #}
 
               #"response" : (modalities.Response_to_skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
               #              ["simulated1", "physical"]),
@@ -67,8 +67,10 @@ def main():
               #             ["simulated1", "physical"])}
 
               #"video input" : (modalities.Video(), ["physical", "simulated2"])}
-              # "video input": (modalities.Video(model_path_ = paths [user] ["model_path"],
-              #   base_height_ = 256, logger_ = tracker), ["physical", "simulated2"])}
+
+              #../data/videos/female_dancer_studio.mp4
+              "video input": (modalities.Video(video_path_ = "", model_path_ = paths [user] ["model_path"],
+              base_height_ = 100, logger_ = tracker), ["physical", "simulated2"])}
 
     #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
               #"archive skeleton"  : (modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
@@ -81,7 +83,7 @@ def main():
     robots_list.update ({"simulated2" : robots.Simulated_robot (logger_ = tracker)})
 
     if (AUTONOMOUS == False):
-        ip = "192.168.1.66"
+        ip = "192.168.43.152"
         #ip = "10.6.255.230"
         # ip = "10.0.0.101"
 
@@ -91,6 +93,8 @@ def main():
     fsm_processor = fsm.FSM_processor ()
 
     silent_mode = True
+    time_to_not_silent = 5
+    start_time = curr_time
 
     ###пример трекера
     #tracker.update ("asda", 5)
@@ -107,6 +111,10 @@ def main():
 
         if (keyboard_data == ord ("-")):
             silent_mode = not silent_mode
+
+        if (curr_time - start_time >= time_to_not_silent):
+            silent_mode = False
+            time_to_not_silent = 1000000000
 
         output_images = []
         output_names  = []
