@@ -122,24 +122,26 @@ class Joint:
         return self.joint_name
 
     def draw (self, img, x, y, parent_angle, scale = 1):
+
+        if type(x) == 'float' and y != None:
         #print ("joint: ", self.length, self.angle)
-        angle = self.init_angle - self.angle + parent_angle
+            angle = self.init_angle - self.angle + parent_angle
 
-        x1 = x + self.length * math.cos (angle)
-        y1 = y + self.length * math.sin (angle)
+            x1 = x + self.length * math.cos (angle)
+            y1 = y + self.length * math.sin (angle)
 
-        x_  = int (x * scale)
-        y_  = int (y * scale)
-        x1_ = int (float (x1 * scale))
-        y1_ = int (float (y1 * scale))
+            x_  = int (x * scale)
+            y_  = int (y * scale)
+            x1_ = int (float (x1 * scale))
+            y1_ = int (float (y1 * scale))
 
-        cv2.line (img, (int (x_), int (y_)), (int (x1_), int (y1_)), self.col1, 3)
-        cv2.circle (img, (int (x1_), int (y1_)), 5, self.col2, -1)
-        cv2.putText (img, self.joint_name, (int (x1_) + 0, int (y1_) + 0),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 250, 231), 1, cv2.LINE_AA)
+            cv2.line (img, (int (x_), int (y_)), (int (x1_), int (y1_)), self.col1, 3)
+            cv2.circle (img, (int (x1_), int (y1_)), 5, self.col2, -1)
+            cv2.putText (img, self.joint_name, (int (x1_) + 0, int (y1_) + 0),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 250, 231), 1, cv2.LINE_AA)
 
-        for child in self.children:
-            child.draw (img, x1, y1, angle, scale)
+            for child in self.children:
+                child.draw (img, x1, y1, angle, scale)
 
     def set_angle (self, new_angle):
         if (new_angle < self.min_angle):
@@ -258,7 +260,7 @@ for instance the robot model is recursive. Aborting operation.")
 
         set_angle = target_joint.set_angle (new_angle)
 
-        print ("joint: ", joint_name, set_angle)
+        # print ("joint: ", joint_name, set_angle)
 
         if (set_angle == new_angle):
             self.updated = True
@@ -372,7 +374,7 @@ class Real_robot(Robot):
         #self.commands_sent += 1
         action_ = action
 
-        print ("queue", self.queue [self.commands_sent :])
+        # print ("queue", self.queue [self.commands_sent :])
 
         while (True):
             action_ = self.queue [self.commands_sent]

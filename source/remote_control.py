@@ -1,4 +1,6 @@
-import modalities
+from modalities.keyboard_modality import Computer_keyboard
+from modalities.video_modality import Video
+from modalities.realsense_modality import RealSense
 import fsm
 import robots
 from common import *
@@ -37,14 +39,14 @@ paths = {"kompaso" : {"model_path"   : "/home/kompaso/NAO_PROJECT/wenhai/source/
                       "phrases_path" : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt",
                       "vision_path"  : "/Users/elijah/Dropbox/Programming/robotics_course/modules/"}}
 
-user = "elijah"
-#user = "kompaso"
+# user = "elijah"
+user = "kompaso"
 
 sys.path.append (paths [user] ["vision_path"])
 import input_output
 
 def main():
-    AUTONOMOUS = False #without physical robot
+    AUTONOMOUS = True #without physical robot
 
     WIND_X = 800
     WIND_Y = 500
@@ -57,7 +59,7 @@ def main():
 
     tracker = Value_tracker ()
 
-    inputs = {"computer keyboard" : (modalities.Computer_keyboard (paths [user] ["phrases_path"],
+    inputs = {"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
                                     logger_ = tracker), ["physical", "simulated2"]), #}
 
               #"response" : (modalities.Response_to_skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
@@ -69,8 +71,10 @@ def main():
               #"video input" : (modalities.Video(), ["physical", "simulated2"])}
 
               #../data/videos/female_dancer_studio.mp4
-              "video input": (modalities.Video(video_path_ = "", model_path_ = paths [user] ["model_path"],
-              base_height_ = 100, logger_ = tracker), ["physical", "simulated2"])}
+              "video input": (Video(video_path_ = "", model_path_ = paths [user] ["model_path"],
+              base_height_ = 100, logger_ = tracker), ["physical", "simulated2"]) ,
+              "Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
+              base_height_ = 300, logger_ = tracker), ["physical", "simulated2"])}
 
     #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
               #"archive skeleton"  : (modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
@@ -129,8 +133,8 @@ def main():
 
             command = inputs [modality] [0].get_command (skip_reading_data)
 
-            print ("modality: ", modality)
-            print (command)
+            # print ("modality: ", modality)
+            # print (command)
             logfile.write (str (curr_time) + str (command))
 
             action = fsm_processor.handle_command (command)

@@ -86,67 +86,9 @@ class RefinementStage(nn.Module):
         return [heatmaps, pafs]
 
 
-class RefinementStageLight(nn.Module):
-    def __init__(self, in_channels, mid_channels, out_channels):
+class PoseEstimationWithMobileNet_(nn.Module):
+    def __init__(self, num_refinement_stages=1, num_channels=128, num_heatmaps=19, num_pafs=38):
         super().__init__()
-        self.trunk = nn.Sequential(
-            RefinementStageBlock(in_channels, mid_channels),
-            RefinementStageBlock(mid_channels, mid_channels)
-        )
-        self.feature_maps = nn.Sequential(
-            conv(mid_channels, mid_channels, kernel_size=1, padding=0, bn=False),
-            conv(mid_channels, out_channels, kernel_size=1, padding=0, bn=False, relu=False)
-        )
-
-    def forward(self, x):
-        trunk_features = self.trunk(x)
-        feature_maps = self.feature_maps(trunk_features)
-        return [feature_maps]
-
-
-class ResBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, ratio, should_align=False):
-        super().__init__()
-        self.should_align = should_align
-        self.bottleneck = nn.Sequential(
-            conv(in_channels, in_channels // ratio, kernel_size=1, padding=0),
-            conv(in_channels // ratio, in_channels // ratio),
-            conv(in_channels // ratio, out_channels, kernel_size=1, padding=0)
-        )
-        if self.should_align:
-            self.align = conv(in_channels, out_channels, kernel_size=1, padding=0)
-
-    def forward(self, x):
-        res = self.bottleneck(x)
-        if self.should_align:
-            x = self.align(x)
-        return x + res
-
-
-class Pose3D(nn.Module):
-    def __init__(self, in_channels, num_2d_heatmaps, ratio=2, out_channels=57):
-        super().__init__()
-        self.stem = nn.Sequential(
-            ResBlock(in_channels + num_2d_heatmaps, in_channels, ratio, should_align=True),
-            ResBlock(in_channels, in_channels, ratio),
-            ResBlock(in_channels, in_channels, ratio),
-            ResBlock(in_channels, in_channels, ratio),
-            ResBlock(in_channels, in_channels, ratio),
-        )
-
-        self.prediction = RefinementStageLight(in_channels, in_channels, out_channels)
-
-    def forward(self, x, feature_maps_2d):
-        stem = self.stem(torch.cat([x, feature_maps_2d], 1))
-        feature_maps = self.prediction(stem)
-        return feature_maps
-
-
-class PoseEstimationWithMobileNet(nn.Module):
-    def __init__(self, num_refinement_stages=1, num_channels=128, num_heatmaps=19, num_pafs=38,
-                 is_convertible_by_mo=False):
-        super().__init__()
-        self.is_convertible_by_mo = is_convertible_by_mo
         self.model = nn.Sequential(
             conv(     3,  32, stride=2, bias=False),
             conv_dw( 32,  64),
@@ -165,31 +107,17 @@ class PoseEstimationWithMobileNet(nn.Module):
 
         self.initial_stage = InitialStage(num_channels, num_heatmaps, num_pafs)
         self.refinement_stages = nn.ModuleList()
-
         for idx in range(num_refinement_stages):
             self.refinement_stages.append(RefinementStage(num_channels + num_heatmaps + num_pafs, num_channels,
                                                           num_heatmaps, num_pafs))
-        self.Pose3D = Pose3D(128, num_2d_heatmaps=57)
-        if self.is_convertible_by_mo:
-            self.fake_conv_heatmaps = nn.Conv2d(num_heatmaps, num_heatmaps, kernel_size=1, bias=False)
-            self.fake_conv_heatmaps.weight = nn.Parameter(torch.zeros(num_heatmaps, num_heatmaps, 1, 1))
-            self.fake_conv_pafs = nn.Conv2d(num_pafs, num_pafs, kernel_size=1, bias=False)
-            self.fake_conv_pafs.weight = nn.Parameter(torch.zeros(num_pafs, num_pafs, 1, 1))
 
     def forward(self, x):
-        model_features = self.model(x)
-        backbone_features = self.cpm(model_features)
+        backbone_features = self.model(x)
+        backbone_features = self.cpm(backbone_features)
 
         stages_output = self.initial_stage(backbone_features)
         for refinement_stage in self.refinement_stages:
             stages_output.extend(
                 refinement_stage(torch.cat([backbone_features, stages_output[-2], stages_output[-1]], dim=1)))
-        keypoints2d_maps = stages_output[-2]
-        paf_maps = stages_output[-1]
-        if self.is_convertible_by_mo:  # Model Optimizer R3 2019 cuts out these two network outputs, add fake op to fix it
-            keypoints2d_maps = stages_output[-2] + self.fake_conv_heatmaps(stages_output[-2])
-            paf_maps = stages_output[-1] + self.fake_conv_pafs(stages_output[-1])
-        out = self.Pose3D(backbone_features, torch.cat([stages_output[-2], stages_output[-1]], dim=1))
 
-        return out, keypoints2d_maps, paf_maps
-
+        return stages_output

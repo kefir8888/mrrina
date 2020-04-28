@@ -73,6 +73,14 @@ def rus_line_to_eng (line):
 #     det = x1*y2 - y1*x2
 #     angle = math.atan2(det,dot)
 
+def create_vec(dot2, dot1):
+    vec = np.asarray([dot2[0] - dot1[0],dot2[1] - dot1[1],dot2[2] - dot1[2]])
+    denum = math.sqrt(sum(np.power(vec,2)))
+    return vec/denum
+
+def get_mod(vec):
+    return math.sqrt(sum(np.power(vec,2)))
+
 def angle_2_vec_ (x1, y1, x2, y2):
     dot = x1*x2 + y1*y2
     det = math.sqrt(x1**2 + y1**2)*math.sqrt(x2**2 + y2**2)
@@ -98,3 +106,8 @@ def head_rotation (x_pose):
         return -0.84
     else:
         return 0
+def cart3DtoPol(coords):
+    r = math.sqrt(coords[0]**2 + coords[1]**2 + coords[2]**2)
+    thetha = math.arcos(z/r)
+    phi = math.atan2(coords[1],coords[2])
+    return thetha, phi

@@ -2,9 +2,9 @@ import argparse
 import cv2
 import numpy as np
 import torch
-from models.with_mobilenet import PoseEstimationWithMobileNet
+from models.with_mobilenet_ import PoseEstimationWithMobileNet_
 from modules.keypoints import extract_keypoints, group_keypoints
-# from modules.load_state import load_state
+
 from modules.pose import Pose, track_poses
 from val import normalize, pad_width
 
@@ -49,7 +49,7 @@ class VideoReader(object):
         return img
 
 
-def infer_fast(net, img, net_input_height_size, stride, upsample_ratio, cpu,
+def infer_fast(net, img, net_input_height_size, stride, upsample_ratio, cpu=False,
                pad_value=(0, 0, 0), img_mean=(128, 128, 128), img_scale=1/256):
     height, width, _ = img.shape
     scale = net_input_height_size / height
@@ -80,7 +80,6 @@ def get_skel_coords(net, image_provider, height_size=256, cpu=False, track=1, sm
     net = net.eval()
     if not cpu:
         net = net.cuda()
-
     stride = 8
     upsample_ratio = 4
     num_keypoints = Pose.num_kpts
@@ -136,12 +135,14 @@ def get_skel_coords(net, image_provider, height_size=256, cpu=False, track=1, sm
                         cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255))
     # break
 
-    cv2.imshow('Lightweight Human Pose Estimation Python Demo', img)
+    #cv2.imshow('Lightweight Human Pose Estimation Python Demo', img)
 
     if len(current_poses) != 0:
-        return  current_poses[0].return_coords()
+        #print ("not zero", img)
+        return  current_poses[0].return_coords(), img
     else:
-        return []
+        #print ("zero")
+        return [], np.array ((1, 1, 1), np.uint8)
 
     key = cv2.waitKey(delay)
     if key == 27:  # esc
