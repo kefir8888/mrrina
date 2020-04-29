@@ -30,7 +30,7 @@ class Video (GetPoints):
 
     def _process_data(self):
         if sum (self.read_data) != -36 and self.read_data != []:
-            self.skel_3d.read_data = self.poses_3d
+            self.skel_3d.read_data = (self.poses_3d, "video")
             self.skel_3d._process_data()
             # self.processed_data = self.skel_3d.processed_data
 

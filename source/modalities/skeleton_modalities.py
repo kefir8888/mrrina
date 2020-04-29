@@ -213,6 +213,8 @@ class Skeleton_3D(WorkWithPoints):
         return hand_roll, hand_pitch
 
     def _process_data (self, frame = None):
+        name = self.read_data[1]
+        self.read_data = self.read_data[0]
         self.processed_data = self.create_dicts_with_coords_3D()
 
         kps = self.get_mean_cords(self.kps_mean)
@@ -264,7 +266,7 @@ class Skeleton_3D(WorkWithPoints):
 
 
         x = np.dot(N_256, V_6567)/(N_256_mod*V_6567_mod)
-    
+
         if x <= 1:
             thetha_ley = math.acos(np.dot(N_256, V_6567)/(N_256_mod*V_6567_mod))
             phi_ley_1 = math.acos(np.dot(l_elb_wri, N_256)/(l_elb_wri_mod * N_256_mod))
@@ -279,11 +281,11 @@ class Skeleton_3D(WorkWithPoints):
 
 
             thetha_ler = 3.14 - math.acos(np.dot(l_elb_wri, l_elb_sho)/(l_elb_wri_mod*common.get_mod(l_sho_elb)))
-            self.logger.update("THETA yell wrist", round(thetha_ley, 2))
-            self.logger.update("THETA roll wrist", round(thetha_ler, 2))
+            self.logger.update("yell wrist " + name, round(thetha_ley, 2))
+            self.logger.update("roll wrist", round(thetha_ler, 2))
 
-        self.logger.update("THETA", round(thetha_lsp, 2))
-        # self.logger.update("THETA r", round(self.get_mean(self.shoulder_roll), 2))
+        self.logger.update("shoul pitch " + name, round(thetha_lsp, 2))
+        self.logger.update("shoul roll " + name, round(thetha_lsr, 2))
 ######################################################################################################
         # kps = create_dicts_with_coords_3D(self, self.read_data)
         # kpt_names = ['nose', 'neck', 'r_sho', 'r_elb', 'r_wri', 'l_sho',
