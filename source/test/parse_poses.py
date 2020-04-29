@@ -46,7 +46,7 @@ def get_root_relative_poses(inference_results):
         pose_2d[-1] = found_poses[pose_id, -1]
         poses_2d.append(pose_2d)
 
-    keypoint_treshold = 0.1
+    keypoint_treshold = 0.15
     poses_3d = np.ones((len(poses_2d), num_kpt_panoptic * 4), dtype=np.float32) * -1
     for pose_id in range(len(poses_3d)):
         if poses_2d[pose_id][2] > keypoint_treshold:

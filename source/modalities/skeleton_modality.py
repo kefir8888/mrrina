@@ -1,69 +1,20 @@
-from modalities.modality import  Modality
+from modalities.modality import WorkWithPoints
 
 import numpy as np
 import common
-import torch
-from skel_proc import  get_skel_coords
-from modules.load_state import load_state
-from test.with_mobilenet import PoseEstimationWithMobileNet
-from models.with_mobilenet_ import PoseEstimationWithMobileNet_
-import io
 
-#from test.demo import draww
-from argparse import ArgumentParser
-import json
-import os
-from test.input_reader import VideoReader, ImageReader
-from test.draw import Plotter3d, draw_poses
-from test.parse_poses import parse_poses
-from test.inference_engine_pytorch import InferenceEnginePyTorch
-
-import pydub
-from pydub import AudioSegment
-from pydub.playback import play
-import scipy.fftpack
 import cv2
 
-class Skeleton (Modality):
+class Skeleton_2D (WorkWithPoints):
     def __init__ (self, skeleton_path_ = "", logger_ = 0):
-        self.logger = logger_
-        self.read_data        = []
-        self.interpreted_data = []
+        WorkWithPoints.__init__(self)
         self.all_data         = []
-        self.poses_3d         = []
-
         self.dataframe_num = 0
-        self.processed_data = {"righthand" : 0,
-                               "rightarm"  : 0,
-                               "lefthand"  : 0,
-                               "leftarm"   : 0,
-                               "nose_x"    : 0,
-                               "nose_y"    : 0,
-
-                               "rightshoulder_pitch" : 0,
-                               "leftshoulder_pitch"  : 0,
-                               "leftarm_yaw"         : 0,
-                               "rightarm_yaw"        : 0}
+        self.read_data_from_file_ = False
 
         if (skeleton_path_ != ""):
-            self.all_data = self.read_data_from_file (skeleton_path_)
+            self.all_data = self.read_data_from_file(skeleton_path_)
 
-    def read_data_from_file (self, path):
-        with open(path, 'r') as file:
-            data = file.read()
-            cleared_data = ''
-            for let in data:
-                if let.isdigit() or let == '-':
-                    cleared_data+=let
-                else:
-                    cleared_data+=','
-
-            cleared_data = cleared_data.split(',')
-            data = [int(i) for i in cleared_data if i]
-            data = np.asarray(data)
-            data = data.reshape(-1,36)
-
-        return data
 
     def name (self):
         return "skeleton"
@@ -108,24 +59,9 @@ class Skeleton (Modality):
         return hand_roll, hand_pitch
 
     def _process_data (self, frame = None):
-        kpt_names = ['nose', 'neck', 'r_sho', 'r_elb', 'r_wri', 'l_sho',
-                     'l_elb', 'l_wri', 'r_hip', 'r_knee', 'r_ank', 'l_hip',
-                     'l_knee', 'l_ank', 'r_eye', 'l_eye', 'r_ear', 'l_ear']
-
-        necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip", "r_sho", "r_elb", "r_wri", "r_hip", "neck", "nose", 'r_eye', 'l_eye', "r_ear", "l_ear"]
         kps = {}
-
-            # [[0, 1],  # neck - nose
-            #  [1, 16], [16, 18],  # nose - l_eye - l_ear
-            #  [1, 15], [15, 17],  # nose - r_eye - r_ear
-            #  [0, 3], [3, 4], [4, 5],     # neck - l_shoulder - l_elbow - l_wrist
-            #  [0, 9], [9, 10], [10, 11],  # neck - r_shoulder - r_elbow - r_wrist
-            #  [0, 6], [6, 7], [7, 8],        # neck - l_hip - l_knee - l_ankle
-            #  [0, 12], [12, 13], [13, 14]])  # neck - r_hip - r_knee - r_ankle
-
-
-        for kp in necessary_keypoints_names:
-            ind = kpt_names.index (kp)
+        for kp in self.necessary_keypoints_names:
+            ind = self.kpt_names.index (kp)
             kps.update ({kp : (self.read_data [ind * 2], self.read_data [ind * 2 + 1])})
         # print("Head rotation", (round((kps["l_eye"][0] - kps["nose"][0])/(kps["l_eye"][0] - kps["r_eye"][0]),3)))
         # head_pose = (round((kps["l_eye"][0] - kps["nose"][0])/(kps["l_eye"][0] - kps["r_eye"][0]),3))

@@ -55,7 +55,7 @@ def main():
     canvas = np.ones ((WIND_Y, WIND_X, 3), np.uint8) * 230
 
     curr_time = time ()
-    logfile = open ("log/" + str (curr_time) + ".txt", "w+")
+    logfile = open ("log/" + str (curr_time) + ".txt", Так"w+")
 
     tracker = Value_tracker ()
 
@@ -72,7 +72,7 @@ def main():
 
               #../data/videos/female_dancer_studio.mp4
               "video input": (Video(video_path_ = "", model_path_ = paths [user] ["model_path"],
-              base_height_ = 100, logger_ = tracker), ["physical", "simulated2"]) ,
+              base_height_ = 300, logger_ = tracker), ["physical", "simulated2"]) ,
               "Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
               base_height_ = 300, logger_ = tracker), ["physical", "simulated2"])}
 

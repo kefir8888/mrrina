@@ -29,9 +29,6 @@ class Music (Modality):
     def __init__ (self, music_path_ = "", logger_ = 0):
         self.logger = logger_
 
-        self.read_data        = []
-        self.interpreted_data = []
-
         self.tick = 0
 
         self.commands = {"noaction": [("noaction", [""])],

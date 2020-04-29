@@ -1,1 +1,0 @@
-1585659611.2393217[('noaction', [''])]1585659611.2393217[('/set_joint_angle', ['righthand', '-2.8219597219631476']), ('/set_joint_angle', ['rightarm', '0.0']), ('/set_joint_angle', ['lefthand', '2.934567236912647']), ('/set_joint_angle', ['leftarm', '0.0']), ('/set_joint_angle', ['head', 'None'])]

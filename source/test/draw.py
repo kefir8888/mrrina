@@ -87,113 +87,54 @@ body_edges = np.array(
      [0, 6], [6, 7], [7, 8],        # neck - l_hip - l_knee - l_ankle
      [0, 12], [12, 13], [13, 14]])  # neck - r_hip - r_knee - r_ankle
 
-
-        # kpt_names_old = ['nose', 'neck',
-        #              'r_sho', 'r_elb', 'r_wri', 'l_sho', 'l_elb', 'l_wri',
-        #              'r_hip', 'r_knee', 'r_ank', 'l_hip', 'l_knee', 'l_ank',
-        #              'r_eye', 'l_eye',
-        #              'r_ear', 'l_ear']
-
-    # kpt_names = ['neck', 'nose',
-    #              'l_sho', 'l_elb',
-     # 'l_wri', 'l_hip', 'l_knee', 'l_ank',
-                  # 'r_sho', 'r_elb', 'r_wri', 'r_hip', 'r_knee', 'r_ank',
-    #              'r_eye', 'l_eye',
-    #              'r_ear', 'l_ear']
-
-
 def draw_poses(img, poses_2d):
     res = []
-    for pose_id in range(len(poses_2d)):
-        pose = np.array(poses_2d[pose_id][0:-1]).reshape((-1, 3)).transpose()
-        was_found = pose[2, :] > 0
-        for edge in body_edges:
-            if was_found[edge[0]] and was_found[edge[1]]:
-                cv2.line(img, tuple(pose[0:2, edge[0]].astype(int)), tuple(pose[0:2, edge[1]].astype(int)),
-                         (255, 255, 0), 4, cv2.LINE_AA)
-        for kpt_id in range(pose.shape[1]):
-
-            res.append(pose[0:2, kpt_id].astype(int))
-            if pose[2, kpt_id] != -1:
-
-                # print("KPT;", kpt_id)
-                # print(pose[0:2, kpt_id])
-                cv2.circle(img, tuple(pose[0:2, kpt_id].astype(int)), 3, (0, 255, 255), -1, cv2.LINE_AA)
+    pose = np.array(poses_2d[0][0:-1]).reshape((-1, 3)).transpose()
+    was_found = pose[2, :] > 0
+    for edge in body_edges:
+        if was_found[edge[0]] and was_found[edge[1]]:
+            cv2.line(img, tuple(pose[0:2, edge[0]].astype(int)), tuple(pose[0:2, edge[1]].astype(int)),
+                     (255, 255, 0), 4, cv2.LINE_AA)
+    for kpt_id in range(pose.shape[1]):
+        res.append(pose[0:2, kpt_id].astype(int))
+        if pose[2, kpt_id] != -1:
+            cv2.circle(img, tuple(pose[0:2, kpt_id].astype(int)), 3, (0, 255, 255), -1, cv2.LINE_AA)
     y = np.asarray(res).flatten()
+#     print(res)
+#     keys_ = ['neck', 'nose',
+#                  'l_sho', 'l_elb',
+#                  'l_wri', 'l_hip',
+#                  'l_knee', 'l_ank',
+#                  'r_sho', 'r_elb',
+#                  'r_wri', 'r_hip',
+#                  'r_knee', 'r_ank',
+#                  'r_eye', 'l_eye',
+#                  'r_ear', 'l_ear']
+# ####надо
+#     keys = ['nose', 'neck',
+#                  'r_sho', 'r_elb', 'r_wri',
+#                  'l_sho', 'l_elb', 'l_wri',
+#                  'r_hip', 'r_knee', 'r_ank',
+#                   'l_hip', 'l_knee', 'l_ank',
+#                  'r_eye', 'l_eye',
+#                  'r_ear', 'l_ear']
+#
+#
+#     x = np.zeros(y.shape)
+#     x[0:2] = y[2:4] ###точно, возможны колебания между собой
+#     x[2:4] = y[0:2]
+#     x[4:6] = y[18:20]#+
+#     x[6:8] = y[20:22]
+#     x[8:10] = y[22:24]
+#     x[10:12] = y[6:8] #+
+#     x[12:14] = y[8:10]
+#     x[14:16] = y[10:12]
+#     x[16:18] = y[12:14]
+#     x[22:24] = y[24:26]
+#     x[28:30] = y[28:30] #+
+#     x[30:32] = y[30:32] #+
+#     x[32:34] = y[32:34] #+
+#     x[34:36] = y[34:36] #+
 
 
-###есть
-    keys_ = ['neck', 'nose',
-                 'l_sho', 'l_elb',
-                 'l_wri', 'l_hip',
-                 'l_knee', 'l_ank',
-                 'r_sho', 'r_elb',
-                 'r_wri', 'r_hip',
-                 'r_knee', 'r_ank',
-                 'r_eye', 'l_eye',
-                 'r_ear', 'l_ear']
-####надо
-    keys = ['nose', 'neck',
-                 'r_sho', 'r_elb', 'r_wri',
-                 'l_sho', 'l_elb', 'l_wri',
-                 'r_hip', 'r_knee', 'r_ank',
-                  'l_hip', 'l_knee', 'l_ank',
-                 'r_eye', 'l_eye',
-                 'r_ear', 'l_ear']
-
-
-
-    # print(dictionary)
-    x = np.zeros(y.shape)
-    x[0:2] = y[2:4] ###точно, возможны колебания между собой
-    x[2:4] = y[0:2]
-    #
-    # x[4:6] = y[18:20]#+
-    # x[6:8] = y[20:22]
-    # x[8:10] = y[22:24]
-    # #
-    # #
-    # x[10:12] = y[6:8] #+
-    # x[12:14] = y[8:10]
-    # x[14:16] = y[10:12]
-
-
-    x[4:6] = y[18:20]#+
-    x[6:8] = y[20:22]
-    x[8:10] = y[22:24]
-    #
-    #
-    x[10:12] = y[6:8] #+
-    x[12:14] = y[8:10]
-    x[14:16] = y[10:12]
-
-
-    #
-    x[16:18] = y[12:14]
-    # # x[18:20] = y[24:26]
-    # # x[20:22] = y[26:28]
-    # #
-    x[22:24] = y[24:26]
-    # x[24:26] = y[12:14]
-    # x[26:28] = y[14:16]
-    #
-    x[28:30] = y[28:30] #+
-    x[30:32] = y[30:32] #+
-    x[32:34] = y[32:34] #+
-    x[34:36] = y[34:36] #+
-    #
-    # values = x.reshape((-1,2))
-    # dictionary = dict(zip(keys, values))
-    #
-    # print("r_elb", dictionary['r_elb'])
-    # print("l_elb", dictionary['l_elb'])
-    #
-    # print("r_sho", dictionary['r_sho'])
-    # print("l_sho", dictionary['l_sho'])
-
-    # print("r_wri", dictionary['r_wri'])
-    # print("l_wri", dictionary['l_wri'])
-    # print("Старое",y)
-    # print("Новое",x)
-
-    return x
+    return y
