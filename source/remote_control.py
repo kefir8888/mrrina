@@ -55,7 +55,7 @@ def main():
     canvas = np.ones ((WIND_Y, WIND_X, 3), np.uint8) * 230
 
     curr_time = time ()
-    logfile = open ("log/" + str (curr_time) + ".txt", Так"w+")
+    logfile = open ("log/" + str (curr_time) + ".txt", "w+")
 
     tracker = Value_tracker ()
 
@@ -145,8 +145,8 @@ def main():
                     if (key in robots_list.keys ()):
                         robots_list [key].add_action (action)
 
-            canvas = np.ones((WIND_Y, WIND_X, 3), np.uint8) * 200
-            output_images += tracker.draw (canvas)
+            # canvas = np.ones((WIND_Y, WIND_X, 3), np.uint8) * 200
+            # output_images = tracker.draw (canvas)
 
             modality_frames = inputs [modality] [0].draw (canvas)
             #print (modality, "mod")
@@ -154,7 +154,8 @@ def main():
                 # cv2.imshow (modality, modality_frame)
                 output_images += modality_frames
                 output_names.append  (modality)
-
+        canvas = np.ones((WIND_Y, WIND_X, 3), np.uint8) * 200
+        output_images += tracker.draw (canvas)
         if (silent_mode == False):
             for key in robots_list.keys ():
                 robots_list [key].on_idle ()
