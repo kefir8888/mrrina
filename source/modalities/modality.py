@@ -17,16 +17,18 @@ class Modality:
         self.read_data        = []
         self.interpreted_data = []
 
-        self.processed_data = {"righthand" : 0,
-                               "rightshoulder_pitch"   : 0,
-                               "rightarm"  : 0,
-                               "lefthand"  : 0,
-                               "leftarm"   : 0,
-                               "nose_x"    : 0,
-                               "nose_x"    : 0,
-                               "leftshoulder_pitch"  : 0,
-                               "leftarm_yaw"         : 0,
-                               "rightarm_yaw"        : 0}
+        self.processed_data = {"r_sho_roll" : 0,
+                               "r_sho_pitch": 0,
+                               "r_elb_roll" : 0,
+                               "r_elb_yaw"  : 0,
+
+                               "l_sho_roll" : 0,
+                               "l_sho_pitch": 0,
+                               "l_elb_roll" : 0,
+                               "l_elb_yaw"  : 0,
+
+                               "head_Yaw"    : 0,
+                               "head_Pitch"    : 0}
 
     def name (self):
         return "not specified"
@@ -37,7 +39,7 @@ class Modality:
 class WorkWithPoints(Modality):
     def __init__ (self, logger_=0):
         Modality.__init__(self, logger_)
-        self.necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip", "r_sho", "r_elb", "r_wri", "r_hip","neck",'mid_hip',  "nose", 'r_eye', 'l_eye', "r_ear", "l_ear"]
+        self.necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip", "r_sho", "r_elb", "r_wri", "r_hip","neck",'mid_hip',  "nose", 'r_eye', 'l_eye', "r_ear"]
         self.kps_mean = {kp : {"x": deque(maxlen = 25),"y": deque(maxlen = 25),"z": deque(maxlen = 25)} for kp in self.necessary_keypoints_names}
 
         self.kpt_names   = ['neck', 'nose', 'mid_hip',
@@ -60,8 +62,8 @@ class WorkWithPoints(Modality):
             kps.update ({kp : [int(self.get_mean(kps_raw[kp]["x"])), int(self.get_mean(kps_raw[kp]["y"])),  int(self.get_mean(kps_raw[kp]["z"]))]})
         return kps
 
-    def name (self):
-        return "not specified"
+    # def name (self):
+    #     return "not specified"
 
     def read_data_from_file (self, path):
         with open(path, 'r') as file:
@@ -79,9 +81,9 @@ class WorkWithPoints(Modality):
             data = data.reshape(-1,36)
 
         return data
-
-    def draw (self, img):
-        return [np.array ((1, 1, 1), np.uint8)]
+    #
+    # def draw (self, img):
+    #     return [np.array ((1, 1, 1), np.uint8)]
 
 
 class GetPoints(Modality):
@@ -141,9 +143,9 @@ class GetPoints(Modality):
         return x, poses_3d[0]
 
 
-
-    def name (self):
-        return "not specified"
-
-    def draw (self, img):
-        return [np.array ((1, 1, 1), np.uint8)]
+    #
+    # def name (self):
+    #     return "not specified"
+    #
+    # def draw (self, img):
+    #     return [np.array ((1, 1, 1), np.uint8)]

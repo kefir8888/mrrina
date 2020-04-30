@@ -337,18 +337,19 @@ class Real_robot(Robot):
 
         self.simulated = Simulated_robot (logger_ = self.logger)
 
-        self.synchronized_joints = {"righthand" : "r_shoulderroll",
-                                    "rightarm"  : "r_elbowroll",
-                                    "lefthand"  : "l_shoulderroll",
-                                    "leftarm"   : "l_elbowroll",
+        self.synchronized_joints = {"head_Yaw"    : "head_Yaw",
+                                    "head_Pitch"  : "head_Pitch",
 
-                                    "rightshoulder_pitch"   : "r_shoulderpitch",
-                                    "rightarm_yaw"  : "r_elbowyaw",
-                                    "leftshoulder_pitch"  : "l_shoulderpitch",
-                                    "leftarm_yaw" : "l_elbowyaw", # ,
+                                    "l_sho_roll"  : "l_shoulderroll",
+                                    "l_sho_pitch" : "l_shoulderpitch",
+                                    "l_elb_roll"  : "l_elbowroll",
+                                    "l_elb_yaw"   : "l_elbowyaw" ,
 
-                                    "nose_x" : "head_Yaw",
-                                    "nose_y" : "head_Pitch"}
+                                    "r_sho_roll"  : "r_shoulderroll",
+                                    "r_sho_pitch" : "r_shoulderpitch",
+                                    "r_elb_roll"  : "r_elbowroll",
+                                    "r_elb_yaw"   : "r_elbowyaw"
+                                    }
 
         self.init_positions = {"r_shoulderpitch" : 1.1,
                                "r_shoulderroll"  : 0,
