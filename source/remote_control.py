@@ -47,7 +47,7 @@ sys.path.append (paths [user] ["vision_path"])
 import input_output
 
 def main():
-    AUTONOMOUS = False #without physical robot
+    AUTONOMOUS = True #without physical robot
 
     WIND_X = 800
     WIND_Y = 500
@@ -61,7 +61,7 @@ def main():
     tracker = Value_tracker ()
 
     inputs = {"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
-                                    logger_ = tracker), ["physical", "simulated2"]), #}
+                                    logger_ = tracker), ["physical", "simulated2"])}
 
               #"response" : (modalities.Response_to_skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
               #              ["simulated1", "physical"]),
@@ -74,8 +74,8 @@ def main():
               #../data/videos/female_dancer_studio.mp4
               # "video input": (Video(video_path_ = "", model_path_ = paths [user] ["model_path"],
               # base_height_ = 300, logger_ = tracker), ["physical", "simulated2"]) }
-              "Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
-              base_height_ = 300, logger_ = tracker), ["physical", "simulated2"])}
+              # "Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
+              # base_height_ = 300, logger_ = tracker), ["physical", "simulated2"])}
 
     #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
               #"archive skeleton"  : (modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
@@ -160,15 +160,15 @@ def main():
         if (silent_mode == False):
             for key in robots_list.keys ():
                 robots_list [key].on_idle ()
-
-        list (robots_list.items ()) [0] [1].plot_state (canvas, 150, 40, 2.5)
+        canvas_ = np.ones((WIND_Y, WIND_X, 3), np.uint8) * 200
+        list (robots_list.items ()) [0] [1].plot_state (canvas_, 150, 40, 2.5)
 
         if (silent_mode == True):
             canvas = cv2.putText (canvas, "silent mode", (30, 100), cv2.FONT_HERSHEY_SIMPLEX,
                    1, (0, 255, 0), 2, cv2.LINE_AA)
 
         # cv2.imshow ("remote_controller", canvas)
-        output_images.append (canvas)
+        output_images.append (canvas_)
 
         output_names.append ("remote controller")
 
