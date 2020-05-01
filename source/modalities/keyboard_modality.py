@@ -154,29 +154,63 @@ class Computer_keyboard (Modality):
 
         self.direct_control =  {"z"        : [("/stand",   ["heh"])],
                                 "x"        : [("/rest",    ["kek"])],
-                                "w"        : [("/increment_joint_angle", ["lefthand", "0.21"])],
-                                "e"        : [("/increment_joint_angle", ["lefthand", "-0.21"])],
-                                "r"        : [("/increment_joint_angle", ["leftarm", "0.21"])],
-                                "t"        : [("/increment_joint_angle", ["leftarm", "-0.21"])],
-                                "y"        : [("/increment_joint_angle", ["leftshoulder_pitch", "0.21"])],
-                                "u"        : [("/increment_joint_angle", ["leftshoulder_pitch", "-0.21"])],
-                                "i"        : [("/increment_joint_angle", ["leftarm_yaw", "0.21"])],
-                                "o"        : [("/increment_joint_angle", ["leftarm_yaw", "-0.21"])],
+                                "w"        : [("/increment_joint_angle", ["l_sho_roll", "0.21"])],
+                                "e"        : [("/increment_joint_angle", ["l_sho_roll", "-0.21"])],
+                                "r"        : [("/increment_joint_angle", ["l_elb_roll", "0.21"])],
+                                "t"        : [("/increment_joint_angle", ["l_elb_roll", "-0.21"])],
+                                "y"        : [("/increment_joint_angle", ["l_sho_pitch", "0.21"])],
+                                "u"        : [("/increment_joint_angle", ["l_sho_pitch", "-0.21"])],
+                                "i"        : [("/increment_joint_angle", ["l_elb_yaw", "0.21"])],
+                                "o"        : [("/increment_joint_angle", ["l_elb_yaw", "-0.21"])],
 
-                                "s"        : [("/increment_joint_angle", ["righthand", "0.21"])],
-                                "d"        : [("/increment_joint_angle", ["righthand", "-0.21"])],
-                                "f"        : [("/increment_joint_angle", ["rightarm", "0.21"])],
-                                "g"        : [("/increment_joint_angle", ["rightarm", "-0.21"])],
-                                "h"        : [("/increment_joint_angle", ["rightshoulder_pitch", "0.21"])],
-                                "j"        : [("/increment_joint_angle", ["rightshoulder_pitch", "-0.21"])],
-                                "k"        : [("/increment_joint_angle", ["rightarm_yaw", "0.21"])],
-                                "l"        : [("/increment_joint_angle", ["rightarm_yaw", "-0.21"])],
+                                "s"        : [("/increment_joint_angle", ["r_sho_roll", "0.21"])],
+                                "d"        : [("/increment_joint_angle", ["r_sho_roll", "-0.21"])],
+                                "f"        : [("/increment_joint_angle", ["r_elb_roll", "0.21"])],
+                                "g"        : [("/increment_joint_angle", ["r_elb_roll", "-0.21"])],
+                                "h"        : [("/increment_joint_angle", ["r_sho_pitch", "0.21"])],
+                                "j"        : [("/increment_joint_angle", ["r_sho_pitch", "-0.21"])],
+                                "k"        : [("/increment_joint_angle", ["r_sho_yaw", "0.21"])],
+                                "l"        : [("/increment_joint_angle", ["r_sho_yaw", "-0.21"])],
 
 
-                                "c"        : [("/increment_joint_angle", ["nose_x", "0.1"])],
-                                "v"        : [("/increment_joint_angle", ["nose_x", "-0.1"])],
-                                "b"        : [("/increment_joint_angle", ["nose_y", "0.1"])],
-                                "n"        : [("/increment_joint_angle", ["nose_y", "-0.1"])],
+                                "c"        : [("/increment_joint_angle", ["head_Yaw", "0.1"])],
+                                "v"        : [("/increment_joint_angle", ["head_Yaw", "-0.1"])],
+                                "b"        : [("/increment_joint_angle", ["head_Pitch", "0.1"])],
+                                "n"        : [("/increment_joint_angle", ["head_Pitch", "-0.1"])],
+
+
+                                "n"        : [("next",     [""])],
+                                "noaction" : [("noaction", [""])]}
+
+        self.direct_control_1 =  {"z"        : [("/stand",   ["heh"])],
+                                "x"        : [("/rest",    ["kek"])],
+                                "w"        : [("/increment_joint_angle", ["l_hip_roll", "0.1"])],
+                                "e"        : [("/increment_joint_angle", ["l_hip_roll", "-0.1"])],
+                                "r"        : [("/increment_joint_angle", ["l_hip_pitch", "0.1"])],
+                                "t"        : [("/increment_joint_angle", ["l_hip_pitch", "-0.1"])],
+                                "y"        : [("/increment_joint_angle", ["l_knee_pitch", "0.1"])],
+                                "u"        : [("/increment_joint_angle", ["l_knee_pitch", "-0.1"])],
+                                "i"        : [("/increment_joint_angle", ["l_ank_pitch", "0.1"])],
+                                "o"        : [("/increment_joint_angle", ["l_ank_pitch", "-0.1"])],
+                                "p"        : [("/increment_joint_angle", ["l_ank_roll", "0.1"])],
+                                "["        : [("/increment_joint_angle", ["l_ank_roll", "-0.1"])],
+
+
+                                "s"        : [("/increment_joint_angle", ["r_hip_roll", "0.05"])],
+                                "d"        : [("/increment_joint_angle", ["r_hip_roll", "-0.05"])],
+                                "f"        : [("/increment_joint_angle", ["r_hip_pitch", "0.05"])],
+                                "g"        : [("/increment_joint_angle", ["r_hip_pitch", "-0.05"])],
+                                "h"        : [("/increment_joint_angle", ["r_knee_pitch", "0.05"])],
+                                "j"        : [("/increment_joint_angle", ["r_knee_pitch", "-0.05"])],
+                                "k"        : [("/increment_joint_angle", ["r_ank_pitch", "0.05"])],
+                                "l"        : [("/increment_joint_angle", ["r_ank_pitch", "-0.05"])],
+                                ":"        : [("/increment_joint_angle", ["r_ank_roll", "0.05"])],
+                                "]"        : [("/increment_joint_angle", ["r_ank_roll", "-0.05"])],
+
+
+                                "c"        : [("/increment_joint_angle", ["hehe_pelvis", "0.05"])],
+                                "v"        : [("/increment_joint_angle", ["hehe_pelvis", "-0.05"])],
+
 
 
                                 "n"        : [("next",     [""])],
@@ -186,6 +220,7 @@ class Computer_keyboard (Modality):
         self.key_to_command = []
 
         self.key_to_command.append(self.direct_control)
+        self.key_to_command.append(self.direct_control_1)
         self.key_to_command.append(self.exceptional)
         self.key_to_command.append (self.repeating)
         self.key_to_command.append (self.repeating2)

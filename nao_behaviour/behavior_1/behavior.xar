@@ -92,20 +92,80 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
         head_Pitch = (parsed_q['head_Pitch']) [0]
     except:
         pass
+    try:
+        pelvis = (parsed_q['pelvis']) [0]
+    except:
+        pass
+    try:
+        l_kneepitch = (parsed_q['l_kneepitch']) [0]
+    except:
+        pass
+    try:
+        r_kneepitch = (parsed_q['r_kneepitch']) [0]
+    except:
+        pass
+
+    try:
+        l_hiproll = (parsed_q['l_hiproll']) [0]
+    except:
+        pass
+    try:
+        r_hiproll = (parsed_q['r_hiproll']) [0]
+    except:
+        pass
+
+    try:
+        l_hippitch = (parsed_q['l_hippitch']) [0]
+    except:
+        pass
+    try:
+        r_hippitch = (parsed_q['r_hippitch']) [0]
+    except:
+        pass
+    try:
+        l_ankpitch = (parsed_q['l_ankpitch']) [0]
+    except:
+        pass
+    try:
+        r_ankpitch = (parsed_q['r_ankpitch']) [0]
+    except:
+        pass
+    try:
+        l_ankroll = (parsed_q['l_ankroll']) [0]
+    except:
+        pass
+    try:
+        r_ankroll = (parsed_q['r_ankroll']) [0]
+    except:
+        pass
+
 
     list1 = []
 
     try:
-        list1.append(r_shoulderpitch)
-        list1.append(r_shoulderroll)
-        list1.append(r_elbowroll)
-        list1.append(r_elbowyaw)
-        list1.append(l_shoulderpitch)
-        list1.append(l_shoulderroll)
-        list1.append(l_elbowroll)
-        list1.append(l_elbowyaw)
         list1.append(head_Yaw)
         list1.append(head_Pitch)
+        list1.append(l_shoulderroll)
+        list1.append(l_shoulderpitch)
+        list1.append(l_elbowroll)
+        list1.append(l_elbowyaw)
+        list1.append(r_shoulderroll)
+        list1.append(r_shoulderpitch)
+        list1.append(r_elbowroll)
+        list1.append(r_elbowyaw)
+        list1.append(pelvis)
+        list1.append(l_kneepitch)
+        list1.append(r_kneepitch)
+        list1.append(l_hiproll)
+        list1.append(r_hiproll)
+        list1.append(l_hippitch)
+        list1.append(r_hippitch)
+        list1.append(l_ankpitch)
+        list1.append(r_ankpitch)
+
+
+
+
         current_object.logger.info ("angles list extracted")
 
     except:
@@ -28595,7 +28655,8 @@ class MyClass(GeneratedClass):
               <bitmap>media/images/box/box-python-script.png</bitmap>
               <script language="4">
                 <content>
-                  <![CDATA[class MyClass(GeneratedClass):
+                  <![CDATA[
+class MyClass(GeneratedClass):
     def __init__(self):
         GeneratedClass.__init__(self)
         self.motionProxy = ALProxy("ALMotion")
@@ -28611,8 +28672,8 @@ class MyClass(GeneratedClass):
     def onInput_onStart(self, angleList):
         #self.onStopped() #activate the output of the box
 
-        names = ["RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw", "LShoulderPitch", "LShoulderRoll", "LElbowRoll", "LElbowYaw", "HeadYaw","HeadPitch"]
-        timeLists = [[0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4],[0.4]]
+        names = ["HeadYaw","HeadPitch", "LShoulderRoll", "LShoulderPitch", "LElbowRoll", "LElbowYaw", "RShoulderRoll","RShoulderPitch", "RElbowRoll", "RElbowYaw", "LHipYawPitch", "LKneePitch", "RKneePitch", "LHipRoll", "RHipRoll", "LHipPitch", "RHipPitch", "LAnklePitch", "RAnklePitch","LAnkleRoll", "RAnkleRoll"]
+        timeLists = [[0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4]]
         isAbsolute = True
         angleLists = []
 
