@@ -162,6 +162,8 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
         list1.append(r_hippitch)
         list1.append(l_ankpitch)
         list1.append(r_ankpitch)
+        list1.append(l_ankroll)
+        list1.append(r_ankroll)
 
 
 
@@ -28673,7 +28675,9 @@ class MyClass(GeneratedClass):
         #self.onStopped() #activate the output of the box
 
         names = ["HeadYaw","HeadPitch", "LShoulderRoll", "LShoulderPitch", "LElbowRoll", "LElbowYaw", "RShoulderRoll","RShoulderPitch", "RElbowRoll", "RElbowYaw", "LHipYawPitch", "LKneePitch", "RKneePitch", "LHipRoll", "RHipRoll", "LHipPitch", "RHipPitch", "LAnklePitch", "RAnklePitch","LAnkleRoll", "RAnkleRoll"]
-        timeLists = [[0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4]]
+        timeList = [0.4]
+        timeLists = [timeList] * 21
+        #timeLists = [[0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4], [0.4],[0.4]]
         isAbsolute = True
         angleLists = []
 
