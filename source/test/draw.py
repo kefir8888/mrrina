@@ -15,7 +15,7 @@ class Plotter3d:
     SKELETON_EDGES = np.array([[11, 10], [10, 9], [9, 0], [0, 3], [3, 4], [4, 5], [0, 6], [6, 7], [7, 8], [0, 12],
                                [12, 13], [13, 14], [0, 1], [1, 15], [15, 16], [1, 17], [17, 18]])
 
-    def __init__(self, canvas_size, origin=(0.5, 0.5), scale=1):
+    def __init__(self, canvas_size, origin=(0.5, 0.5), scale=0.1):
         self.origin = np.array([origin[1] * canvas_size[1], origin[0] * canvas_size[0]], dtype=np.float32)  # x, y
         self.scale = np.float32(scale)
         self.theta = 0
@@ -89,6 +89,7 @@ body_edges = np.array(
 
 def draw_poses(img, poses_2d):
     res = []
+    # pose = np.array(poses_2d[0][0:-1]).reshape((-1, 3)).transpose()
     pose = np.array(poses_2d[0][0:-1]).reshape((-1, 3)).transpose()
     was_found = pose[2, :] > 0
     for edge in body_edges:

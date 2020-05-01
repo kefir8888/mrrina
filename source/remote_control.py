@@ -25,8 +25,9 @@ class Value_tracker:
 
         i = 0
         for k, v in self.tracked.items():
-            result = cv2.putText (result, k + ": " + str (v) [:5], (30, 60 * (i + 1)), cv2.FONT_HERSHEY_SIMPLEX,
-                                 2, (100, 25, 130), 2, cv2.LINE_AA)
+            # print("AAAAAAAAAAAAA", v)
+            result = cv2.putText (result, k + ": " + str (v), (30, 60 * (i + 1)), cv2.FONT_HERSHEY_SIMPLEX,
+                                 2, (100, 25, 130), 3, cv2.LINE_AA)
             i += 1
 
         return [result]
@@ -46,7 +47,7 @@ sys.path.append (paths [user] ["vision_path"])
 import input_output
 
 def main():
-    AUTONOMOUS = True #without physical robot
+    AUTONOMOUS = False #without physical robot
 
     WIND_X = 800
     WIND_Y = 500
@@ -71,8 +72,8 @@ def main():
               #"video input" : (modalities.Video(), ["physical", "simulated2"])}
 
               #../data/videos/female_dancer_studio.mp4
-              "video input": (Video(video_path_ = "", model_path_ = paths [user] ["model_path"],
-              base_height_ = 300, logger_ = tracker), ["physical", "simulated2"]) ,
+              # "video input": (Video(video_path_ = "", model_path_ = paths [user] ["model_path"],
+              # base_height_ = 300, logger_ = tracker), ["physical", "simulated2"]) }
               "Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
               base_height_ = 300, logger_ = tracker), ["physical", "simulated2"])}
 
@@ -87,7 +88,7 @@ def main():
     robots_list.update ({"simulated2" : robots.Simulated_robot (logger_ = tracker)})
 
     if (AUTONOMOUS == False):
-        ip = "192.168.43.152"
+        ip = "192.168.1.66"
         #ip = "10.6.255.230"
         # ip = "10.0.0.101"
 
@@ -97,7 +98,7 @@ def main():
     fsm_processor = fsm.FSM_processor ()
 
     silent_mode = True
-    time_to_not_silent = 5
+    time_to_not_silent = 10
     start_time = curr_time
 
     ###пример трекера
@@ -133,8 +134,8 @@ def main():
 
             command = inputs [modality] [0].get_command (skip_reading_data)
 
-            # print ("modality: ", modality)
-            # print (command)
+            print ("modality: ", modality)
+            print (command)
             logfile.write (str (curr_time) + str (command))
 
             action = fsm_processor.handle_command (command)

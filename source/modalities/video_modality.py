@@ -1,6 +1,8 @@
 from modalities.skeleton_modalities import  Skeleton_3D
 from modalities.modality import GetPoints
 
+from test.draw import Plotter3d, draw_poses
+
 import numpy as np
 import common
 
@@ -11,10 +13,13 @@ class Video (GetPoints):
         GetPoints.__init__(self, logger_, model_path_, mode_, base_height_, focal_length)
         self.skel_3d = Skeleton_3D(logger_ = self.logger)
         self.poses_3d         = []
+        self.canvas_3d = np.zeros((720, 1280, 3), dtype=np.uint8)
+        self.plotter = Plotter3d(self.canvas_3d.shape[:2])
+        self.canvas_3d_window_name = 'Video Skeleton 3D'
 
         if (video_path_ == ""):
             # self.all_data = cv2.VideoCapture("/home/kompaso/Desktop/hand_high.mp4")
-            self.all_data = cv2.VideoCapture(4)#self.available_cameras[-1]) #/home/kompaso/Desktop/hand_high.mp4
+            self.all_data = cv2.VideoCapture(1)#self.available_cameras[-1]) #/home/kompaso/Desktop/hand_high.mp4
 
         self.read = False
 
@@ -25,13 +30,18 @@ class Video (GetPoints):
         if (self.read == False):
             _, img = self.all_data.read()
             self.img = img
-
-        self.read_data, self.poses_3d = self._infer_net (self.img) #draww(self.img)
+        # edges = []
+        self.read_data, self.poses_3d, edges = self._infer_net (self.img) #draww(self.img)
+        self.plotter.plot(self.canvas_3d, self.poses_3d, edges)
+        # print("VIDEO", self.poses_3d)
+        # cv2.imshow(canvas_3d_window_name, canvas_3d)
 
     def _process_data(self):
         if sum (self.read_data) != -36 and self.read_data != []:
             self.skel_3d.read_data = (self.poses_3d, "video")
             self.skel_3d._process_data()
+            self.processed_data = self.skel_3d.processed_data
+            # print("Video", self.processed_data)
             # self.processed_data = self.skel_3d.processed_data
 
 
@@ -45,7 +55,7 @@ class Video (GetPoints):
             for key in self.processed_data.keys():
                 commands.append(("/set_joint_angle", [key, str(self.processed_data[key])]))
 
-            # print ("app joints", commands)
+            print ("app joints", commands)
 
         else:
             commands.append (("noaction", [""]))
@@ -63,4 +73,4 @@ class Video (GetPoints):
         return self._get_command()
 
     def draw(self, img):
-        return [self.frame]
+        return [self.canvas_3d, self.frame]

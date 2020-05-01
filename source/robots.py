@@ -122,9 +122,10 @@ class Joint:
         return self.joint_name
 
     def draw (self, img, x, y, parent_angle, scale = 1):
+        # print("DRAW", y)
+        if y != None: #тут была проверка на флоат, но сейчас координаты уже в инт
+            # print ("joint: ", self.length, self.angle)
 
-        if type(x) == 'float' and y != None:
-        #print ("joint: ", self.length, self.angle)
             angle = self.init_angle - self.angle + parent_angle
 
             x1 = x + self.length * math.cos (angle)
@@ -177,7 +178,7 @@ class Simulated_robot(Robot):
         #(self, length_, angle_, angle_multiplier_, col1_, col2_, name_, min_angle_, max_angle_)
         self.load_configuration (self.config_path)
 
-        self.joints_to_track = ["righthand", "lefthand", "leftarm", "rightarm", "nose_x", "leftshoulder_pitch", "rightshoulder_pitch", "leftarm_yaw"]
+        self.joints_to_track = ["r_sho_roll", "l_sho_roll", "r_sho_pitch", "l_sho_pitch", "r_elb_roll", "l_elb_roll", "r_elb_yaw", "l_elb_yaw"]
 
         self.updated = False
         self.name = "simulated"
@@ -193,7 +194,7 @@ class Simulated_robot(Robot):
         while (string != ""):
             data = string [:-1].split (" ")
 
-            #print ("dat", data)
+            # print ("dat", data)
 
             parent = str   (data [0])
             name   = str   (data [1])
@@ -305,6 +306,7 @@ for instance the robot model is recursive. Aborting operation.")
                 print ("action :", action, " is not supported")
 
     def plot_state (self, img, x, y, scale = 1):
+
         line_num = 0
 
         for joint in self.find_joint (""):
@@ -319,7 +321,7 @@ for instance the robot model is recursive. Aborting operation.")
                 cv2.FONT_HERSHEY_SIMPLEX, 0.4, (200, 50, 231), 1, cv2.LINE_AA)
 
             line_num += 1
-        self.base_point.draw (img, x, y, 0, scale)
+        self.base_point.draw(img, x, y, 0, scale)
 
 class Real_robot(Robot):
     def __init__(self, ip_num, port_ = 9559, timeout_ = 0.04, logger_ = 0):
@@ -345,20 +347,46 @@ class Real_robot(Robot):
                                     "l_elb_roll"  : "l_elbowroll",
                                     "l_elb_yaw"   : "l_elbowyaw" ,
 
+                                    "l_hip_roll"  : "l_hiproll",
+                                    "l_hip_pitch" : "l_hippitch",
+
+                                    "l_knee_pitch": "l_kneepitch",
+                                    "l_ank_pitch" : "l_ankpitch",
+                                    "l_ank_roll"  : "l_ankroll",
+
                                     "r_sho_roll"  : "r_shoulderroll",
                                     "r_sho_pitch" : "r_shoulderpitch",
                                     "r_elb_roll"  : "r_elbowroll",
-                                    "r_elb_yaw"   : "r_elbowyaw"
+                                    "r_elb_yaw"   : "r_elbowyaw",
+
+                                    "r_hip_roll"  : "r_hiproll",
+                                    "r_hip_pitch" : "r_hippitch",
+
+                                    "r_knee_pitch": "r_kneepitch",
+                                    "r_ank_pitch" : "r_ankpitch",
+                                    "r_ank_roll"  : "r_ankroll"
                                     }
 
-        self.init_positions = {"r_shoulderpitch" : 1.1,
+        self.init_positions = {"r_shoulderpitch" : 0,
                                "r_shoulderroll"  : 0,
                                "r_elbowroll"     : 0,
                                "r_elbowyaw"      : 0,
-                               "l_shoulderpitch" : 1.1,
+                               "r_hiproll"       : 0,
+                               "r_hippitch"      : 0,
+                               "r_kneepitch"     : 0,
+                               "r_ankpitch"      : 0,
+                               "r_ankroll"       : 0,
+
+                               "l_shoulderpitch" : 0,
                                "l_shoulderroll"  : 0,
                                "l_elbowroll"     : 0,
                                "l_elbowyaw"      : 0,
+                               "l_hiproll"       : 0,
+                               "l_hippitch"      : 0,
+                               "l_kneepitch"     : 0,
+                               "l_ankpitch"      : 0,
+                               "l_ankroll"       : 0,
+
                                "head_Yaw"        : 0,
                                "head_Pitch"      : -0.3}
 
@@ -413,7 +441,7 @@ class Real_robot(Robot):
                 if (joint.angle is None):
                     joint.angle = 0
 
-                angle = joint.angle * joint.angle_multiplier + init_angle + angle_shift
+                angle = joint.angle * joint.angle_multiplier + init_angle
                 #if key == "righthand":
                 #    print("SHANKOV ZA CHTO: ", joint.angle, angle)
                 # if (angle < min_angle):

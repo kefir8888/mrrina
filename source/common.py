@@ -106,8 +106,3 @@ def head_rotation (x_pose):
         return -0.84
     else:
         return 0
-def cart3DtoPol(coords):
-    r = math.sqrt(coords[0]**2 + coords[1]**2 + coords[2]**2)
-    thetha = math.arcos(z/r)
-    phi = math.atan2(coords[1],coords[2])
-    return thetha, phi
