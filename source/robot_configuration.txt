@@ -20,7 +20,7 @@ leftfoot l_knee_pitch 40 0 1 -0.09 2.11 0
 leftfoot l_ank_pitch 40 0 1 -1.18 0.92 0
 leftfoot l_ank_roll 40 0 1 -0.39 0.76 0
 body rightleg 50 0.18 1 -10 20 0
-rightleg r_hip_roll 40 0 1 -0.79 -0.37 0
+rightleg r_hip_roll 40 0 1 -0.79 0.37 0
 rightleg r_hip_pitch 40 0 1 -1.53 0.48 0
 rightleg rightfoot 40 -0.13 1 -10 20 0
 rightfoot r_knee_pitch 40 0 1 -0.09 2.11 0
