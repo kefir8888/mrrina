@@ -1,5 +1,6 @@
 from modalities.modality import WorkWithPoints
 import common
+import os
 
 import numpy as np
 import cv2
@@ -30,7 +31,6 @@ class Skeleton_2D(WorkWithPoints):
 
     def get_read_data (self):
         return self.read_data
-
 
     def hand_up_angles(self, angle, hand):
         hand_roll  = angle
@@ -149,16 +149,31 @@ class Skeleton_3D(WorkWithPoints):
     def __init__ (self, skeleton_path_ = "", logger_ = 0):
         WorkWithPoints.__init__(self, logger_, maxlen_=20)
         self.all_data         = []
+        self.dataframe_num = 0
 
         if (skeleton_path_ != ""):
-            self.all_data = self.read_data_from_file(skeleton_path_)
+            verbose = False
+            if( os.path.isfile(skeleton_path_) == True ):
+                print( "Skeleton file: ", skeleton_path_)
+                skeleton_data = open(skeleton_path_, 'r')
+                all_skeleton_frames = self.read_skeleton_data_from_NTU(skeleton_data, verbose )
+                self.all_data = all_skeleton_frames
+            else:
+                print("\nNo skeleton file with name: ", data_path)
+                exit(0)
 
 
     def name (self):
         return "skeleton"
 
+
     def _read_data (self):
-        self.read_data = self.all_data
+        if (self.dataframe_num >= len (self.all_data)):
+            read_data = 0
+            return
+
+        self.read_data = self.all_data [self.dataframe_num]
+        self.dataframe_num += 1
 
     def create_dicts_with_coords_3D(self):
         kps = {}
@@ -167,7 +182,7 @@ class Skeleton_3D(WorkWithPoints):
                 ind = self.kpt_names.index(kp)
                 if kp == 'mid_hip':
                     if (kps["l_hip"][0] > 0 and kps["r_hip"][0] > 0):
-                        kps.update ({kp : [int((self.read_data[6][0] + self.read_data[12][0]) / 2), int((self.read_data[6][1] + self.read_data[12][1]) / 2), int((self.read_data[6][2] + self.read_data[12][2]) / 2)]})
+                        kps.update ({kp : [(self.read_data[6][0] + self.read_data[12][0]) / 2, (self.read_data[6][1] + self.read_data[12][1]) / 2, (self.read_data[6][2] + self.read_data[12][2]) / 2]})
                     else:
                         kps.update ({kp : [self.read_data[0][0], self.read_data[0][1] + 200,  self.read_data[0][2]]})
                 else:
@@ -183,13 +198,13 @@ class Skeleton_3D(WorkWithPoints):
 
 
     def _process_data (self, frame = None):
-        name = self.read_data[1]
-        self.read_data = self.read_data[0]
+        # name = self.read_data
+        # self.read_data = self.read_data
+
         self.interpreted_data = self.create_dicts_with_coords_3D()
 
         kps = self.get_mean_cords(self.kps_mean)
-
-
+    
         ##################################################left_full_hand##############################################################
         l_hip_neck = common.create_vec(kps["mid_hip"], kps["neck"])
         neck_l_sho = common.create_vec(kps["neck"], kps["l_sho"])
@@ -245,10 +260,10 @@ class Skeleton_3D(WorkWithPoints):
         self.angles_mean["l_elb_yaw"].append(l_elb_yaw)
         self.angles_mean["l_elb_roll"].append(l_elb_roll)
 
-        # self.logger.update("l shoul pitch", round(self.get_mean(self.angles_mean["l_sho_pitch"]), 2))
-        # self.logger.update("l shoul roll", round(self.get_mean(self.angles_mean["l_sho_roll"]), 2))
-        # self.logger.update("l elb yaw", round(self.get_mean(self.angles_mean["l_elb_yaw"]), 2))
-        # self.logger.update("l elb roll", round(self.get_mean(self.angles_mean["l_elb_roll"]), 2))
+        self.logger.update("l shoul pitch", round(self.get_mean(self.angles_mean["l_sho_pitch"]), 2))
+        self.logger.update("l shoul roll", round(self.get_mean(self.angles_mean["l_sho_roll"]), 2))
+        self.logger.update("l elb yaw", round(self.get_mean(self.angles_mean["l_elb_yaw"]), 2))
+        self.logger.update("l elb roll", round(self.get_mean(self.angles_mean["l_elb_roll"]), 2))
 
         self.processed_data ["l_sho_pitch"]  = round(self.get_mean(self.angles_mean["l_sho_pitch"]), 2)
         self.processed_data ["l_sho_roll"]  = round(self.get_mean(self.angles_mean["l_sho_roll"]), 2)
@@ -376,7 +391,7 @@ class Skeleton_3D(WorkWithPoints):
         ##########################################################################################################################
         self.angles_mean["l_knee_pitch"].append(left_knee_pitch)
 
-        self.logger.update("l knee pitch", round(self.get_mean(self.angles_mean["l_knee_pitch"]), 2))
+        # self.logger.update("l knee pitch", round(self.get_mean(self.angles_mean["l_knee_pitch"]), 2))
 
         self.processed_data ["l_knee_pitch"]  = round(self.get_mean(self.angles_mean["l_knee_pitch"]), 2)
         ###########################################################################################################################3
@@ -394,7 +409,7 @@ class Skeleton_3D(WorkWithPoints):
         ###########################################################################################################################
         self.angles_mean["r_knee_pitch"].append(right_knee_pitch)
 
-        self.logger.update("r knee pitch", round(self.get_mean(self.angles_mean["r_knee_pitch"]), 2))
+        # self.logger.update("r knee pitch", round(self.get_mean(self.angles_mean["r_knee_pitch"]), 2))
 
         self.processed_data ["r_knee_pitch"]  = round(self.get_mean(self.angles_mean["r_knee_pitch"]), 2)
         #########################################################################################################################

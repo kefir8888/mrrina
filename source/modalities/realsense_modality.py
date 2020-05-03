@@ -70,7 +70,7 @@ class RealSense (GetPoints):
 
 
     def _process_data(self):
-        self.skel_3d.read_data = (self.read_data, "rs")
+        self.skel_3d.read_data = self.read_data
         self.skel_3d._process_data()
         self.processed_data = self.skel_3d.processed_data
         # print("Realsense", self.processed_data)

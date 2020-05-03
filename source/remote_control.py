@@ -1,5 +1,6 @@
 from modalities.keyboard_modality import Computer_keyboard
 from modalities.video_modality import Video
+from modalities.skeleton_modalities import Skeleton_3D
 from modalities.realsense_modality import RealSense
 import fsm
 import robots
@@ -50,7 +51,7 @@ def main():
     AUTONOMOUS = True #without physical robot
 
     WIND_X = 800
-    WIND_Y = 500
+    WIND_Y = 700
     cv2.namedWindow  ("remote_controller", cv2.WINDOW_AUTOSIZE)
     cv2.resizeWindow ("remote_controller", (WIND_Y, WIND_X))
     canvas = np.ones ((WIND_Y, WIND_X, 3), np.uint8) * 230
@@ -61,7 +62,7 @@ def main():
     tracker = Value_tracker ()
 
     inputs = {"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
-                                    logger_ = tracker), ["physical", "simulated2"])}
+                                    logger_ = tracker), ["physical", "simulated2"]) ,
 
               #"response" : (modalities.Response_to_skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
               #              ["simulated1", "physical"]),
@@ -72,13 +73,13 @@ def main():
               #"video input" : (modalities.Video(), ["physical", "simulated2"])}
 
               #../data/videos/female_dancer_studio.mp4
-              # "video input": (Video(video_path_ = "", model_path_ = paths [user] ["model_path"],
-              # base_height_ = 300, logger_ = tracker), ["physical", "simulated2"]) }
+              "video input": (Video(video_path_ = "", model_path_ = paths [user] ["model_path"],
+              base_height_ = 300, logger_ = tracker), ["physical", "simulated2"]) }
               # "Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
               # base_height_ = 300, logger_ = tracker), ["physical", "simulated2"])}
 
-    #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
-              #"archive skeleton"  : (modalities.Skeleton ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/skeletons/skel_up_ponomareva.txt"),
+              #"archive skeleton"  : modalities.Skeleton ("/home/kompaso/Desktop/ISP/lightweight-human-pose-estimation_2/skel/skel_robot_ponomareva.txt")}
+              # "archive skeleton"  : (Skeleton_3D (skeleton_path_ = "/home/kompaso/diplom_modules/S001C001P001R001A010.skeleton", logger_ = tracker),
               #                       ["simulated2"])}
 
     robots_list = {}
@@ -98,7 +99,7 @@ def main():
     fsm_processor = fsm.FSM_processor ()
 
     silent_mode = True
-    time_to_not_silent = 10
+    time_to_not_silent = 0
     start_time = curr_time
 
     ###пример трекера
@@ -134,8 +135,8 @@ def main():
 
             command = inputs [modality] [0].get_command (skip_reading_data)
 
-            print ("modality: ", modality)
-            print (command)
+            # print ("modality: ", modality)
+            # print (command)
             logfile.write (str (curr_time) + str (command))
 
             action = fsm_processor.handle_command (command)
@@ -156,11 +157,12 @@ def main():
                 output_images += modality_frames
                 output_names.append  (modality)
         canvas = np.ones((WIND_Y, WIND_X, 3), np.uint8) * 200
+        canvas_ = canvas.copy()
         output_images += tracker.draw (canvas)
         if (silent_mode == False):
             for key in robots_list.keys ():
                 robots_list [key].on_idle ()
-        canvas_ = np.ones((WIND_Y, WIND_X, 3), np.uint8) * 200
+
         list (robots_list.items ()) [0] [1].plot_state (canvas_, 150, 40, 2.5)
 
         if (silent_mode == True):

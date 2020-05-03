@@ -19,7 +19,7 @@ class Modality:
         self.interpreted_data = []
 
         self.processed_data = {"r_sho_roll"  : 0,
-                               "r_sho_pitch" : 0,
+                               "r_sho_pitch" : 1.1,
                                "r_elb_roll"  : 0,
                                "r_elb_yaw"   : 0,
 
@@ -31,7 +31,7 @@ class Modality:
                                "r_ank_roll"  : 0,
 
                                "l_sho_roll" : 0,
-                               "l_sho_pitch": 0,
+                               "l_sho_pitch": 1.1,
                                "l_elb_roll" : 0,
                                "l_elb_yaw"  : 0,
 
@@ -54,7 +54,7 @@ class Modality:
 class WorkWithPoints(Modality):
     def __init__ (self, logger_=0, maxlen_ = 25):
         Modality.__init__(self, logger_)
-        self.necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip", "r_sho", "r_elb", "r_wri", "r_hip","neck",'mid_hip',  "nose", 'r_eye', 'l_eye', "r_ear"]
+        self.necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip","l_knee", "l_ank", "r_sho", "r_elb", "r_wri", "r_hip","r_knee", "r_ank", "neck",'mid_hip',  "nose", 'r_eye', 'l_eye', "r_ear", "l_ear"]
         maxlen__ = 25
         self.kps_mean = {kp : {"x": deque(maxlen = maxlen__),"y": deque(maxlen = maxlen__),"z": deque(maxlen = maxlen__)} for kp in self.necessary_keypoints_names}
         self.angles_mean    = {"r_sho_roll"  : deque(maxlen = maxlen_),
@@ -102,28 +102,114 @@ class WorkWithPoints(Modality):
         kps = {}
         for kp in self.necessary_keypoints_names:
             ind = self.kpt_names.index(kp)
-            kps.update ({kp : [int(self.get_mean(kps_raw[kp]["x"])), int(self.get_mean(kps_raw[kp]["y"])),  int(self.get_mean(kps_raw[kp]["z"]))]})
+            kps.update ({kp : [self.get_mean(kps_raw[kp]["x"]), self.get_mean(kps_raw[kp]["y"]),  self.get_mean(kps_raw[kp]["z"])]})
         return kps
 
     # def name (self):
     #     return "not specified"
 
-    def read_data_from_file (self, path):
-        with open(path, 'r') as file:
-            data = file.read()
-            cleared_data = ''
-            for let in data:
-                if let.isdigit() or let == '-':
-                    cleared_data+=let
-                else:
-                    cleared_data+=','
+    def store_skeleton_in_list(self,data):
+        result = []
 
-            cleared_data = cleared_data.split(',')
-            data = [int(i) for i in cleared_data if i]
-            data = np.asarray(data)
-            data = data.reshape(-1,36)
+        for lineIdx in range(0, len(data)):
+            frame_skel=[]
 
-        return data
+            # Take a line from the raw data.
+            single_line = data[lineIdx]
+
+            # Cut trailing line break
+            single_line.rstrip('\n')
+            # Split the line to tokens using the whitespaces as delimiter
+            single_Tokens = single_line.split(' ')
+
+            if( len(single_Tokens) == 10 or len(single_Tokens) == 12):
+                result.append(float(single_Tokens[0]))
+                result.append(float(single_Tokens[1]))
+                result.append(float(single_Tokens[2]))
+
+        return result[3:]
+
+
+    def read_skeleton_data_from_NTU(self,data, _verbose_ = False):
+        frames_of_the_set = []
+        nOSkel = 0
+        raw_Content = []
+
+        # Read the whole file in a data block.
+        raw_Content = data.readlines()
+
+        # Get the number of Frames
+        number_of_frames = 0
+        number_of_frames = raw_Content[0]
+        if( _verbose_ == True):
+            print( "Number of frames in the set: ", number_of_frames )
+
+        # Cut the first line ( number of frames ) from the raw_Content
+        raw_Content = raw_Content[1:]
+        if( _verbose_ == True ):
+            print('Number of Skeletons: ', raw_Content[0] )
+
+        # Adapt the increment for the subsequent for loop to the number of skeletons in the set.
+        if( int(raw_Content[0]) == 1  ):
+            forIncrement = 28
+            noSkel = 1
+        else:
+            forIncrement = 55
+            noSkel = 2
+
+        # Temporary data storages for the skeletons
+        skeleton1 = []
+        skeletal_block = []
+
+        # Step through the lines of raw_Content and parse them
+        for lineIdx in range(0, len(raw_Content), forIncrement ):
+
+            # Get the n-th frame of the whole set.
+            skeletal_block = []
+            # Load frame wise the skeleton data ( a block contains one or two skeleton(s) )
+            skeletal_block = raw_Content[lineIdx:lineIdx+forIncrement]
+
+            # Depending on the number of skeletons in the frame build one list for a single skeleton set or two lists for a multiskeleton set.
+            if( noSkel == 1 ):
+                skeleton1 = self.store_skeleton_in_list(skeletal_block)
+                frames_of_the_set.append(skeleton1)
+            else:
+                print ("Wrong data, try another file")
+                return None
+
+        all_skeleton_frames = []
+        for frame in frames_of_the_set:
+            new_frame = []
+            mid_frame = np.reshape(frame,(25,3))
+            new_frame.append(mid_frame[2])
+            new_frame.append(mid_frame[3])
+            new_frame.append(mid_frame[0])
+            new_frame.append(mid_frame[4])
+            new_frame.append(mid_frame[5])
+            new_frame.append(mid_frame[6])
+            new_frame.append(mid_frame[12])
+            new_frame.append(mid_frame[13])
+            new_frame.append(mid_frame[14])
+            new_frame.append(mid_frame[8])
+            new_frame.append(mid_frame[9])
+            new_frame.append(mid_frame[10])
+            new_frame.append(mid_frame[16])
+            new_frame.append(mid_frame[17])
+            new_frame.append(mid_frame[18])
+            new_frame.append(mid_frame[3])
+            new_frame.append(mid_frame[3])
+            new_frame.append(mid_frame[3])
+            new_frame.append(mid_frame[3])
+
+
+            # new_frame.append(mid_frame[0])
+            # new_frame += mid_frame[2:20]
+            all_skeleton_frames.append(new_frame)
+
+        return all_skeleton_frames
+
+
+
     #
     # def draw (self, img):
     #     return [np.array ((1, 1, 1), np.uint8)]

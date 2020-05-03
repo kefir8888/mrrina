@@ -18,8 +18,8 @@ class Video (GetPoints):
         self.canvas_3d_window_name = 'Video Skeleton 3D'
 
         if (video_path_ == ""):
-            # self.all_data = cv2.VideoCapture("/home/kompaso/Desktop/hand_high.mp4")
-            self.all_data = cv2.VideoCapture(1)#self.available_cameras[-1]) #/home/kompaso/Desktop/hand_high.mp4
+            self.all_data = cv2.VideoCapture("/home/kompaso/Desktop/sit.mp4")
+            # self.all_data = cv2.VideoCapture(1)#self.available_cameras[-1]) #/home/kompaso/Desktop/hand_high.mp4
 
         self.read = False
 
@@ -38,7 +38,7 @@ class Video (GetPoints):
 
     def _process_data(self):
         if sum (self.read_data) != -36 and self.read_data != []:
-            self.skel_3d.read_data = (self.poses_3d, "video")
+            self.skel_3d.read_data = self.poses_3d
             self.skel_3d._process_data()
             self.processed_data = self.skel_3d.processed_data
             # print("Video", self.processed_data)
