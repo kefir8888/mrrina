@@ -90,7 +90,13 @@ body_edges = np.array(
 def draw_poses(img, poses_2d):
     res = []
     # pose = np.array(poses_2d[0][0:-1]).reshape((-1, 3)).transpose()
-    pose = np.array(poses_2d[0][0:-1]).reshape((-1, 3)).transpose()
+
+
+    if len (poses_2d) == 0:
+        return []
+    elif len(poses_2d) >= 1:
+        pose = np.array(poses_2d[0][0:-1]).reshape((-1, 3)).transpose()
+
     was_found = pose[2, :] > 0
     for edge in body_edges:
         if was_found[edge[0]] and was_found[edge[1]]:
@@ -98,8 +104,8 @@ def draw_poses(img, poses_2d):
                      (255, 255, 0), 4, cv2.LINE_AA)
     for kpt_id in range(pose.shape[1]):
         res.append(pose[0:2, kpt_id].astype(int))
-        if pose[2, kpt_id] != -1:
-            cv2.circle(img, tuple(pose[0:2, kpt_id].astype(int)), 3, (0, 255, 255), -1, cv2.LINE_AA)
+        # if pose[2, kpt_id] != -1:
+        #     cv2.circle(img, tuple(pose[0:2, kpt_id].astype(int)), 3, (0, 255, 255), -1, cv2.LINE_AA)
     y = np.asarray(res).flatten()
 #     print(res)
 #     keys_ = ['neck', 'nose',

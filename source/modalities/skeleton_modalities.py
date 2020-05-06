@@ -14,6 +14,7 @@ class Skeleton_2D(WorkWithPoints):
         self.dataframe_num = 0
         self.read_data_from_file_ = False
 
+
         if (skeleton_path_ != ""):
             self.all_data = self.read_data_from_file(skeleton_path_)
 
@@ -150,6 +151,12 @@ class Skeleton_3D(WorkWithPoints):
         WorkWithPoints.__init__(self, logger_, maxlen_=20)
         self.all_data         = []
         self.dataframe_num = 0
+        self.previous_knee = 0
+        self.previous_hip = 0
+        self.previous_ankl = 0
+
+
+
 
         if (skeleton_path_ != ""):
             verbose = False
@@ -165,6 +172,14 @@ class Skeleton_3D(WorkWithPoints):
 
     def name (self):
         return "skeleton"
+
+    def detecting_mode(self, kps):
+        if (kps['l_ank'][1] - kps['r_ank'][1]) > 50:
+            return "left_leg_mod"
+        elif (kps['r_ank'][1] - kps['l_ank'][1]) > 50:
+            return "right_leg_mod"
+        else:
+            return "double_mod"
 
 
     def _read_data (self):
@@ -204,7 +219,7 @@ class Skeleton_3D(WorkWithPoints):
         self.interpreted_data = self.create_dicts_with_coords_3D()
 
         kps = self.get_mean_cords(self.kps_mean)
-    
+
         ##################################################left_full_hand##############################################################
         l_hip_neck = common.create_vec(kps["mid_hip"], kps["neck"])
         neck_l_sho = common.create_vec(kps["neck"], kps["l_sho"])
@@ -231,7 +246,7 @@ class Skeleton_3D(WorkWithPoints):
         mod_R_lbp_lse = common.get_mod(R_lbp_lse)
         mod_R_l_arm = common.get_mod(R_l_arm)
 
-        l_sho_pitch_raw = math.acos(np.dot(l_hip_neck, R_lbp_lse)/(mod_l_hip_neck*mod_R_lbp_lse))-0.6
+        l_sho_pitch_raw = math.acos(np.dot(l_hip_neck, R_lbp_lse)/(mod_l_hip_neck*mod_R_lbp_lse))-0.65
         l_elb_yaw_raw = math.acos(np.dot(N_neck_l_sho_elb, N_l_sho_elb_wri)/(mod_N_neck_l_sho_elb*mod_N_l_sho_elb_wri))
 
         phi_lsp = math.acos(np.dot(l_sho_elb,l_hip_neck)/(mod_l_hip_neck * mod_l_sho_elb))
@@ -260,15 +275,15 @@ class Skeleton_3D(WorkWithPoints):
         self.angles_mean["l_elb_yaw"].append(l_elb_yaw)
         self.angles_mean["l_elb_roll"].append(l_elb_roll)
 
-        self.logger.update("l shoul pitch", round(self.get_mean(self.angles_mean["l_sho_pitch"]), 2))
-        self.logger.update("l shoul roll", round(self.get_mean(self.angles_mean["l_sho_roll"]), 2))
-        self.logger.update("l elb yaw", round(self.get_mean(self.angles_mean["l_elb_yaw"]), 2))
-        self.logger.update("l elb roll", round(self.get_mean(self.angles_mean["l_elb_roll"]), 2))
+        # self.logger.update("l shoul pitch", round(self.get_mean(self.angles_mean["l_sho_pitch"]), 2))
+        # self.logger.update("l shoul roll", round(self.get_mean(self.angles_mean["l_sho_roll"]), 2))
+        # self.logger.update("l elb yaw", round(self.get_mean(self.angles_mean["l_elb_yaw"]), 2))
+        # self.logger.update("l elb roll", round(self.get_mean(self.angles_mean["l_elb_roll"]), 2))
 
-        self.processed_data ["l_sho_pitch"]  = round(self.get_mean(self.angles_mean["l_sho_pitch"]), 2)
-        self.processed_data ["l_sho_roll"]  = round(self.get_mean(self.angles_mean["l_sho_roll"]), 2)
-        self.processed_data ["l_elb_yaw"]  = round(self.get_mean(self.angles_mean["l_elb_yaw"]), 2)
-        self.processed_data ["l_elb_roll"]  = round(self.get_mean(self.angles_mean["l_elb_roll"]), 2)
+        # self.processed_data ["l_sho_pitch"]  = round(self.get_mean(self.angles_mean["l_sho_pitch"]), 2)
+        # self.processed_data ["l_sho_roll"]  = round(self.get_mean(self.angles_mean["l_sho_roll"]), 2)
+        # self.processed_data ["l_elb_yaw"]  = round(self.get_mean(self.angles_mean["l_elb_yaw"]), 2)
+        # self.processed_data ["l_elb_roll"]  = round(self.get_mean(self.angles_mean["l_elb_roll"]), 2)
 ###############################################################################################################################
 
 ##########################################r_full_hand###############################################################
@@ -296,7 +311,7 @@ class Skeleton_3D(WorkWithPoints):
         mod_R_r_body_plane = common.get_mod(R_r_body_plane)
         mod_R_r_arm = common.get_mod(R_r_arm)
 
-        r_sho_pitch_raw = math.acos(np.dot(r_hip_neck, R_rbp_rse)/(mod_r_hip_neck*mod_R_rbp_rse))-0.6
+        r_sho_pitch_raw = math.acos(np.dot(r_hip_neck, R_rbp_rse)/(mod_r_hip_neck*mod_R_rbp_rse))-0.65
         r_elb_yaw_raw = math.acos(np.dot(N_neck_r_sho_elb, N_r_sho_elb_wri)/(mod_N_neck_r_sho_elb*mod_N_r_sho_elb_wri))
 
         phi_rsp = math.acos(np.dot(r_sho_elb,r_hip_neck)/(mod_r_hip_neck * mod_r_sho_elb))
@@ -330,10 +345,10 @@ class Skeleton_3D(WorkWithPoints):
         # self.logger.update("r elb yaw", round(self.get_mean(self.angles_mean["r_elb_yaw"]), 2))
         # self.logger.update("r elb roll", round(self.get_mean(self.angles_mean["r_elb_roll"]), 2))
 
-        self.processed_data ["r_sho_pitch"] = round(self.get_mean(self.angles_mean["r_sho_pitch"]), 2)
-        self.processed_data ["r_sho_roll"]  = round(self.get_mean(self.angles_mean["r_sho_roll"]), 2)
-        self.processed_data ["r_elb_yaw"]   = round(self.get_mean(self.angles_mean["r_elb_yaw"]), 2)
-        self.processed_data ["r_elb_roll"]  = round(self.get_mean(self.angles_mean["r_elb_roll"]), 2)
+        # self.processed_data ["r_sho_pitch"] = round(self.get_mean(self.angles_mean["r_sho_pitch"]), 2)
+        # self.processed_data ["r_sho_roll"]  = round(self.get_mean(self.angles_mean["r_sho_roll"]), 2)
+        # self.processed_data ["r_elb_yaw"]   = round(self.get_mean(self.angles_mean["r_elb_yaw"]), 2)
+        # self.processed_data ["r_elb_roll"]  = round(self.get_mean(self.angles_mean["r_elb_roll"]), 2)
         #################################################################################################################################
 
         ################################################l_hip###########################################################################
@@ -371,9 +386,9 @@ class Skeleton_3D(WorkWithPoints):
         # # self.logger.update("r elb yaw", round(self.get_mean(self.angles_mean["r_elb_yaw"]), 2))
         # # self.logger.update("r elb roll", round(self.get_mean(self.angles_mean["r_elb_roll"]), 2))
         #
-        self.processed_data ["l_hip_roll"] = round(self.get_mean(self.angles_mean["l_hip_roll"]), 2)
+        # self.processed_data ["l_hip_roll"] = round(self.get_mean(self.angles_mean["l_hip_roll"]), 2)
         # self.processed_data ["l_ank_roll"] = -round(self.get_mean(self.angles_mean["l_hip_roll"]), 2)
-        self.processed_data ["l_hip_pitch"]  = round(self.get_mean(self.angles_mean["l_hip_pitch"]), 2)
+        # self.processed_data ["l_hip_pitch"]  = round(self.get_mean(self.angles_mean["l_hip_pitch"]), 2)
         # # self.processed_data ["r_elb_yaw"]   = round(self.get_mean(self.angles_mean["r_elb_yaw"]), 2)
         # # self.processed_data ["r_elb_roll"]  = round(self.get_mean(self.angles_mean["r_elb_roll"]), 2)
         #############################################################################################################################
@@ -387,13 +402,18 @@ class Skeleton_3D(WorkWithPoints):
         mod_l_knee_hip = common.get_mod(l_knee_hip)
         mod_l_knee_ankle = common.get_mod(l_knee_ankle)
 
-        left_knee_pitch = 3.14 - math.acos(np.dot(l_knee_ankle, l_knee_hip)/(mod_l_knee_ankle*mod_l_knee_hip))
+        print(mod_l_knee_ankle, mod_l_knee_hip, np.dot(l_knee_ankle, l_knee_hip),l_knee_ankle, l_knee_hip )
+        left_knee_pitch_raw = np.dot(l_knee_ankle, l_knee_hip)/(float(mod_l_knee_ankle)*float(mod_l_knee_hip))
+        if left_knee_pitch_raw > 1:
+            left_knee_pitch_raw = 1
+
+        left_knee_pitch = 3.14 - math.acos(left_knee_pitch_raw)
         ##########################################################################################################################
         self.angles_mean["l_knee_pitch"].append(left_knee_pitch)
 
-        # self.logger.update("l knee pitch", round(self.get_mean(self.angles_mean["l_knee_pitch"]), 2))
+        self.logger.update("l knee pitch", round(self.get_mean(self.angles_mean["l_knee_pitch"]), 2))
 
-        self.processed_data ["l_knee_pitch"]  = round(self.get_mean(self.angles_mean["l_knee_pitch"]), 2)
+        # self.processed_data ["l_knee_pitch"]  = round(self.get_mean(self.angles_mean["l_knee_pitch"]), 2)
         ###########################################################################################################################3
 
         ##############################################r_knee####################################################################
@@ -404,14 +424,39 @@ class Skeleton_3D(WorkWithPoints):
 
         mod_r_knee_hip = common.get_mod(r_knee_hip)
         mod_r_knee_ankle = common.get_mod(r_knee_ankle)
-
-        right_knee_pitch = 3.14 - math.acos(np.dot(r_knee_ankle, r_knee_hip)/(mod_r_knee_ankle*mod_r_knee_hip))
+        right_knee_pitch_raw = np.dot(r_knee_ankle, r_knee_hip)/(mod_r_knee_ankle*mod_r_knee_hip)
+        if right_knee_pitch_raw > 1:
+            right_knee_pitch_raw = 1
+        right_knee_pitch = 3.14 - math.acos(right_knee_pitch_raw)
         ###########################################################################################################################
         self.angles_mean["r_knee_pitch"].append(right_knee_pitch)
 
-        # self.logger.update("r knee pitch", round(self.get_mean(self.angles_mean["r_knee_pitch"]), 2))
+        l_knee = round(self.get_mean(self.angles_mean["l_knee_pitch"]), 2)
+        r_knee =  round(self.get_mean(self.angles_mean["r_knee_pitch"]), 2)
 
-        self.processed_data ["r_knee_pitch"]  = round(self.get_mean(self.angles_mean["r_knee_pitch"]), 2)
+        if (0.0 < l_knee and l_knee <= 0.5 ) and (0.0 < r_knee and r_knee <= 0.5 ):
+            print("STAND")
+        if (0.5 < l_knee and l_knee <= 2.3 ) and (0.4 < r_knee and r_knee <= 2.3 ):
+            print("STAND1")
+        if (2.3 < l_knee) and (2.3 < r_knee):
+            # self.processed_data ["r_hip_roll"] = math.radians()
+            # self.processed_data ["r_hip_roll"] = math.radians()
+            # self.processed_data ["r_ank_pitch"] = math.radians()
+            # self.processed_data ["r_hip_pitch"]  =
+            #
+            # self.processed_data ["l_hip_roll"] =
+            # self.processed_data ["l_ank_pitch"] =
+            # self.processed_data ["l_hip_pitch"]  =
+
+            print("STAND1")
+
+        # if (0.8 < l_knee and l_knee <= 0.8 ) and (0.4 < r_knee and r_knee <= 0.8 ):
+        #     print("STAND1")
+
+        self.logger.update("knee pitch", self.previous_knee)
+        self.logger.update("hip pitch", self.previous_hip)
+        self.logger.update("ankle pitch", self.previous_ankl)
+
         #########################################################################################################################
         ########################################test ankle#################################################################
 
@@ -453,15 +498,16 @@ class Skeleton_3D(WorkWithPoints):
         # # self.logger.update("r elb yaw", round(self.get_mean(self.angles_mean["r_elb_yaw"]), 2))
         # # self.logger.update("r elb roll", round(self.get_mean(self.angles_mean["r_elb_roll"]), 2))
         #
-        self.processed_data ["r_hip_roll"] = -round(self.get_mean(self.angles_mean["r_hip_roll"]), 2)
+        # self.processed_data ["r_hip_roll"] = -round(self.get_mean(self.angles_mean["r_hip_roll"]), 2)
         # self.processed_data ["r_ank_pitch"] = round(self.get_mean(self.angles_mean["r_ank_pitch"]), 2)
-        self.processed_data ["r_hip_pitch"]  = round(self.get_mean(self.angles_mean["r_hip_pitch"]), 2)
+        # self.processed_data ["r_hip_pitch"]  = round(self.get_mean(self.angles_mean["r_hip_pitch"]), 2)
 
-        self.processed_data ["l_hip_roll"] = -round(self.get_mean(self.angles_mean["r_hip_roll"]), 2)
+        # self.processed_data ["l_hip_roll"] = -round(self.get_mean(self.angles_mean["r_hip_roll"]), 2)
         # self.processed_data ["l_ank_pitch"] = round(self.get_mean(self.angles_mean["r_ank_pitch"]), 2)
-        self.processed_data ["l_hip_pitch"]  = round(self.get_mean(self.angles_mean["r_hip_pitch"]), 2)
+        # self.processed_data ["l_hip_pitch"]  = round(self.get_mean(self.angles_mean["r_hip_pitch"]), 2)
         # # self.processed_data ["r_elb_yaw"]   = round(self.get_mean(self.angles_mean["r_elb_yaw"]), 2)
         # # self.processed_data ["r_elb_roll"]  = round(self.get_mean(self.angles_mean["r_elb_roll"]), 2)
+        self.processed_data ["new_joints_time"] = 0.75 
         #############################################################################################################################
 
         ###################################################head#######################################################################
@@ -492,12 +538,20 @@ class Skeleton_3D(WorkWithPoints):
         # self.logger.update("Head Yaw", round(self.get_mean(self.angles_mean["head_Yaw"]), 2))
         # self.logger.update("Head Pitch", round(self.get_mean(self.angles_mean["head_Pitch"]), 2))
 
-        self.processed_data ["head_Yaw"]  = round(self.get_mean(self.angles_mean["head_Yaw"]), 2)
-        self.processed_data ["head_Pitch"]  = round(self.get_mean(self.angles_mean["head_Yaw"]), 2)
+        # self.processed_data ["head_Yaw"]  = round(self.get_mean(self.angles_mean["head_Yaw"]), 2)
+        # self.processed_data ["head_Pitch"]  = round(self.get_mean(self.angles_mean["head_Yaw"]), 2)
         #############################################################################################################################
 
         #############################################################################################################################
         #
+        detecting_mode_1 =  math.acos(np.dot(r_hip_knee, l_hip_knee)/(mod_l_hip_knee*mod_r_hip_knee))
+        self.logger.update("AAAA",detecting_mode_1)
+        self.logger.update("AAAA___AAAAA",self.detecting_mode(kps))
+
+
+
+
+
         # l_elb_sho = common.create_vec(kps["l_elb"], kps["l_sho"])
         # l_elb_wri = common.create_vec(kps["l_sho"], kps["l_wri"])
         # l_elb_wri_mod = common.get_mod(l_elb_wri)

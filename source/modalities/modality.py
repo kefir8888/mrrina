@@ -43,7 +43,11 @@ class Modality:
                                "l_ank_roll"  : 0,
 
                                "head_Yaw"    : 0,
-                               "head_Pitch"  : 0}
+                               "head_Pitch"  : 0,
+
+                               "hehe_pelvis" : 0,
+
+                               "new_joints_time": 0.75}
 
     def name (self):
         return "not specified"
@@ -52,10 +56,10 @@ class Modality:
         return [np.array ((1, 1, 1), np.uint8)]
 
 class WorkWithPoints(Modality):
-    def __init__ (self, logger_=0, maxlen_ = 25):
+    def __init__ (self, logger_=0, maxlen_ = 10):
         Modality.__init__(self, logger_)
         self.necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip","l_knee", "l_ank", "r_sho", "r_elb", "r_wri", "r_hip","r_knee", "r_ank", "neck",'mid_hip',  "nose", 'r_eye', 'l_eye', "r_ear", "l_ear"]
-        maxlen__ = 25
+        maxlen__ = 10
         self.kps_mean = {kp : {"x": deque(maxlen = maxlen__),"y": deque(maxlen = maxlen__),"z": deque(maxlen = maxlen__)} for kp in self.necessary_keypoints_names}
         self.angles_mean    = {"r_sho_roll"  : deque(maxlen = maxlen_),
                                "r_sho_pitch" : deque(maxlen = maxlen_),
@@ -130,83 +134,7 @@ class WorkWithPoints(Modality):
         return result[3:]
 
 
-    def read_skeleton_data_from_NTU(self,data, _verbose_ = False):
-        frames_of_the_set = []
-        nOSkel = 0
-        raw_Content = []
 
-        # Read the whole file in a data block.
-        raw_Content = data.readlines()
-
-        # Get the number of Frames
-        number_of_frames = 0
-        number_of_frames = raw_Content[0]
-        if( _verbose_ == True):
-            print( "Number of frames in the set: ", number_of_frames )
-
-        # Cut the first line ( number of frames ) from the raw_Content
-        raw_Content = raw_Content[1:]
-        if( _verbose_ == True ):
-            print('Number of Skeletons: ', raw_Content[0] )
-
-        # Adapt the increment for the subsequent for loop to the number of skeletons in the set.
-        if( int(raw_Content[0]) == 1  ):
-            forIncrement = 28
-            noSkel = 1
-        else:
-            forIncrement = 55
-            noSkel = 2
-
-        # Temporary data storages for the skeletons
-        skeleton1 = []
-        skeletal_block = []
-
-        # Step through the lines of raw_Content and parse them
-        for lineIdx in range(0, len(raw_Content), forIncrement ):
-
-            # Get the n-th frame of the whole set.
-            skeletal_block = []
-            # Load frame wise the skeleton data ( a block contains one or two skeleton(s) )
-            skeletal_block = raw_Content[lineIdx:lineIdx+forIncrement]
-
-            # Depending on the number of skeletons in the frame build one list for a single skeleton set or two lists for a multiskeleton set.
-            if( noSkel == 1 ):
-                skeleton1 = self.store_skeleton_in_list(skeletal_block)
-                frames_of_the_set.append(skeleton1)
-            else:
-                print ("Wrong data, try another file")
-                return None
-
-        all_skeleton_frames = []
-        for frame in frames_of_the_set:
-            new_frame = []
-            mid_frame = np.reshape(frame,(25,3))
-            new_frame.append(mid_frame[2])
-            new_frame.append(mid_frame[3])
-            new_frame.append(mid_frame[0])
-            new_frame.append(mid_frame[4])
-            new_frame.append(mid_frame[5])
-            new_frame.append(mid_frame[6])
-            new_frame.append(mid_frame[12])
-            new_frame.append(mid_frame[13])
-            new_frame.append(mid_frame[14])
-            new_frame.append(mid_frame[8])
-            new_frame.append(mid_frame[9])
-            new_frame.append(mid_frame[10])
-            new_frame.append(mid_frame[16])
-            new_frame.append(mid_frame[17])
-            new_frame.append(mid_frame[18])
-            new_frame.append(mid_frame[3])
-            new_frame.append(mid_frame[3])
-            new_frame.append(mid_frame[3])
-            new_frame.append(mid_frame[3])
-
-
-            # new_frame.append(mid_frame[0])
-            # new_frame += mid_frame[2:20]
-            all_skeleton_frames.append(new_frame)
-
-        return all_skeleton_frames
 
 
 
@@ -216,24 +144,27 @@ class WorkWithPoints(Modality):
 
 
 class GetPoints(Modality):
-    def __init__ (self, logger_=0, model_path_="", mode_="GPU", base_height_=512, focal_length = -1):
+    def __init__ (self, logger_=0, model_path_="", mode_="GPU", base_height_=512, focal_length = -1, R_ = [], t_ = []):
         Modality.__init__(self, logger_)
         self.base_height = base_height_
         self.net = InferenceEnginePyTorch (model_path_, mode_)
         self.stride = 8
         self.fx = focal_length
+        self.R = R_
+        self.t = t_
 
-
-        file_path = os.path.join('data', 'extrinsics.json')
-        with open(file_path, 'r') as f:
-            extrinsics = json.load(f)
-        self.R = np.array(extrinsics['R'], dtype=np.float32)
-        self.t = np.array(extrinsics['t'], dtype=np.float32)
+        if self.R == [] or self.t.all() == []:
+            file_path = os.path.join('data', 'extrinsics.json')
+            with open(file_path, 'r') as f:
+                extrinsics = json.load(f)
+            self.R = np.array(extrinsics['R'], dtype=np.float32)
+            self.t = np.array(extrinsics['t'], dtype=np.float32)
 
 
     def _infer_net (self, frame):
         current_time = cv2.getTickCount()
         mean_time = 0
+        edges = []
         input_scale = self.base_height / frame.shape[0]
         scaled_img = cv2.resize(frame, dsize=None, fx=input_scale, fy=input_scale)
         scaled_img = scaled_img[:,0:scaled_img.shape[1] - (scaled_img.shape[1] % self.stride)]
@@ -261,7 +192,10 @@ class GetPoints(Modality):
             poses_3d = poses_3d.reshape(poses_3d.shape[0], 19, -1)[:, :, 0:3]
             edges = (Plotter3d.SKELETON_EDGES + 19 * np.arange(1).reshape((-1, 1, 1))).reshape((-1, 2))
 
-
+        if len(poses_3d) == 1:
+            poses_3d = poses_3d
+        elif len(poses_3d) > 1:
+            poses_3d = poses_3d[0]
         x = draw_poses(frame, poses_2d)
         current_time = (cv2.getTickCount() - current_time) / cv2.getTickFrequency()
         if mean_time == 0:
@@ -271,7 +205,7 @@ class GetPoints(Modality):
         cv2.putText(frame, 'FPS: {}'.format(int(1 / mean_time * 10) / 10),
                     (40, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255))
         self.frame = frame
-        return x, poses_3d[0], edges
+        return x, poses_3d, edges
 
 
     #
