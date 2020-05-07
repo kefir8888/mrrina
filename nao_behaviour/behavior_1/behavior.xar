@@ -14,7 +14,7 @@
     <Timeline enable="0">
       <BehaviorLayer name="behavior_layer1">
         <BehaviorKeyframe name="keyframe1" index="1">
-          <Diagram scale="50">
+          <Diagram scale="42.0448">
             <Box name="M1" id="1" localization="8" tooltip="This box contains a basic python script and can be used to create any python script box you would like.&#x0A;&#x0A;To edit its script, double-click on it." x="320" y="105">
               <bitmap>media/images/box/box-python-script.png</bitmap>
               <script language="4">
@@ -31,10 +31,9 @@ from naoqi import ALProxy
 import time
 import almath
 
-#ip = '0.0.0.0'
-#ip = '10.6.255.230'
-ip = '192.168.1.66'
-#ip = '10.0.0.103'
+#ip = '192.168.1.66'
+ip = '192.168.1.9'
+
 port = 9569
 
 class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -304,7 +303,7 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
 
     elif action == "/raise_hands":
         current_object.logger.info ("raising hands")
-        current_object.raise_hands(list1)
+        current_object.raise_hands(self.path)
 
     elif action == "/stop_voice":           current_object.stop_voice()
 
@@ -532,7 +531,7 @@ class MyClass(GeneratedClass):
               <Output name="rot_m20" type="1" type_size="1" nature="2" inner="0" tooltip="" id="82" />
               <Output name="rot_50" type="1" type_size="1" nature="2" inner="0" tooltip="" id="83" />
               <Output name="rot_m50" type="1" type_size="1" nature="2" inner="0" tooltip="" id="84" />
-              <Output name="raise_hands" type="2" type_size="8" nature="2" inner="0" tooltip="" id="85" />
+              <Output name="raise_hands" type="3" type_size="1" nature="2" inner="0" tooltip="" id="85" />
               <Output name="M1" type="1" type_size="1" nature="2" inner="0" tooltip="" id="86" />
               <Output name="M2" type="1" type_size="1" nature="2" inner="0" tooltip="" id="87" />
               <Output name="M3" type="1" type_size="1" nature="2" inner="0" tooltip="" id="88" />
@@ -26291,7 +26290,7 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
-            <Box name="Play Sound (20)" id="158" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="1906" y="1593">
+            <Box name="Play Sound (20)" id="158" localization="8" tooltip="Play a sound file. Select the file in parameters. The format of the file can be wav or ogg (on virtual robot) and also mp3 (on a real robot).&#x0A;&#x0A;Note: There can be some delay to play ogg or mp3 (on a robot) files. We advise you to use wav if&#x0A;you want a fast play of the file." x="1832" y="1591">
               <bitmap>media/images/box/interaction/play_music.png</bitmap>
               <script language="4">
                 <content>
@@ -28681,8 +28680,7 @@ class MyClass(GeneratedClass):
               <bitmap>media/images/box/box-python-script.png</bitmap>
               <script language="4">
                 <content>
-                  <![CDATA[
-class MyClass(GeneratedClass):
+                  <![CDATA[class MyClass(GeneratedClass):
     def __init__(self):
         GeneratedClass.__init__(self)
         self.motionProxy = ALProxy("ALMotion")
@@ -28699,13 +28697,184 @@ class MyClass(GeneratedClass):
         #put clean-up code here
         pass
 
-    def onInput_onStart(self, angleList):
+    def parse_angles_string(self, string):
+        #request parsing
+        q = urlparse(string).query
+        parsed_q = parse_qs(q)
+        current_object.logger.info (str (parsed_q) + "parse input")
+
+        action = (parsed_q ['action']) [0]
+
+        try:
+            text   = (parsed_q ['text']) [0]
+        except:
+            pass
+
+        try:
+            r_shoulderpitch = (parsed_q['r_shoulderpitch']) [0]
+        except:
+            pass
+        try:
+            r_shoulderroll = (parsed_q['r_shoulderroll']) [0]
+        except:
+            pass
+        try:
+            r_elbowroll = (parsed_q['r_elbowroll']) [0]
+        except:
+            pass
+        try:
+            r_elbowyaw = (parsed_q['r_elbowyaw']) [0]
+        except:
+            pass
+        try:
+            l_shoulderpitch = (parsed_q['l_shoulderpitch']) [0]
+        except:
+            pass
+        try:
+            l_shoulderroll = (parsed_q['l_shoulderroll']) [0]
+        except:
+            pass
+        try:
+            l_elbowroll = (parsed_q['l_elbowroll']) [0]
+        except:
+            pass
+        try:
+            l_elbowyaw = (parsed_q['l_elbowyaw']) [0]
+        except:
+            pass
+        try:
+            head_Yaw = (parsed_q['head_Yaw']) [0]
+        except:
+            pass
+        try:
+            head_Pitch = (parsed_q['head_Pitch']) [0]
+        except:
+            pass
+        try:
+            pelvis = (parsed_q['pelvis']) [0]
+        except:
+            pass
+        try:
+            l_kneepitch = (parsed_q['l_kneepitch']) [0]
+        except:
+            pass
+        try:
+            r_kneepitch = (parsed_q['r_kneepitch']) [0]
+        except:
+            pass
+        try:
+            l_hippitch = (parsed_q['l_hippitch']) [0]
+        except:
+            pass
+        try:
+            r_hippitch = (parsed_q['r_hippitch']) [0]
+        except:
+            pass
+        try:
+            l_ankpitch = (parsed_q['l_ankpitch']) [0]
+        except:
+            pass
+        try:
+            r_ankpitch = (parsed_q['r_ankpitch']) [0]
+        except:
+            pass
+        try:
+            l_ankroll = (parsed_q['l_ankroll']) [0]
+        except:
+            pass
+
+        try:
+            l_hiproll = (parsed_q['l_hiproll']) [0]
+        except:
+            pass
+
+        try:
+            r_ankroll = (parsed_q['r_ankroll']) [0]
+        except:
+            pass
+
+        try:
+            r_hiproll = (parsed_q['r_hiproll']) [0]
+        except:
+            pass
+
+        try:
+            time = (parsed_q['mode']) [0]
+
+        except:
+            pass
+
+
+        list1 = []
+
+        try:
+            list1.append(head_Yaw)
+            list1.append(head_Pitch)
+            list1.append(l_shoulderroll)
+            list1.append(l_shoulderpitch)
+            list1.append(l_elbowroll)
+            current_object.logger.info (str (list1) + "first batch")
+            list1.append(l_elbowyaw)
+            list1.append(r_shoulderroll)
+            list1.append(r_shoulderpitch)
+            list1.append(r_elbowroll)
+            list1.append(r_elbowyaw)
+            current_object.logger.info (str (list1) + "second batch")
+
+            list1.append ('0')#(pelvis)
+
+            list1.append('0')#(l_kneepitch)
+            list1.append('0')#(r_kneepitch)
+            current_object.logger.info (str (list1) + "third batch")
+            list1.append('0')#(l_hippitch)
+            list1.append('0')#(r_hippitch)
+            list1.append('0')#(l_ankpitch)
+            list1.append('0')#(r_ankpitch)
+
+            time = "0.0"
+
+            if time == "0.0":
+                list1.append('0')#(l_ankroll)
+                list1.append('0')#(l_hiproll)
+                list1.append('0')#(r_ankroll)
+                list1.append('0')#(r_hiproll)
+                list1.append('0')#(time)
+                current_object.logger.info (type(time))
+                current_object.logger.info ("angles list extracted 0.0")
+
+            if time == "1.0":
+                list1.append(r_ankroll)
+                list1.append(r_hiproll)
+                list1.append(time)
+                current_object.logger.info (type(time))
+                current_object.logger.info ("angles list extracted 1.0")
+
+            if time == "2.0":
+                list1.append(l_ankroll)
+                list1.append(l_hiproll)
+                list1.append(time)
+                current_object.logger.info (type(time))
+                current_object.logger.info ("angles list extracted 2.0")
+
+        except:
+            pass
+
+        current_object.logger.info (str (len (list1)) + "len")
+
+        return list1
+
+    def onInput_onStart(self, angleList_):
+        angleList = self.parse_angles_string(angleList_)
 
         isAbsolute = True
         angleLists = []
 
         mode = float(angleList[-1])
 
+        self.logger.info("angles onInput")
+        self.logger.info(angleList)
+
+        #return
 
         if self.mode != mode:
             self.logger.info("UPDATED")
@@ -28801,13 +28970,18 @@ class MyClass(GeneratedClass):
         angleLists = []
         for angle in new_angleList:
             a = []
+            #self.logger.info (angle)
 
             a.append(float(angle))#*almath.TO_RAD)
             angleLists.append(a)
         timeLists = [self.timeList] * size
 
-        self.logger.info ("angles:")
-
+        self.logger.info ("names:")
+        self.logger.info (names)
+        self.logger.info (angleLists)
+        self.logger.info (new_angleList)
+        self.logger.info (timeLists)
+        #self.logger.info ("angles:")
 
         self.motionProxy.angleInterpolation(names, angleLists, timeLists, isAbsolute)
 
@@ -28820,7 +28994,7 @@ class MyClass(GeneratedClass):
                 </content>
               </script>
               <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
-              <Input name="onStart" type="2" type_size="8" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+              <Input name="onStart" type="3" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
               <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
               <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
               <Parameter name="number" inherits_from_parent="0" content_type="1" value="0" default_value="0" min="0" max="10000000" tooltip="" id="5" />
@@ -40765,6 +40939,160 @@ class MyClass(GeneratedClass):
                 </ActuatorList>
               </Timeline>
             </Box>
+            <Box name="Python Script (4)" id="279" localization="8" tooltip="This box contains a basic python script and can be used to create any python script box you would like.&#x0A;&#x0A;To edit its script, double-click on it." x="1948" y="1510">
+              <bitmap>media/images/box/box-python-script.png</bitmap>
+              <script language="4">
+                <content>
+                  <![CDATA[
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self)
+        self.motionProxy = ALProxy("ALMotion")
+        self.timeList = [0.8]
+        self.mode = 0.0
+        self.motionProxy.wbEnable(True)
+
+
+    def onLoad(self):
+        #put initialization code here
+        pass
+
+    def onUnload(self):
+        #put clean-up code here
+        pass
+
+    def onInput_onStart(self, angleList):
+        isAbsolute = True
+        angleLists = []
+
+        mode = float(angleList[-1])
+
+        self.logger.info("angles onInput")
+        self.logger.info(angleList)
+
+        if self.mode != mode:
+            self.logger.info("UPDATED")
+
+            if mode == 0.0 and self.mode == 1.0:
+                names_ = ["LHipRoll", "LAnkleRoll"]
+                angleLists_ = [[0.21, 0.2, 0.1, 0.0, -0.09, -0.17, -0.26, -0.29, -0.26, -0.17, -0.09, 0.0, 0.12], [0.29, 0.31,0.32, 0.32, 0.32, 0.31, 0.30, 0.26, 0.17, 0.13, 0.09, 0.0, -0.112]]
+                timeLists = [[ 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5], [ 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5]]
+
+                self.motionProxy.angleInterpolation(names_, angleLists_, timeLists, True)
+             #   self.motionProxy.wbEnableBalanceConstraint(False, "LLeg")
+                self.motionProxy.wbFootState("Fixed", "Legs")
+                self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
+
+
+
+            if mode == 0.0 and self.mode == 2.0:
+                names_ = ["RHipRoll", "RAnkleRoll"]
+                angleLists_ = [[ -0.25, -0.1, 0.0, 0.09, 0.17, 0.26, 0.3, 0.26, 0.17, 0.09, 0.0, -0.12], [ -0.29, -0.3, -0.31, -0.32, -0.32, -0.30, -0.26, -0.17, -0.13, -0.09, 0.0, -0.112]]
+                timeLists = [[ 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0], [ 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0]]
+                self.motionProxy.angleInterpolation(names_, angleLists_, timeLists, True)
+               # self.motionProxy.wbEnableBalanceConstraint(False, "RLeg")
+
+                self.motionProxy.wbFootState("Fixed", "Legs")
+                self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
+
+
+
+            if mode == 1.0 and self.mode == 0.0:
+              #  self.motionProxy.wbEnableBalanceConstraint(False, "Legs")
+
+                self.motionProxy.wbFootState("Free", "RLeg")
+                self.motionProxy.wbFootState("Fixed", "LLeg")
+                self.motionProxy.wbEnableBalanceConstraint(True, "LLeg")
+
+                names_ = ["LHipRoll", "LAnkleRoll"]
+                angleLists_ = [ [0.0, -0.09, -0.17, -0.26, -0.29, -0.26, -0.17, -0.09, 0.0, 0.1, 0.2, 0.3], [0.0, 0.09, 0.13, 0.17, 0.26, 0.30, 0.32, 0.32, 0.32, 0.31, 0.29, 0.29]]
+                timeLists = [[ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0], [ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0]]
+                self.logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                self.logger.info(mode)
+
+                self.motionProxy.angleInterpolation(names_, angleLists_, timeLists, True)
+
+
+            if mode == 2.0 and self.mode == 0.0:
+               # self.motionProxy.wbEnableBalanceConstraint(False, "Legs")
+
+                self.motionProxy.wbFootState("Free", "LLeg")
+                self.motionProxy.wbFootState("Fixed", "RLeg")
+                self.motionProxy.wbEnableBalanceConstraint(True, "RLeg")
+
+                names_ = ["RHipRoll", "RAnkleRoll"]
+                angleLists_ = [ [0.0, 0.09, 0.17, 0.26, 0.3, 0.26, 0.17, 0.09, 0.0, -0.1, -0.25], [0.0, -0.09, -0.13, -0.17, -0.26, -0.30, -0.32, -0.32, -0.31, -0.3, -0.29]]
+                timeLists = [[ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5], [ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5]]
+                self.motionProxy.angleInterpolation(names_, angleLists_, timeLists, True)
+
+        self.mode = mode
+        self.logger.info(self.mode)
+
+
+
+        if self.mode == 0.0:
+
+            self.motionProxy.wbFootState("Fixed", "Legs")
+            self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
+            size = 21
+            new_angleList = angleList[:size]
+            names = ["HeadYaw","HeadPitch", "LShoulderRoll", "LShoulderPitch", "LElbowRoll", "LElbowYaw", "RShoulderRoll","RShoulderPitch", "RElbowRoll", "RElbowYaw", "LHipYawPitch", "LKneePitch", "RKneePitch", "LHipPitch", "RHipPitch", "LAnklePitch", "RAnklePitch","LAnkleRoll", "LHipRoll", "RAnkleRoll", "RHipRoll"]
+            self.logger.info("MODE 0.0")
+
+
+        if self.mode == 1.0:
+            size = 19
+            new_angleList = angleList[:size]
+            new_angleList.append(0.3)
+            new_angleList.append(0.29)
+            size = 21
+            names = ["HeadYaw","HeadPitch", "LShoulderRoll", "LShoulderPitch", "LElbowRoll", "LElbowYaw", "RShoulderRoll","RShoulderPitch", "RElbowRoll", "RElbowYaw", "LHipYawPitch", "LKneePitch", "RKneePitch", "LHipPitch", "RHipPitch", "LAnklePitch", "RAnklePitch", "RAnkleRoll", "RHipRoll", "LHipRoll", "LAnkleRoll"]
+            self.logger.info("MODE 1.0")
+
+
+        if self.mode == 2.0:
+            size = 19
+            new_angleList = angleList[:size]
+            new_angleList.append(-0.25)
+            new_angleList.append(-0.29)
+            size = 21
+            names = ["HeadYaw","HeadPitch", "LShoulderRoll", "LShoulderPitch", "LElbowRoll", "LElbowYaw", "RShoulderRoll","RShoulderPitch", "RElbowRoll", "RElbowYaw", "LHipYawPitch", "LKneePitch", "RKneePitch", "LHipPitch", "RHipPitch", "LAnklePitch", "RAnklePitch","LAnkleRoll", "LHipRoll", "RHipRoll", "RAnkleRoll"]
+            self.logger.info("MODE 2.0")
+
+
+
+        angleLists = []
+        for angle in new_angleList:
+            a = []
+            #self.logger.info (angle)
+
+            a.append(float(angle))#*almath.TO_RAD)
+            angleLists.append(a)
+        timeLists = [self.timeList] * size
+
+        self.logger.info ("names:")
+        self.logger.info (names)
+        self.logger.info (angleLists)
+        self.logger.info (new_angleList)
+        self.logger.info (timeLists)
+        #self.logger.info ("angles:")
+
+        self.motionProxy.angleInterpolation(names, angleLists, timeLists, isAbsolute)
+
+        #pass
+
+    def onInput_onStop(self):
+        self.motionProxy.wbEnable(False)
+        self.onUnload() #it is recommended to reuse the clean-up as the box is stopped
+        self.onStopped() #activate the output of the box]]>
+                </content>
+              </script>
+              <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+              <Input name="onStart" type="3" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+              <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+              <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
+              <Parameter name="number" inherits_from_parent="0" content_type="1" value="0" default_value="0" min="0" max="10000000" tooltip="" id="5" />
+            </Box>
             <Link inputowner="1" indexofinput="3" outputowner="1" indexofoutput="7" />
             <Link inputowner="2" indexofinput="2" outputowner="1" indexofoutput="9" />
             <Link inputowner="3" indexofinput="2" outputowner="1" indexofoutput="10" />
@@ -40932,7 +41260,6 @@ class MyClass(GeneratedClass):
             <Link inputowner="12" indexofinput="2" outputowner="179" indexofoutput="4" />
             <Link inputowner="180" indexofinput="2" outputowner="1" indexofoutput="30" />
             <Link inputowner="12" indexofinput="2" outputowner="180" indexofoutput="4" />
-            <Link inputowner="179" indexofinput="2" outputowner="1" indexofoutput="85" />
             <Link inputowner="1" indexofinput="2" outputowner="52" indexofoutput="3" />
             <Link inputowner="166" indexofinput="2" outputowner="1" indexofoutput="8" />
             <Link inputowner="12" indexofinput="2" outputowner="166" indexofoutput="4" />
@@ -41095,6 +41422,7 @@ class MyClass(GeneratedClass):
             <Link inputowner="278" indexofinput="2" outputowner="277" indexofoutput="4" />
             <Link inputowner="12" indexofinput="2" outputowner="278" indexofoutput="4" />
             <Link inputowner="260" indexofinput="2" outputowner="1" indexofoutput="62" />
+            <Link inputowner="179" indexofinput="2" outputowner="1" indexofoutput="85" />
           </Diagram>
         </BehaviorKeyframe>
       </BehaviorLayer>

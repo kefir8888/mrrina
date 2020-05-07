@@ -9,8 +9,6 @@ from test.draw import Plotter3d
 import os
 import json
 
-
-
 class Modality:
     def __init__ (self, logger_=0):
         self.timeout = common.Timeout_module (0.35)

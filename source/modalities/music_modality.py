@@ -1,29 +1,15 @@
 from modalities.modality import  Modality
-from modalities.skeleton_modality import  Skeleton
 
 import numpy as np
 import common
-import torch
-from skel_proc import  get_skel_coords
-from modules.load_state import load_state
-from test.with_mobilenet import PoseEstimationWithMobileNet
-from models.with_mobilenet_ import PoseEstimationWithMobileNet_
-import io
-
-#from test.demo import draww
-from argparse import ArgumentParser
-import json
-import os
-from test.input_reader import VideoReader, ImageReader
-from test.draw import Plotter3d, draw_poses
-from test.parse_poses import parse_poses
-from test.inference_engine_pytorch import InferenceEnginePyTorch
 
 import pydub
 from pydub import AudioSegment
 from pydub.playback import play
 import scipy.fftpack
 import cv2
+
+import multiprocessing
 
 class Motion_source:
     def __init__ (self):
@@ -68,26 +54,15 @@ class Music (Modality):
                          "16": [("/hands_sides", [""])]
                          }
 
-        rate, audio = self.read(music_path_)
-        N = 2000
-        an_part = audio[:2000, 1]
-        x = np.linspace(0, 2 * np.pi, N)
-        #print("sh", an_part.shape)
-
-        w = scipy.fftpack.rfft(an_part)
-        f = scipy.fftpack.rfftfreq(N, x[1] - x[0])
-        spectrum = w ** 2
-
-        cutoff_idx = spectrum > (spectrum.max() / 15)
-        w2 = w.copy()
-        w2[cutoff_idx] = 0
-
-        #print(f[1])
-
-        self.timeout = common.Timeout_module(1 / f[1] / 8)
+        self.rate, self.audio = self.read(music_path_)
+        self._extract_rhythm ()
+        self.timeout = common.Timeout_module(1 / self.rhythm / 8)
 
         #song = AudioSegment.from_mp3 (music_path_)
         #play (song)
+
+    def play_song (self):
+        pass
 
     def read(self, f, normalized=False):
         """MP3 to numpy array"""
@@ -110,6 +85,21 @@ class Music (Modality):
         song = pydub.AudioSegment(y.tobytes(), frame_rate=sr, sample_width=2, channels=channels)
         song.export(f, format="mp3", bitrate="320k")
 
+    def _extract_rhythm (self):
+        N = 2000
+        an_part = self.audio [:2000, 1]
+        x = np.linspace (0, 2 * np.pi, N)
+
+        w = scipy.fftpack.rfft (an_part)
+        f = scipy.fftpack.rfftfreq (N, x[1] - x[0])
+        spectrum = w**2
+
+        cutoff_idx = spectrum > (spectrum.max () / 15)
+        w2 = w.copy ()
+        w2 [cutoff_idx] = 0
+
+        self.rhythm = f [1]
+
     def name(self):
         return "Dance generation with audio input"
 
@@ -126,7 +116,7 @@ class Music (Modality):
         comm = self.commands ["noaction"]
 
         if (self.timeout.timeout_passed ()):
-            l     = len (self.commands)
+            l = len (self.commands)
 
             comm = self.commands[str (np.random.randint (1, l))]
             self.tick += 1
