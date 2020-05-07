@@ -16,14 +16,15 @@ paths = {"kompaso" : {"model_path"   : "/home/kompaso/NAO_PROJECT/wenhai/source/
          "elijah"  : {"model_path"   : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/test/human-pose-estimation-3d.pth",
                       "phrases_path" : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt",
                       "vision_path"  : "/Users/elijah/Dropbox/Programming/robotics_course/modules/"}}
-# user = "elijah"
-user = "kompaso"
+
+user = "elijah"
+#user = "kompaso"
 
 sys.path.append (paths [user] ["vision_path"])
 import input_output
 
 class Manager:
-    def __init__ (self, config_ = "", silent_mode_ = True, time_to_not_silent_ =  0, color_ = 230):
+    def __init__ (self, config_ = "", silent_mode_ = True, time_to_not_silent_ =  0, color_ = 190):
         self.inputs = {}
         self.robots_list = {}
         self.silent_mode = silent_mode_
@@ -61,10 +62,12 @@ class Manager:
 
         return result
 
-    def handle_keyboard (self):
-        self.inputs["computer keyboard"][0]._read_data()
+    def handle_modalities (self):
+        self.output_images = []
+        self.output_names  = []
 
-        keyboard_data = self.inputs ["computer keyboard"] [0].get_read_data ()
+        self.inputs["computer keyboard"][0]._read_data()
+        keyboard_data = self.inputs["computer keyboard"][0].get_read_data()
 
         if (keyboard_data == ord("q")):
             self.quit = True
@@ -76,10 +79,6 @@ class Manager:
             self.silent_mode = False
             self.time_to_not_silent = 1000000000
 
-    def handle_modalities (self):
-        self.output_images = []
-        self.output_names  = []
-
         for modality in self.inputs.keys ():
             skip_reading_data = False
 
@@ -88,6 +87,8 @@ class Manager:
 
             command = self.inputs [modality] [0].get_command (skip_reading_data)
 
+            print ("command", command)
+
             self.logfile.write (str (self.curr_time) + str (command))
 
             action = self.fsm_processor.handle_command (command)
@@ -95,6 +96,7 @@ class Manager:
             if (self.silent_mode == False):
                 for key in self.inputs [modality] [1]:
                     if (key in self.robots_list.keys ()):
+                        print ("adding action", key, action)
                         self.robots_list [key].add_action (action)
 
             modality_frames = self.inputs [modality] [0].draw (self.canvas)
@@ -121,7 +123,6 @@ class Manager:
         self.curr_time = time ()
         # tracker.update("time", curr_time)
 
-        self.handle_keyboard   ()
         self.handle_modalities ()
         self.handle_robots     ()
 
@@ -141,12 +142,12 @@ def main():
     manager.init ()
 
     inputs = {"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
-                                    logger_ = manager.tracker), ["physical", "simulated2"]),
+                                    logger_ = manager.tracker), ["physical", "simulated2"])}#},
 
               # "video input": (Video(video_path_ = "/Users/elijah/Downloads/sort/snoop_ponomareva.mp4", model_path_ = paths [user] ["model_path"],
               # base_height_ = 230, logger_ = manager.tracker), ["physical", "simulated2"]) }
-              "Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
-              base_height_ = 300, logger_ = manager.tracker), ["physical", "simulated2"])}
+              #"Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
+              #base_height_ = 300, logger_ = manager.tracker), ["physical", "simulated2"])}
 
               # "archive skeleton"  : (Skeleton_3D (skeleton_path_ = "/home/kompaso/diplom_modules/S001C001P001R001A010.skeleton", logger_ = tracker),
               #                       ["simulated2"])}
@@ -159,12 +160,10 @@ def main():
         manager.add_robots ({"physical" : robots.Real_robot (ip, "9569", logger_ = manager.tracker)})
 
     while (True):
-        manager.handle_keyboard ()
-
         if (manager.on_idle () ["quit"] == True):
             break
 
-        cv2.imshow ("remote_controller", manager.form_output_image (1400))
+        cv2.imshow ("remote_controller", manager.form_output_image (900))
 
 if __name__ == '__main__':
     main()

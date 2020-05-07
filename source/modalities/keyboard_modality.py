@@ -315,6 +315,7 @@ class Computer_keyboard (Modality):
 
     def _read_data (self):
         self.read_data = cv2.waitKey (1)
+        #print ("read data", self.read_data)
 
     def get_read_data (self):
         return self.read_data
