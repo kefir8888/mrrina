@@ -36,6 +36,9 @@ class Manager:
         cv2.destroyAllWindows()
 
     def create_window (self, WIND_X, WIND_Y):
+        self.WIND_X = WIND_X
+        self.WIND_Y = WIND_Y
+
         cv2.namedWindow("remote_controller", cv2.WINDOW_AUTOSIZE)
         cv2.resizeWindow("remote_controller", (WIND_Y, WIND_X))
         self.canvas = np.ones ((WIND_Y, WIND_X, 3), np.uint8) * self.color
@@ -101,7 +104,7 @@ class Manager:
                 self.output_names.append (modality)
 
     def handle_robots (self):
-        self.canvas = np.ones ((WIND_Y, WIND_X, 3), np.uint8) * self.color
+        self.canvas = np.ones ((self.WIND_Y, self.WIND_X, 3), np.uint8) * self.color
         canvas_ = self.canvas.copy ()
         output_images += tracker.draw (canvas)
 
