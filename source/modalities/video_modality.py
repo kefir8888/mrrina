@@ -18,8 +18,8 @@ class Video (GetPoints):
         self.canvas_3d_window_name = 'Video Skeleton 3D'
 
         if (video_path_ == ""):
-            self.all_data = cv2.VideoCapture("/home/kompaso/Desktop/sit.mp4")
-            # self.all_data = cv2.VideoCapture(1)#self.available_cameras[-1]) #/home/kompaso/Desktop/hand_high.mp4
+            # self.all_data = cv2.VideoCapture("/home/kompaso/Desktop/sit.mp4")
+            self.all_data = cv2.VideoCapture(0)#self.available_cameras[-1]) #/home/kompaso/Desktop/hand_high.mp4
 
         self.read = False
 

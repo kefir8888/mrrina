@@ -15,7 +15,9 @@ import os
 
 import cv2
 
-import pyrealsense2 as rs
+#сорян, закомментил, чтобы  проверить, что у меня все остальное работает [elijah 07.05.20]
+#import pyrealsense2 as rs
+
 import math
 
 from modalities.modality import  Modality

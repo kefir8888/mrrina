@@ -25,6 +25,24 @@ from pydub.playback import play
 import scipy.fftpack
 import cv2
 
+class Motion_source:
+    def __init__ (self):
+        pass
+
+    def get_motion (self, time):
+        return np.zeros (18, np.float32)
+
+#from skeleton_modalities import smth
+#class Cyclic
+#class Markov_chain
+#class Rhytmic_sine
+
+#class Archieve_data
+#class Archieve_data_format1
+#class Archieve_data_format2
+
+#class External_model_loader
+
 class Music (Modality):
     def __init__ (self, music_path_ = "", logger_ = 0):
         self.logger = logger_
