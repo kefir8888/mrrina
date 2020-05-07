@@ -16,8 +16,8 @@ paths = {"kompaso" : {"model_path"   : "/home/kompaso/NAO_PROJECT/wenhai/source/
          "elijah"  : {"model_path"   : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/test/human-pose-estimation-3d.pth",
                       "phrases_path" : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt",
                       "vision_path"  : "/Users/elijah/Dropbox/Programming/robotics_course/modules/"}}
-user = "elijah"
-#user = "kompaso"
+# user = "elijah"
+user = "kompaso"
 
 sys.path.append (paths [user] ["vision_path"])
 import input_output
@@ -141,12 +141,12 @@ def main():
     manager.init ()
 
     inputs = {"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
-                                    logger_ = manager.tracker), ["physical", "simulated2"])}#,
+                                    logger_ = manager.tracker), ["physical", "simulated2"]),
 
-              #"video input": (Video(video_path_ = "/Users/elijah/Downloads/sort/snoop_ponomareva.mp4", model_path_ = paths [user] ["model_path"],
-              #base_height_ = 230, logger_ = manager.tracker), ["physical", "simulated2"]) }
-              # "Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
-              # base_height_ = 300, logger_ = tracker), ["physical", "simulated2"])}
+              # "video input": (Video(video_path_ = "/Users/elijah/Downloads/sort/snoop_ponomareva.mp4", model_path_ = paths [user] ["model_path"],
+              # base_height_ = 230, logger_ = manager.tracker), ["physical", "simulated2"]) }
+              "Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
+              base_height_ = 300, logger_ = manager.tracker), ["physical", "simulated2"])}
 
               # "archive skeleton"  : (Skeleton_3D (skeleton_path_ = "/home/kompaso/diplom_modules/S001C001P001R001A010.skeleton", logger_ = tracker),
               #                       ["simulated2"])}

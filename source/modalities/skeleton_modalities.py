@@ -154,6 +154,7 @@ class Skeleton_3D(WorkWithPoints):
         self.previous_knee = 0
         self.previous_hip = 0
         self.previous_ankl = 0
+        self.mode = 0.0
 
 
 
@@ -174,12 +175,12 @@ class Skeleton_3D(WorkWithPoints):
         return "skeleton"
 
     def detecting_mode(self, kps):
-        if (kps['l_ank'][1] - kps['r_ank'][1]) > 50:
-            return "left_leg_mod"
-        elif (kps['r_ank'][1] - kps['l_ank'][1]) > 50:
-            return "right_leg_mod"
+        if (kps['l_ank'][1] - kps['r_ank'][1]) > 30:
+            return 1.0
+        elif (kps['r_ank'][1] - kps['l_ank'][1]) > 30:
+            return 2.0
         else:
-            return "double_mod"
+            return 0.0
 
 
     def _read_data (self):
@@ -219,6 +220,8 @@ class Skeleton_3D(WorkWithPoints):
         self.interpreted_data = self.create_dicts_with_coords_3D()
 
         kps = self.get_mean_cords(self.kps_mean)
+
+        # self.processed_data["mode"] = 1
 
         ##################################################left_full_hand##############################################################
         l_hip_neck = common.create_vec(kps["mid_hip"], kps["neck"])
@@ -507,7 +510,7 @@ class Skeleton_3D(WorkWithPoints):
         # self.processed_data ["l_hip_pitch"]  = round(self.get_mean(self.angles_mean["r_hip_pitch"]), 2)
         # # self.processed_data ["r_elb_yaw"]   = round(self.get_mean(self.angles_mean["r_elb_yaw"]), 2)
         # # self.processed_data ["r_elb_roll"]  = round(self.get_mean(self.angles_mean["r_elb_roll"]), 2)
-        self.processed_data ["new_joints_time"] = 0.75 
+        # self.processed_data ["mode"] = "Double"
         #############################################################################################################################
 
         ###################################################head#######################################################################
@@ -545,8 +548,14 @@ class Skeleton_3D(WorkWithPoints):
         #############################################################################################################################
         #
         detecting_mode_1 =  math.acos(np.dot(r_hip_knee, l_hip_knee)/(mod_l_hip_knee*mod_r_hip_knee))
-        self.logger.update("AAAA",detecting_mode_1)
-        self.logger.update("AAAA___AAAAA",self.detecting_mode(kps))
+        # self.logger.update("AAAA",detecting_mode_1)
+        mode_ = self.detecting_mode(kps)
+        print("SELF MODE", self.mode)
+        self.logger.update("MODE", mode_)
+        if mode_ != self.mode:
+
+            self.processed_data["mode"] = mode_
+            self.mode = mode_
 
 
 
@@ -723,6 +732,7 @@ class Skeleton_3D(WorkWithPoints):
 
         for key in self.processed_data.keys ():
             commands.append (("/set_joint_angle", [key, str (self.processed_data [key])]))
+
 
         return commands
 
