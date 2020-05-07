@@ -1,26 +1,7 @@
-from modalities.keyboard_modality import Computer_keyboard
-from modalities.video_modality import Video
-from modalities.skeleton_modalities import Skeleton_3D
-from modalities.realsense_modality import RealSense
 import fsm
-import robots
 from common import *
 from time import time, sleep
-import sys
 from value_tracker import Value_tracker
-
-paths = {"kompaso" : {"model_path"   : "/home/kompaso/NAO_PROJECT/wenhai/source/test/human-pose-estimation-3d.pth",
-                      "phrases_path" : "/home/kompaso/NAO_PROJECT/wenhai/data/sounds/phrases.txt",
-                      "vision_path"  : "/home/kompaso/NAO_PROJECT/wenhai/robotics_course/modules/"},
-
-         "elijah"  : {"model_path"   : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/test/human-pose-estimation-3d.pth",
-                      "phrases_path" : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt",
-                      "vision_path"  : "/Users/elijah/Dropbox/Programming/robotics_course/modules/"}}
-
-user = "elijah"
-#user = "kompaso"
-
-sys.path.append (paths [user] ["vision_path"])
 import input_output
 
 class Manager:
@@ -87,7 +68,7 @@ class Manager:
 
             command = self.inputs [modality] [0].get_command (skip_reading_data)
 
-            print ("command", command)
+            #print ("command", command)
 
             self.logfile.write (str (self.curr_time) + str (command))
 
@@ -96,7 +77,7 @@ class Manager:
             if (self.silent_mode == False):
                 for key in self.inputs [modality] [1]:
                     if (key in self.robots_list.keys ()):
-                        print ("adding action", key, action)
+                        #print ("adding action", key, action)
                         self.robots_list [key].add_action (action)
 
             modality_frames = self.inputs [modality] [0].draw (self.canvas)
@@ -133,37 +114,3 @@ class Manager:
         sleep  (0.02)
 
         return {"quit" : self.quit}
-
-def main():
-    AUTONOMOUS = True #without physical robot
-
-    manager = Manager ()
-    manager.create_window (800, 700)
-    manager.init ()
-
-    inputs = {"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
-                                    logger_ = manager.tracker), ["physical", "simulated2"])}#},
-
-              # "video input": (Video(video_path_ = "/Users/elijah/Downloads/sort/snoop_ponomareva.mp4", model_path_ = paths [user] ["model_path"],
-              # base_height_ = 230, logger_ = manager.tracker), ["physical", "simulated2"]) }
-              #"Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
-              #base_height_ = 300, logger_ = manager.tracker), ["physical", "simulated2"])}
-
-              # "archive skeleton"  : (Skeleton_3D (skeleton_path_ = "/home/kompaso/diplom_modules/S001C001P001R001A010.skeleton", logger_ = tracker),
-              #                       ["simulated2"])}
-
-    manager.add_inputs (inputs)
-    manager.add_robots ({"simulated2" : robots.Simulated_robot (logger_ = manager.tracker)})
-
-    if (AUTONOMOUS == False):
-        ip = "192.168.1.66"
-        manager.add_robots ({"physical" : robots.Real_robot (ip, "9569", logger_ = manager.tracker)})
-
-    while (True):
-        if (manager.on_idle () ["quit"] == True):
-            break
-
-        cv2.imshow ("remote_controller", manager.form_output_image (900))
-
-if __name__ == '__main__':
-    main()

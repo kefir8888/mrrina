@@ -3,6 +3,9 @@ import numpy as np
 import time
 import math
 from pathlib import Path
+from time import time, sleep
+import sys
+from value_tracker import Value_tracker
 
 #from IPython.display import clear_output
 
@@ -16,6 +19,14 @@ from gtts import gTTS
 
 #.mp3 files playing
 #from pygame import mixer
+
+paths = {"kompaso" : {"model_path"   : "/home/kompaso/NAO_PROJECT/wenhai/source/test/human-pose-estimation-3d.pth",
+                      "phrases_path" : "/home/kompaso/NAO_PROJECT/wenhai/data/sounds/phrases.txt",
+                      "vision_path"  : "/home/kompaso/NAO_PROJECT/wenhai/robotics_course/modules/"},
+
+         "elijah"  : {"model_path"   : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/test/human-pose-estimation-3d.pth",
+                      "phrases_path" : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt",
+                      "vision_path"  : "/Users/elijah/Dropbox/Programming/robotics_course/modules/"}}
 
 def get_available_cameras(upper_bound=10, lower_bound=0):
     available = []
@@ -39,7 +50,7 @@ class Timeout_module:
         self._update ()
 
     def _update (self):
-        self.curr_time = time.time ()
+        self.curr_time = time ()
 
     def _update_last_action_time (self, new_last_action_time = -1):
         if (new_last_action_time == -1):

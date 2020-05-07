@@ -62,10 +62,10 @@ class Robot:
         #actions from the queue. If the robot is real, it (to this date)
         #performs only one action
 
-        print ("on_idle, ", len (self.queue), self.commands_sent)
+        #print ("on_idle, ", len (self.queue), self.commands_sent)
 
         if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent)):
-            print ("TIMEOUT_PASSED")
+            #print ("TIMEOUT_PASSED")
             while (len (self.queue) > self.commands_sent):
                 # print ("len >")
                 next_command = self.queue [self.commands_sent]

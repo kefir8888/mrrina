@@ -2,17 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="09311d07-103c-49a8-b68f-de07bcdb2b48" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../adelaida" beforeDir="false" afterPath="$PROJECT_DIR$/../../adelaida" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../2020-04-02-22_05_11.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../2020-05-01-19_14_08.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../2020-05-01-19_15_18.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modalities.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modalities.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common.py" beforeDir="false" afterPath="$PROJECT_DIR$/../common.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard_modality.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard_modality.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/realsense_modality.py" beforeDir="false" afterPath="$PROJECT_DIR$/realsense_modality.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../remote_control.py" beforeDir="false" afterPath="$PROJECT_DIR$/../remote_control.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../remote_control.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../robots.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robots.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -25,6 +19,11 @@
   </component>
   <component name="ProjectId" id="1bYIiQq1VSPxBFnMyYcZhxrow4T" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
@@ -73,6 +72,10 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
+    <state x="320" y="115" key="#Inspections" timestamp="1588870544913">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state x="320" y="115" key="#Inspections/0.0.1440.900@0.0.1440.900" timestamp="1588870544913" />
     <state width="1419" height="188" key="GridCell.Tab.0.bottom" timestamp="1588867498992">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
