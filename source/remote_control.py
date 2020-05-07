@@ -106,13 +106,13 @@ class Manager:
     def handle_robots (self):
         self.canvas = np.ones ((self.WIND_Y, self.WIND_X, 3), np.uint8) * self.color
         canvas_ = self.canvas.copy ()
-        output_images += tracker.draw (canvas)
+        self.output_images += self.tracker.draw (self.canvas)
 
         if (self.silent_mode == False):
             for key in self.robots_list.keys ():
                 self.robots_list [key].on_idle ()
 
-        list (robots_list.items ()) [0] [1].plot_state (canvas_, 150, 40, 2.5)
+        list (self.robots_list.items ()) [0] [1].plot_state (canvas_, 150, 40, 2.5)
 
         self.output_images.append (canvas_)
         self.output_names.append  ("remote controller")
@@ -125,7 +125,7 @@ class Manager:
         self.handle_modalities ()
         self.handle_robots     ()
 
-        if (silent_mode == True):
+        if (self.silent_mode == True):
             self.canvas = cv2.putText (self.canvas, "silent mode", (30, 100), cv2.FONT_HERSHEY_SIMPLEX,
                    1, (0, 255, 0), 2, cv2.LINE_AA)
 
@@ -141,10 +141,10 @@ def main():
     manager.init ()
 
     inputs = {"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
-                                    logger_ = manager.tracker), ["physical", "simulated2"]) ,
+                                    logger_ = manager.tracker), ["physical", "simulated2"])}#,
 
-              "video input": (Video(video_path_ = "", model_path_ = paths [user] ["model_path"],
-              base_height_ = 30, logger_ = manager.tracker), ["physical", "simulated2"]) }
+              #"video input": (Video(video_path_ = "/Users/elijah/Downloads/sort/snoop_ponomareva.mp4", model_path_ = paths [user] ["model_path"],
+              #base_height_ = 230, logger_ = manager.tracker), ["physical", "simulated2"]) }
               # "Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
               # base_height_ = 300, logger_ = tracker), ["physical", "simulated2"])}
 
