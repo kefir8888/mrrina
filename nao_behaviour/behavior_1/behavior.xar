@@ -48,6 +48,8 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
     current_object.logger.info (parsed_q)
 
     action = (parsed_q ['action']) [0]
+
+
     try:
         text   = (parsed_q ['text']) [0]
     except:
@@ -104,16 +106,6 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
         r_kneepitch = (parsed_q['r_kneepitch']) [0]
     except:
         pass
-
-    try:
-        l_hiproll = (parsed_q['l_hiproll']) [0]
-    except:
-        pass
-    try:
-        r_hiproll = (parsed_q['r_hiproll']) [0]
-    except:
-        pass
-
     try:
         l_hippitch = (parsed_q['l_hippitch']) [0]
     except:
@@ -134,8 +126,25 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
         l_ankroll = (parsed_q['l_ankroll']) [0]
     except:
         pass
+
+    try:
+        l_hiproll = (parsed_q['l_hiproll']) [0]
+    except:
+        pass
+
     try:
         r_ankroll = (parsed_q['r_ankroll']) [0]
+    except:
+        pass
+
+    try:
+        r_hiproll = (parsed_q['r_hiproll']) [0]
+    except:
+        pass
+
+    try:
+        time = (parsed_q['mode']) [0]
+
     except:
         pass
 
@@ -143,6 +152,7 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
     list1 = []
 
     try:
+
         list1.append(head_Yaw)
         list1.append(head_Pitch)
         list1.append(l_shoulderroll)
@@ -156,19 +166,33 @@ class NaoRemoteHTTPRequestHandler(BaseHTTPRequestHandler):
         list1.append(pelvis)
         list1.append(l_kneepitch)
         list1.append(r_kneepitch)
-        list1.append(l_hiproll)
-        list1.append(r_hiproll)
         list1.append(l_hippitch)
         list1.append(r_hippitch)
         list1.append(l_ankpitch)
         list1.append(r_ankpitch)
-        list1.append(l_ankroll)
-        list1.append(r_ankroll)
 
+        if time == "0.0":
+            list1.append(l_ankroll)
+            list1.append(l_hiproll)
+            list1.append(r_ankroll)
+            list1.append(r_hiproll)
+            list1.append(time)
+            current_object.logger.info (type(time))
+            current_object.logger.info ("angles list extracted 0.0")
 
+        if time == "1.0":
+            list1.append(r_ankroll)
+            list1.append(r_hiproll)
+            list1.append(time)
+            current_object.logger.info (type(time))
+            current_object.logger.info ("angles list extracted 1.0")
 
-
-        current_object.logger.info ("angles list extracted")
+        if time == "2.0":
+            list1.append(l_ankroll)
+            list1.append(l_hiproll)
+            list1.append(time)
+            current_object.logger.info (type(time))
+            current_object.logger.info ("angles list extracted 2.0")
 
     except:
         pass
@@ -28662,6 +28686,10 @@ class MyClass(GeneratedClass):
     def __init__(self):
         GeneratedClass.__init__(self)
         self.motionProxy = ALProxy("ALMotion")
+        self.timeList = [0.8]
+        self.mode = 0.0
+        self.motionProxy.wbEnable(True)
+
 
     def onLoad(self):
         #put initialization code here
@@ -28672,29 +28700,121 @@ class MyClass(GeneratedClass):
         pass
 
     def onInput_onStart(self, angleList):
-        #self.onStopped() #activate the output of the box
 
-        names = ["HeadYaw","HeadPitch", "LShoulderRoll", "LShoulderPitch", "LElbowRoll", "LElbowYaw", "RShoulderRoll","RShoulderPitch", "RElbowRoll", "RElbowYaw", "LHipYawPitch", "LKneePitch", "RKneePitch", "LHipRoll", "RHipRoll", "LHipPitch", "RHipPitch", "LAnklePitch", "RAnklePitch","LAnkleRoll", "RAnkleRoll"]
-        timeList = [0.4]
-        timeLists = [timeList] * 21
-        #timeLists = [[0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4], [0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4],[0.4], [0.4],[0.4]]
         isAbsolute = True
         angleLists = []
 
-        for angle in angleList:
+        mode = float(angleList[-1])
+
+
+        if self.mode != mode:
+            self.logger.info("UPDATED")
+
+            if mode == 0.0 and self.mode == 1.0:
+                names_ = ["LHipRoll", "LAnkleRoll"]
+                angleLists_ = [[0.21, 0.2, 0.1, 0.0, -0.09, -0.17, -0.26, -0.29, -0.26, -0.17, -0.09, 0.0, 0.12], [0.29, 0.31,0.32, 0.32, 0.32, 0.31, 0.30, 0.26, 0.17, 0.13, 0.09, 0.0, -0.112]]
+                timeLists = [[ 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5], [ 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5]]
+
+                self.motionProxy.angleInterpolation(names_, angleLists_, timeLists, True)
+             #   self.motionProxy.wbEnableBalanceConstraint(False, "LLeg")
+                self.motionProxy.wbFootState("Fixed", "Legs")
+                self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
+
+
+
+            if mode == 0.0 and self.mode == 2.0:
+                names_ = ["RHipRoll", "RAnkleRoll"]
+                angleLists_ = [[ -0.25, -0.1, 0.0, 0.09, 0.17, 0.26, 0.3, 0.26, 0.17, 0.09, 0.0, -0.12], [ -0.29, -0.3, -0.31, -0.32, -0.32, -0.30, -0.26, -0.17, -0.13, -0.09, 0.0, -0.112]]
+                timeLists = [[ 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0], [ 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0]]
+                self.motionProxy.angleInterpolation(names_, angleLists_, timeLists, True)
+               # self.motionProxy.wbEnableBalanceConstraint(False, "RLeg")
+
+                self.motionProxy.wbFootState("Fixed", "Legs")
+                self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
+
+
+
+            if mode == 1.0 and self.mode == 0.0:
+              #  self.motionProxy.wbEnableBalanceConstraint(False, "Legs")
+
+                self.motionProxy.wbFootState("Free", "RLeg")
+                self.motionProxy.wbFootState("Fixed", "LLeg")
+                self.motionProxy.wbEnableBalanceConstraint(True, "LLeg")
+
+                names_ = ["LHipRoll", "LAnkleRoll"]
+                angleLists_ = [ [0.0, -0.09, -0.17, -0.26, -0.29, -0.26, -0.17, -0.09, 0.0, 0.1, 0.2, 0.3], [0.0, 0.09, 0.13, 0.17, 0.26, 0.30, 0.32, 0.32, 0.32, 0.31, 0.29, 0.29]]
+                timeLists = [[ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0], [ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0]]
+                self.logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                self.logger.info(mode)
+
+                self.motionProxy.angleInterpolation(names_, angleLists_, timeLists, True)
+
+
+            if mode == 2.0 and self.mode == 0.0:
+               # self.motionProxy.wbEnableBalanceConstraint(False, "Legs")
+
+                self.motionProxy.wbFootState("Free", "LLeg")
+                self.motionProxy.wbFootState("Fixed", "RLeg")
+                self.motionProxy.wbEnableBalanceConstraint(True, "RLeg")
+
+                names_ = ["RHipRoll", "RAnkleRoll"]
+                angleLists_ = [ [0.0, 0.09, 0.17, 0.26, 0.3, 0.26, 0.17, 0.09, 0.0, -0.1, -0.25], [0.0, -0.09, -0.13, -0.17, -0.26, -0.30, -0.32, -0.32, -0.31, -0.3, -0.29]]
+                timeLists = [[ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5], [ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5]]
+                self.motionProxy.angleInterpolation(names_, angleLists_, timeLists, True)
+
+        self.mode = mode
+        self.logger.info(self.mode)
+
+
+
+        if self.mode == 0.0:
+
+            self.motionProxy.wbFootState("Fixed", "Legs")
+            self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
+            size = 21
+            new_angleList = angleList[:size]
+            names = ["HeadYaw","HeadPitch", "LShoulderRoll", "LShoulderPitch", "LElbowRoll", "LElbowYaw", "RShoulderRoll","RShoulderPitch", "RElbowRoll", "RElbowYaw", "LHipYawPitch", "LKneePitch", "RKneePitch", "LHipPitch", "RHipPitch", "LAnklePitch", "RAnklePitch","LAnkleRoll", "LHipRoll", "RAnkleRoll", "RHipRoll"]
+            self.logger.info("MODE 0.0")
+
+
+        if self.mode == 1.0:
+            size = 19
+            new_angleList = angleList[:size]
+            new_angleList.append(0.3)
+            new_angleList.append(0.29)
+            size = 21
+            names = ["HeadYaw","HeadPitch", "LShoulderRoll", "LShoulderPitch", "LElbowRoll", "LElbowYaw", "RShoulderRoll","RShoulderPitch", "RElbowRoll", "RElbowYaw", "LHipYawPitch", "LKneePitch", "RKneePitch", "LHipPitch", "RHipPitch", "LAnklePitch", "RAnklePitch", "RAnkleRoll", "RHipRoll", "LHipRoll", "LAnkleRoll"]
+            self.logger.info("MODE 1.0")
+
+
+        if self.mode == 2.0:
+            size = 19
+            new_angleList = angleList[:size]
+            new_angleList.append(-0.25)
+            new_angleList.append(-0.29)
+            size = 21
+            names = ["HeadYaw","HeadPitch", "LShoulderRoll", "LShoulderPitch", "LElbowRoll", "LElbowYaw", "RShoulderRoll","RShoulderPitch", "RElbowRoll", "RElbowYaw", "LHipYawPitch", "LKneePitch", "RKneePitch", "LHipPitch", "RHipPitch", "LAnklePitch", "RAnklePitch","LAnkleRoll", "LHipRoll", "RHipRoll", "RAnkleRoll"]
+            self.logger.info("MODE 2.0")
+
+
+
+        angleLists = []
+        for angle in new_angleList:
             a = []
-            #self.logger.info(type(float(angle)))
+
             a.append(float(angle))#*almath.TO_RAD)
             angleLists.append(a)
+        timeLists = [self.timeList] * size
 
         self.logger.info ("angles:")
-        self.logger.info (angleList)
+
 
         self.motionProxy.angleInterpolation(names, angleLists, timeLists, isAbsolute)
 
         #pass
 
     def onInput_onStop(self):
+        self.motionProxy.wbEnable(False)
         self.onUnload() #it is recommended to reuse the clean-up as the box is stopped
         self.onStopped() #activate the output of the box]]>
                 </content>
