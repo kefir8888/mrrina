@@ -19,7 +19,7 @@ def main():
     AUTONOMOUS = False #without physical robot
 
     manager = Manager ()
-    manager.create_window (800, 700)
+    manager.create_window (300, 260)
     manager.init ()
 
     inputs = {"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
@@ -35,6 +35,7 @@ def main():
     manager.add_robots ({"simulated2" : robots.Simulated_robot (logger_ = manager.tracker)})
 
     if (AUTONOMOUS == False):
+        print("ALIVE")
         ip = "192.168.1.66"
         manager.add_robots ({"physical" : robots.Real_robot_qi (ip, "9569", logger_ = manager.tracker)})
 

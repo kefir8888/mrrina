@@ -599,13 +599,14 @@ class Real_robot_qi(Robot):
     def _send_command (self):#, action):
         action = self.queue [self.commands_sent]
         action_ = action
+        print("GAF")
 
         while (True):
             action_ = self.queue [self.commands_sent]
             self.commands_sent += 1
 
             self.simulated._send_command (action_)
-            #print ("action: ", action_)
+            print ("action: ", action_)
 
             if (not ((action [0] [0] == "/increment_joint_angle" or
                  action [0] [0] == "/set_joint_angle") and
@@ -664,8 +665,8 @@ class Real_robot_qi(Robot):
 
         # print ("len and sent", len (self.queue), self.commands_sent)
 
-        if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent)):# and
-            #self.free == True):
+        if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent) and
+            self.free == True):
             #command = self.queue [self.commands_sent]
 
             #print ("command", command)
