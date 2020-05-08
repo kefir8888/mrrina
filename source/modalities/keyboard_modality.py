@@ -267,12 +267,14 @@ class Computer_keyboard (Modality):
 
         self.key_to_command = []
 
-        self.key_to_command.append(self.direct_control)
-        self.key_to_command.append(self.direct_control_3)
-        self.key_to_command.append(self.exceptional)
+        self.key_to_command.append (self.direct_control)
+        self.key_to_command.append (self.direct_control_3)
+        self.key_to_command.append (self.exceptional)
         self.key_to_command.append (self.repeating)
         self.key_to_command.append (self.repeating2)
         self.key_to_command.append (self.eyes)
+
+        print "key to command", len (self.key_to_command)
 
         if (phrases_path == ""):
             f = io.open (phrases_path, "r", encoding='utf-8')
@@ -306,8 +308,8 @@ class Computer_keyboard (Modality):
                 self.key_to_command.append (new_list)
                 new_list = self.common_commands.copy ()
 
-        else:
-            self.key_to_command = [self.common_commands]
+        #else:
+        #    self.key_to_command = [self.common_commands]
 
         if (key_to_command_ ["z"] != "empty"):
             self.key_to_command = key_to_command_
@@ -317,7 +319,7 @@ class Computer_keyboard (Modality):
 
     def _read_data (self):
         self.read_data = cv2.waitKey (1)
-        # print ("read data", self.read_data)
+        print ("read data", self.read_data)
 
     def get_read_data (self):
         return self.read_data
@@ -332,14 +334,18 @@ class Computer_keyboard (Modality):
         if (self.interpreted_data >= 0):
             # key = str (chr (self.interpreted_data))
             key = (chr (self.interpreted_data)).encode('utf-8')
-
+            print ("key in get_command", key)
 
             if (key in self.key_to_command [self.curr_mode].keys ()):
                 return self.key_to_command [self.curr_mode] [key]
 
-            if (key in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]):
-                self.curr_mode = int (key) % len (self.key_to_command)
-                print ("curr mode ", self.curr_mode)
+            if (key in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']):
+                self.curr_mode = int (key)# % len (self.key_to_command)
+
+                while (self.curr_mode >= len (self.key_to_command)):
+                    self.curr_mode -= len(self.key_to_command)
+
+                print ("curr mode ", self.curr_mode, len(self.key_to_command))
 
         return self.key_to_command [self.curr_mode] ["noaction"]
 
