@@ -51,7 +51,7 @@ class Robot:
 
         self.timeout_module = Timeout_module (timeout_)
 
-    def _send_command (self, command, args):
+    def _send_command (self, command):
         pass
 
     def plot_state (self, img):
@@ -306,7 +306,6 @@ for instance the robot model is recursive. Aborting operation.")
                 print ("action :", action, " is not supported")
 
     def plot_state (self, img, x, y, scale = 1):
-
         line_num = 0
 
         for joint in self.find_joint (""):
@@ -493,6 +492,152 @@ class Real_robot(Robot):
             self.simulated.updated = False
 
         return r
+
+    def on_idle (self):
+        if (self.free_timeout_module.timeout_passed ()):
+            #r = self._send_command ([["/free", "a"]])
+            #print ("resp", r)
+
+            free = 6#int (str (r) [13:14]) #6 free, 7 not free; don't ask, don't tell
+
+            if (free == 6):
+                self.free = True
+
+            else:
+                self.free = True
+
+        #print ("queue", self.queue [self.commands_sent:])
+        #print (len (self.queue), self.commands_sent, self.free)
+
+        # print ("len and sent", len (self.queue), self.commands_sent)
+
+        if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent) and
+            self.free == True):
+            #command = self.queue [self.commands_sent]
+
+            #print ("command", command)
+
+            self._send_command ()#command)
+            #self.commands_sent += 1
+
+            #self.commands_sent = len (self.queue)
+
+    def plot_state (self, img, x, y, scale = 1):
+        self.simulated.plot_state (img, x, y, scale)
+
+class Real_robot_qi(Robot):
+    def __init__(self, ip_num_, timeout_ = 0.04, logger_ = 0):
+        Robot.__init__ (self, timeout_)
+        self.logger = logger_
+
+        self.ip_num = ip_num_
+        self.motionProxy = ALProxy("ALMotion", self.ip_num, 9559)
+        self.postureProxy = ALProxy("ALRobotPosture", robotIP, 9559)
+
+        self.simulated = Simulated_robot (logger_ = self.logger)
+
+        self.synchronized_joints = {"head_Yaw"    : "head_Yaw",
+                                    "head_Pitch"  : "head_Pitch",
+
+                                    "l_sho_roll"  : "l_shoulderroll",
+                                    "l_sho_pitch" : "l_shoulderpitch",
+                                    "l_elb_roll"  : "l_elbowroll",
+                                    "l_elb_yaw"   : "l_elbowyaw" ,
+
+                                    "l_hip_roll"  : "l_hiproll",
+                                    "l_hip_pitch" : "l_hippitch",
+
+                                    "l_knee_pitch": "l_kneepitch",
+                                    "l_ank_pitch" : "l_ankpitch",
+                                    "l_ank_roll"  : "l_ankroll",
+
+                                    "r_sho_roll"  : "r_shoulderroll",
+                                    "r_sho_pitch" : "r_shoulderpitch",
+                                    "r_elb_roll"  : "r_elbowroll",
+                                    "r_elb_yaw"   : "r_elbowyaw",
+
+                                    "r_hip_roll"  : "r_hiproll",
+                                    "r_hip_pitch" : "r_hippitch",
+
+                                    "r_knee_pitch": "r_kneepitch",
+                                    "r_ank_pitch" : "r_ankpitch",
+                                    "r_ank_roll"  : "r_ankroll"
+                                    }
+
+        self.init_positions = {"r_shoulderpitch" : 0,
+                               "r_shoulderroll"  : 0,
+                               "r_elbowroll"     : 0,
+                               "r_elbowyaw"      : 0,
+                               "r_hiproll"       : 0,
+                               "r_hippitch"      : 0,
+                               "r_kneepitch"     : 0,
+                               "r_ankpitch"      : 0,
+                               "r_ankroll"       : 0,
+
+                               "l_shoulderpitch" : 0,
+                               "l_shoulderroll"  : 0,
+                               "l_elbowroll"     : 0,
+                               "l_elbowyaw"      : 0,
+                               "l_hiproll"       : 0,
+                               "l_hippitch"      : 0,
+                               "l_kneepitch"     : 0,
+                               "l_ankpitch"      : 0,
+                               "l_ankroll"       : 0,
+
+                               "head_Yaw"        : 0,
+                               "head_Pitch"      : -0.3}
+
+        self.name = "real_qi"
+
+    def __del__ (self):
+        pass
+
+    def _send_command (self):#, action):
+        action = self.queue [self.commands_sent]
+        action_ = action
+
+        while (True):
+            action_ = self.queue [self.commands_sent]
+            self.commands_sent += 1
+
+            self.simulated._send_command (action_)
+            #print ("action: ", action_)
+
+            if (not ((action [0] [0] == "/increment_joint_angle" or
+                 action [0] [0] == "/set_joint_angle") and
+                 action [0] [0] == action_ [0] [0] and
+                 len (self.queue) > self.commands_sent)):
+                break
+
+        if (action [0] [0] == "/increment_joint_angle" or
+            action [0] [0] == "/set_joint_angle"):
+            action_str = "/raise_hands"
+            text_str   = ""
+
+            for key in self.synchronized_joints.keys ():
+                joint, _ = self.simulated.find_joint (key)
+                robot_joint = self.synchronized_joints [key]
+                init_angle = self.init_positions [robot_joint]
+
+                if (joint.angle is None):
+                    joint.angle = 0
+
+                angle = joint.angle * joint.angle_multiplier + init_angle
+                text_str += "&" + robot_joint + "=" + str(angle)
+
+        elif (action [0] [0] in self.available_commands.keys ()):
+            action_str = action [0] [0]
+            text_str   = str (action [0] [1] [0])
+
+        else:
+            print ("action :", action, " is not implemented")
+            return -1
+
+        if (self.simulated.updated == True or action [0] == "/free"):
+            request_str = self.ip + self.port + "/?" + "action="\
+                + action_str + "&" + "text=" + text_str
+
+            self.simulated.updated = False
 
     def on_idle (self):
         if (self.free_timeout_module.timeout_passed ()):
