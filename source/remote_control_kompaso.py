@@ -16,17 +16,17 @@ sys.path.append (paths [user] ["vision_path"])
 import input_output
 
 def main():
-    AUTONOMOUS = False #without physical robot
+    AUTONOMOUS = True #without physical robot
 
     manager = Manager ()
     manager.create_window (600, 600)
     manager.init ()
 
     inputs = {"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
-                                    logger_ = manager.tracker), ["physical", "simulated2"])}
+                                    logger_ = manager.tracker), ["physical", "simulated2"]),
 
-              # "archive skeleton"  : (Skeleton_3D (skeleton_path_ = "/home/kompaso/diplom_modules/S001C001P001R001A010.skeleton", logger_ = tracker),
-              #                       ["simulated2"])}
+              "RS" : (RealSense (model_path_ = paths [user] ["model_path"],
+                                              logger_ = manager.tracker), ["physical", "simulated2"])}
 
     manager.add_inputs (inputs)
     manager.add_robots ({"simulated2" : robots.Simulated_robot (logger_ = manager.tracker)})

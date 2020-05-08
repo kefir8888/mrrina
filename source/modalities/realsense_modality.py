@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from modalities.modality import GetPoints
 from modalities.skeleton_modalities import  Skeleton_3D
 from collections import deque
@@ -7,6 +8,7 @@ import torch
 from test.draw import Plotter3d, draw_poses
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from adam_sender import *
 
 import torch
 import torch.nn as nn
@@ -77,6 +79,9 @@ class RealSense (GetPoints):
                  'r_eye', 'l_eye',
                  'r_ear', 'l_ear']
 
+        self.sender = zmqConnect (port1)
+        self.receiver = zmqImageShowServer (port2)
+
 
         self.joints_framework_in_work = ['nose','l_sho', 'l_elb','l_wri','r_sho','r_elb', 'r_wri', 'l_hip','l_knee','l_ank','r_hip','r_kne','r_ank','neck']
 
@@ -115,7 +120,16 @@ class RealSense (GetPoints):
             self.img = np.asanyarray(aligned_frames.get_color_frame().get_data())
             depth_img = np.asanyarray(aligned_frames.get_depth_frame().get_data())
 
-            xy_cords, _, edges = self._infer_net(self.img)
+            frame = self.img.copy()
+            input_scale = float(self.base_height / float(frame.shape[0]))
+
+            scaled_img = cv2.resize(frame, dsize=None, fx=input_scale, fy=input_scale)
+            scaled_img = scaled_img[:,0:scaled_img.shape[1] - (scaled_img.shape[1] % self.stride)]
+
+            self.sender.send_image ("img", frame)
+            # xy_cords, _, _ = self._infer_net(self.img)
+            xy_cords = self.receiver.receive_image ()
+            print(xy_cords)
             if xy_cords != []:
                 xy_cords_ = xy_cords.reshape(-1,2)
 
@@ -305,4 +319,4 @@ class RealSense (GetPoints):
         return self._get_command()
 
     def draw(self, img):
-        return [self.canvas_3d, self.frame]
+        return [self.canvas_3d, self.img]
