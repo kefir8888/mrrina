@@ -212,26 +212,24 @@ def form_grid (images_, window_x_sz = -1, one_img_x_sz = -1, names = []):
         print("Can process only 12 images")
         return 0
 
-    #print ("images0 shape", images_)
     shape = images_[0].shape
+
+    #print ("shape before checking", shape)
+
     if one_img_x_sz != -1:
         rescale_factor = one_img_x_sz/shape[1]
         shape = [int(x*rescale_factor) for x in shape]
 
     if window_x_sz != -1:
-        rescale_factor = window_x_sz/shape[1]/form[0]
+        rescale_factor = float (window_x_sz) / shape[1] / form[0]
         shape = [int(x*rescale_factor) for x in shape]
+        #print("2 case, rescale factor", rescale_factor)
 
-    #print ("len", len (images_))
-
-    #print ("0", images_ [0].shape)
-    #print ("1", images_ [1].shape)
-    #print ("2", images_ [2].shape)
-    #print ("3", images_ [3].shape)
+    #print ("shape after checking", shape)
 
     for img, i in zip (images_, range (len (images_))):
-        print ("before resize", img.shape)
-        print((shape[1], shape[0]))
+        #print ("before resize", img.shape)
+        #print((shape[1], shape[0]))
         img = cv2.resize(img, (shape[1], shape[0]))
         if len(img.shape) == 2: #gray_scale
             img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
