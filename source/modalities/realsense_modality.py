@@ -18,7 +18,7 @@ import os
 
 import cv2
 
-#import pyrealsense2 as rs
+import pyrealsense2 as rs
 import math
 
 from modalities.modality import  Modality
@@ -59,8 +59,8 @@ class RealSense (GetPoints):
         GetPoints.__init__(self, logger_, model_path_, mode_, base_height_, focal_length, [], [])
         self.skel_3d = Skeleton_3D(logger_ = self.logger)
         self.config = rs.config()
-        self.config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
-        self.config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+        self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+        self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
         self.align = rs.align(rs.stream.color)
         self.canvas_3d = np.zeros((720, 1280, 3), dtype=np.uint8)
         self.plotter = Plotter3d(self.canvas_3d.shape[:2], origin=(0.5, 0.5), scale=0.1)

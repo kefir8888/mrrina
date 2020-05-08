@@ -6,15 +6,15 @@ import os
 
 def get_available_cameras (upper_bound = 10, lower_bound = 0):
     available = []
-    
+
     for i in range (lower_bound, upper_bound):
         cap = cv2.VideoCapture (i)
-    
+
         if (cap.isOpened ()):
             available.append (i)
-    
+
         cap.release ()
-    
+
     return available
 
 def folder_files (path):
@@ -50,7 +50,7 @@ class Source:
 
     def __init__ (self, path_, type_ = "", instant_init = True):
         self.path = path_
-        
+
         if (type_ == ""):
             if (self.path.endswith (".jpg") or
                 self.path.endswith (".png") or
@@ -81,7 +81,7 @@ class Source:
                         self.cam_num = max (cameras)
 
                 else:
-                    self.cam_num = num                    
+                    self.cam_num = num
 
             else:
                 self.type = "ros flex"
@@ -140,14 +140,14 @@ class Source:
         if (self.sample_image_obtained          == True and
             self.sample_image_incoherency_fixed == False):
             self.sample_image_incoherency_fixed = True
-            
+
             return self.sample_image
 
         return self.sources [self.type] [1] ()
 
     def get_frame_photo (self):
         return self.img.copy ()
-        
+
     def get_frame_photo_series (self):
         filename = str (self.files [self.file_num])
 
@@ -217,7 +217,7 @@ def form_grid (images_, window_x_sz = -1, one_img_x_sz = -1, names = []):
     if one_img_x_sz != -1:
         rescale_factor = one_img_x_sz/shape[1]
         shape = [int(x*rescale_factor) for x in shape]
-        
+
     if window_x_sz != -1:
         rescale_factor = window_x_sz/shape[1]/form[0]
         shape = [int(x*rescale_factor) for x in shape]
@@ -230,8 +230,8 @@ def form_grid (images_, window_x_sz = -1, one_img_x_sz = -1, names = []):
     #print ("3", images_ [3].shape)
 
     for img, i in zip (images_, range (len (images_))):
-        #print ("before resize", img.shape)
-
+        print ("before resize", img.shape)
+        print((shape[1], shape[0]))
         img = cv2.resize(img, (shape[1], shape[0]))
         if len(img.shape) == 2: #gray_scale
             img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
@@ -246,11 +246,11 @@ def form_grid (images_, window_x_sz = -1, one_img_x_sz = -1, names = []):
 
     for j in range(form[2]):
         images.append(np.zeros_like(images[0]))
-        
+
     rows = []
     for i in range(form[1]):
         rows.append(np.concatenate(images[i*form[0]:(i+1)*form[0]], axis = 1))
-    return np.concatenate(rows) 
+    return np.concatenate(rows)
 
 class Writer:
     def __init__ (self, name_, xsz_, ysz_, fps_ = 20):
@@ -270,4 +270,3 @@ class Writer:
     def __del__(self):
         #print ("release")
         self.out.release()
-

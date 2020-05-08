@@ -569,7 +569,7 @@ class Real_robot_qi(Robot):
                                     }
 
         self.init_positions = {"RShoulderPitch" : 0,
-                               "RshoulderRoll"  : 0,
+                               "RShoulderRoll"  : 0,
                                "RElbowRoll"     : 0,
                                "RElbowYaw"      : 0,
                                "RHipRoll"       : 0,
@@ -585,7 +585,7 @@ class Real_robot_qi(Robot):
                                "LHipRoll"       : 0,
                                "LHipPitch"      : 0,
                                "LKneePitch"     : 0,
-                               "LAnkPitch"      : 0,
+                               "LAnklePitch"      : 0,
                                "LAnkleRoll"       : 0,
 
                                "HeadYaw"        : 0,
@@ -628,12 +628,12 @@ class Real_robot_qi(Robot):
                     joint.angle = 0
 
                 angle = joint.angle * joint.angle_multiplier + init_angle
-                self.motionProxy.angleInterpolation(key,angle, True)
+                # self.motionProxy.angleInterpolation(key,angle, True)
                 text_str += "&" + robot_joint + "=" + str(angle)
 
         elif (action [0] [0] in self.available_commands.keys ()):
             print("MYAU")
-            self.postureProxy.goToPosture("Stand", 2)
+            # self.postureProxy.goToPosture("Stand", 2)
             action_str = action [0] [0]
             text_str   = str (action [0] [1] [0])
 
@@ -642,7 +642,7 @@ class Real_robot_qi(Robot):
             return -1
 
         if (self.simulated.updated == True or action [0] == "/free"):
-            request_str = self.ip + self.port + "/?" + "action="\
+            request_str = self.ip_num  + "/?" + "action="\
                 + action_str + "&" + "text=" + text_str
 
             self.simulated.updated = False

@@ -555,7 +555,7 @@ class Skeleton_3D(WorkWithPoints):
         self.logger.update("MODE", mode_)
         if mode_ != self.mode:
 
-            self.processed_data["mode"] = mode_
+            # self.processed_data["mode"] = mode_
             self.mode = mode_
 
 

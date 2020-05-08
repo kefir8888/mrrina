@@ -164,7 +164,10 @@ class GetPoints(Modality):
         current_time = cv2.getTickCount()
         mean_time = 0
         edges = []
-        input_scale = self.base_height / frame.shape[0]
+        print("B", self.base_height)
+        print("C", frame.shape[0])
+        input_scale = float(self.base_height / float(frame.shape[0]))
+        print("A", input_scale)
         scaled_img = cv2.resize(frame, dsize=None, fx=input_scale, fy=input_scale)
         scaled_img = scaled_img[:,0:scaled_img.shape[1] - (scaled_img.shape[1] % self.stride)]
         if self.fx < 0:

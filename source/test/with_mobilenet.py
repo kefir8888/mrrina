@@ -6,7 +6,7 @@ from modules.conv import conv, conv_dw, conv_dw_no_bn
 
 class Cpm(nn.Module):
     def __init__(self, in_channels, out_channels):
-        super().__init__()
+        super(Cpm, self).__init__()
         self.align = conv(in_channels, out_channels, kernel_size=1, padding=0, bn=False)
         self.trunk = nn.Sequential(
             conv_dw_no_bn(out_channels, out_channels),
@@ -23,7 +23,7 @@ class Cpm(nn.Module):
 
 class InitialStage(nn.Module):
     def __init__(self, num_channels, num_heatmaps, num_pafs):
-        super().__init__()
+        super(InitialStage, self).__init__()
         self.trunk = nn.Sequential(
             conv(num_channels, num_channels, bn=False),
             conv(num_channels, num_channels, bn=False),
@@ -47,7 +47,7 @@ class InitialStage(nn.Module):
 
 class RefinementStageBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
-        super().__init__()
+        super(RefinementStageBlock, self).__init__()
         self.initial = conv(in_channels, out_channels, kernel_size=1, padding=0, bn=False)
         self.trunk = nn.Sequential(
             conv(out_channels, out_channels),
@@ -62,7 +62,7 @@ class RefinementStageBlock(nn.Module):
 
 class RefinementStage(nn.Module):
     def __init__(self, in_channels, out_channels, num_heatmaps, num_pafs):
-        super().__init__()
+        super(RefinementStage, self).__init__()
         self.trunk = nn.Sequential(
             RefinementStageBlock(in_channels, out_channels),
             RefinementStageBlock(out_channels, out_channels),
@@ -88,7 +88,7 @@ class RefinementStage(nn.Module):
 
 class RefinementStageLight(nn.Module):
     def __init__(self, in_channels, mid_channels, out_channels):
-        super().__init__()
+        super(RefinementStageLight, self).__init__()
         self.trunk = nn.Sequential(
             RefinementStageBlock(in_channels, mid_channels),
             RefinementStageBlock(mid_channels, mid_channels)
@@ -106,7 +106,7 @@ class RefinementStageLight(nn.Module):
 
 class ResBlock(nn.Module):
     def __init__(self, in_channels, out_channels, ratio, should_align=False):
-        super().__init__()
+        super(ResBlock, self).__init__()
         self.should_align = should_align
         self.bottleneck = nn.Sequential(
             conv(in_channels, in_channels // ratio, kernel_size=1, padding=0),
@@ -125,7 +125,7 @@ class ResBlock(nn.Module):
 
 class Pose3D(nn.Module):
     def __init__(self, in_channels, num_2d_heatmaps, ratio=2, out_channels=57):
-        super().__init__()
+        super(Pose3D, self).__init__()
         self.stem = nn.Sequential(
             ResBlock(in_channels + num_2d_heatmaps, in_channels, ratio, should_align=True),
             ResBlock(in_channels, in_channels, ratio),
@@ -145,7 +145,7 @@ class Pose3D(nn.Module):
 class PoseEstimationWithMobileNet(nn.Module):
     def __init__(self, num_refinement_stages=1, num_channels=128, num_heatmaps=19, num_pafs=38,
                  is_convertible_by_mo=False):
-        super().__init__()
+        super(PoseEstimationWithMobileNet, self).__init__()
         self.is_convertible_by_mo = is_convertible_by_mo
         self.model = nn.Sequential(
             conv(     3,  32, stride=2, bias=False),
@@ -192,4 +192,3 @@ class PoseEstimationWithMobileNet(nn.Module):
         out = self.Pose3D(backbone_features, torch.cat([stages_output[-2], stages_output[-1]], dim=1))
 
         return out, keypoints2d_maps, paf_maps
-
