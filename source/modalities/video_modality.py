@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from modalities.skeleton_modalities import  Skeleton_3D
 from modalities.modality import GetPoints
 

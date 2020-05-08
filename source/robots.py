@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+from naoqi import ALProxy
 from common import *
 
 class Robot:
@@ -529,63 +532,64 @@ class Real_robot_qi(Robot):
     def __init__(self, ip_num_, timeout_ = 0.04, logger_ = 0):
         Robot.__init__ (self, timeout_)
         self.logger = logger_
+        print("Hello")
 
         self.ip_num = ip_num_
         self.motionProxy = ALProxy("ALMotion", self.ip_num, 9559)
-        self.postureProxy = ALProxy("ALRobotPosture", robotIP, 9559)
+        self.postureProxy = ALProxy("ALRobotPosture", self.ip_num, 9559)
 
         self.simulated = Simulated_robot (logger_ = self.logger)
+########################################################################################################################################33
+        self.synchronized_joints = {"head_Yaw"    : "HeadYaw",
+                                    "head_Pitch"  : "HeadPitch",
 
-        self.synchronized_joints = {"head_Yaw"    : "head_Yaw",
-                                    "head_Pitch"  : "head_Pitch",
+                                    "l_sho_roll"  : "LShoulderRoll",
+                                    "l_sho_pitch" : "LShoulderPitch",
+                                    "l_elb_roll"  : "LElbowRoll",
+                                    "l_elb_yaw"   : "LElbowYaw" ,
 
-                                    "l_sho_roll"  : "l_shoulderroll",
-                                    "l_sho_pitch" : "l_shoulderpitch",
-                                    "l_elb_roll"  : "l_elbowroll",
-                                    "l_elb_yaw"   : "l_elbowyaw" ,
+                                    "l_hip_roll"  : "LHipRoll",
+                                    "l_hip_pitch" : "LHipPitch",
 
-                                    "l_hip_roll"  : "l_hiproll",
-                                    "l_hip_pitch" : "l_hippitch",
+                                    "l_knee_pitch": "LKneePitch",
+                                    "l_ank_pitch" : "LAnklePitch",
+                                    "l_ank_roll"  : "LAnkleRoll",
 
-                                    "l_knee_pitch": "l_kneepitch",
-                                    "l_ank_pitch" : "l_ankpitch",
-                                    "l_ank_roll"  : "l_ankroll",
+                                    "r_sho_roll"  : "RShoulderRoll",
+                                    "r_sho_pitch" : "RShoulderPitch",
+                                    "r_elb_roll"  : "RElbowRoll",
+                                    "r_elb_yaw"   : "RElbowYaw",
 
-                                    "r_sho_roll"  : "r_shoulderroll",
-                                    "r_sho_pitch" : "r_shoulderpitch",
-                                    "r_elb_roll"  : "r_elbowroll",
-                                    "r_elb_yaw"   : "r_elbowyaw",
+                                    "r_hip_roll"  : "RHipRoll",
+                                    "r_hip_pitch" : "RHipPitch",
 
-                                    "r_hip_roll"  : "r_hiproll",
-                                    "r_hip_pitch" : "r_hippitch",
-
-                                    "r_knee_pitch": "r_kneepitch",
-                                    "r_ank_pitch" : "r_ankpitch",
-                                    "r_ank_roll"  : "r_ankroll"
+                                    "r_knee_pitch": "RKneePitch",
+                                    "r_ank_pitch" : "RAnklePitch",
+                                    "r_ank_roll"  : "RAnkleRoll"
                                     }
 
-        self.init_positions = {"r_shoulderpitch" : 0,
-                               "r_shoulderroll"  : 0,
-                               "r_elbowroll"     : 0,
-                               "r_elbowyaw"      : 0,
-                               "r_hiproll"       : 0,
-                               "r_hippitch"      : 0,
-                               "r_kneepitch"     : 0,
-                               "r_ankpitch"      : 0,
-                               "r_ankroll"       : 0,
+        self.init_positions = {"RShoulderPitch" : 0,
+                               "RshoulderRoll"  : 0,
+                               "RElbowRoll"     : 0,
+                               "RElbowYaw"      : 0,
+                               "RHipRoll"       : 0,
+                               "RHipPitch"      : 0,
+                               "RKneePitch"     : 0,
+                               "RAnklePitch"      : 0,
+                               "RAnkleRoll"       : 0,
 
-                               "l_shoulderpitch" : 0,
-                               "l_shoulderroll"  : 0,
-                               "l_elbowroll"     : 0,
-                               "l_elbowyaw"      : 0,
-                               "l_hiproll"       : 0,
-                               "l_hippitch"      : 0,
-                               "l_kneepitch"     : 0,
-                               "l_ankpitch"      : 0,
-                               "l_ankroll"       : 0,
+                               "LShoulderPitch" : 0,
+                               "LShoulderRoll"  : 0,
+                               "LElbowRoll"     : 0,
+                               "LElbowYaw"      : 0,
+                               "LHipRoll"       : 0,
+                               "LHipPitch"      : 0,
+                               "LKneePitch"     : 0,
+                               "LAnkPitch"      : 0,
+                               "LAnkleRoll"       : 0,
 
-                               "head_Yaw"        : 0,
-                               "head_Pitch"      : -0.3}
+                               "HeadYaw"        : 0,
+                               "HeadPitch"      : -0.3}
 
         self.name = "real_qi"
 
@@ -623,9 +627,12 @@ class Real_robot_qi(Robot):
                     joint.angle = 0
 
                 angle = joint.angle * joint.angle_multiplier + init_angle
+                self.motionProxy.angleInterpolation(key,angle, True)
                 text_str += "&" + robot_joint + "=" + str(angle)
 
         elif (action [0] [0] in self.available_commands.keys ()):
+            print("MYAU")
+            self.postureProxy.goToPosture("Stand", 2)
             action_str = action [0] [0]
             text_str   = str (action [0] [1] [0])
 
@@ -640,30 +647,30 @@ class Real_robot_qi(Robot):
             self.simulated.updated = False
 
     def on_idle (self):
-        if (self.free_timeout_module.timeout_passed ()):
-            #r = self._send_command ([["/free", "a"]])
-            #print ("resp", r)
-
-            free = 6#int (str (r) [13:14]) #6 free, 7 not free; don't ask, don't tell
-
-            if (free == 6):
-                self.free = True
-
-            else:
-                self.free = True
-
-        #print ("queue", self.queue [self.commands_sent:])
-        #print (len (self.queue), self.commands_sent, self.free)
-
-        # print ("len and sent", len (self.queue), self.commands_sent)
-
-        if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent) and
-            self.free == True):
-            #command = self.queue [self.commands_sent]
+        # if (self.free_timeout_module.timeout_passed ()):
+        #     #r = self._send_command ([["/free", "a"]])
+        #     #print ("resp", r)
+        #
+        #     free = 6#int (str (r) [13:14]) #6 free, 7 not free; don't ask, don't tell
+        #
+        #     if (free == 6):
+        #         self.free = True
+        #
+        #     else:
+        #         self.free = True
+        #
+        # #print ("queue", self.queue [self.commands_sent:])
+        # #print (len (self.queue), self.commands_sent, self.free)
+        #
+        # # print ("len and sent", len (self.queue), self.commands_sent)
+        #
+        # if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent) and
+        #     self.free == True):
+        #     #command = self.queue [self.commands_sent]
 
             #print ("command", command)
 
-            self._send_command ()#command)
+        self._send_command ()#command)
             #self.commands_sent += 1
 
             #self.commands_sent = len (self.queue)

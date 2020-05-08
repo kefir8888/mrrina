@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from modalities.keyboard_modality   import Computer_keyboard
 from modalities.video_modality      import Video
 from modalities.skeleton_modalities import Skeleton_3D
@@ -14,7 +16,7 @@ sys.path.append (paths [user] ["vision_path"])
 import input_output
 
 def main():
-    AUTONOMOUS = True #without physical robot
+    AUTONOMOUS = False #without physical robot
 
     manager = Manager ()
     manager.create_window (800, 700)
@@ -34,7 +36,7 @@ def main():
 
     if (AUTONOMOUS == False):
         ip = "192.168.1.66"
-        manager.add_robots ({"physical" : robots.Real_robot (ip, "9569", logger_ = manager.tracker)})
+        manager.add_robots ({"physical" : robots.Real_robot_qi (ip, "9569", logger_ = manager.tracker)})
 
     while (True):
         if (manager.on_idle () ["quit"] == True):

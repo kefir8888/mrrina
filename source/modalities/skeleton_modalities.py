@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from modalities.modality import WorkWithPoints
 import common
 import os
