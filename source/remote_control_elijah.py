@@ -12,7 +12,7 @@ from common import *
 user = "elijah"
 
 def main():
-    AUTONOMOUS = False
+    AUTONOMOUS = True#False
 
     manager = Manager ()
 
@@ -20,7 +20,10 @@ def main():
     manager.init ()
 
     manager.add_inputs ({"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
-                         logger_ = manager.tracker), ["physical", "simulated2"])})
+                         logger_ = manager.tracker), ["physical", "simulated2"]),#},
+                         "video input": (Video(video_path_ = "/Users/elijah/Downloads/sort/snoop_ponomareva.mp4", model_path_ = paths [user] ["model_path"],
+                         base_height_ = 170, logger_ = manager.tracker), ["physical", "simulated2"]) }
+                        )
 
     manager.add_robots ({"simulated2" : robots.Simulated_robot (logger_ = manager.tracker)})
 

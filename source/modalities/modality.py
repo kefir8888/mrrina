@@ -170,6 +170,9 @@ class GetPoints(Modality):
         print("A", input_scale)
         scaled_img = cv2.resize(frame, dsize=None, fx=input_scale, fy=input_scale)
         scaled_img = scaled_img[:,0:scaled_img.shape[1] - (scaled_img.shape[1] % self.stride)]
+
+        print ("shakal", scaled_img.shape)
+
         if self.fx < 0:
             self.fx = np.float32(0.8 * frame.shape[1])
         inference_result = self.net.infer(scaled_img)
