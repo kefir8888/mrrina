@@ -2,8 +2,11 @@ import zmq
 import numpy as np
 import cv2
 
-port_num = "5558"
-port = "tcp://127.0.0.1:%s" % port_num
+port_num1 = "5558"
+port1 = "tcp://127.0.0.1:%s" % port_num1
+
+port_num2 = "5557"
+port2 = "tcp://127.0.0.1:%s" % port_num2
 
 class SerializingSocket(zmq.Socket):
     """A class with some extra serialization methods
@@ -48,17 +51,35 @@ class zmqConnect():
         self.zmq_socket = self.zmq_context.socket(zmq.REQ)
         self.zmq_socket.connect(connect_to)
 
-    def imshow(self, arrayname, array):
+    def send_image(self, arrayname, array):
         '''send image to display on remote server'''
-        if array.flags['C_CONTIGUOUS']:
-            # if array is already contiguous in memory just send it
-            self.zmq_socket.send_array(array, arrayname, copy=False)
-        else:
-            # else make it contiguous before sending
-            array = np.ascontiguousarray(array)
-            self.zmq_socket.send_array(array, arrayname, copy=False)
+
+        # if array.flags['C_CONTIGUOUS']:
+        #     # if array is already contiguous in memory just send it
+        #     self.zmq_socket.send_array(array, arrayname, copy=False)
+        # else:
+        #     # else make it contiguous before sending
+        #     array = np.ascontiguousarray(array)
+        #     self.zmq_socket.send_array(array, arrayname, copy=False)
+
+        array = np.ascontiguousarray(array)
+        self.zmq_socket.send_array(array, arrayname, copy=False)
+
         message = self.zmq_socket.recv()
 
+    def receive_list(self, copy=False):
+        '''receive and show image on viewing computer display'''
+        arrayname, list = self.zmq_socket.recv_array(copy=False)
+        # print "Received Array Named: ", arrayname
+        # print "Array size: ", image.shape
+        #cv2.imshow(arrayname, image)
+
+        #print("img displayed")
+
+        cv2.waitKey(1)
+        self.zmq_socket.send(b"OK")
+
+        return list
 
 class zmqImageShowServer():
     '''A class that opens a zmq REP socket on the display computer to receive images
@@ -70,14 +91,28 @@ class zmqImageShowServer():
         self.zmq_socket = self.zmq_context.socket(zmq.REP)
         self.zmq_socket.bind(open_port)
 
-    def imshow(self, copy=False):
+    def receive_image(self, copy=False):
         '''receive and show image on viewing computer display'''
         arrayname, image = self.zmq_socket.recv_array(copy=False)
         # print "Received Array Named: ", arrayname
         # print "Array size: ", image.shape
-        cv2.imshow(arrayname, image)
+        #cv2.imshow(arrayname, image)
 
-        print ("img displayed")
+        #print ("img displayed")
 
-        cv2.waitKey(0)
+        cv2.waitKey(1)
         self.zmq_socket.send(b"OK")
+
+        return image
+
+    def send_list(self, arrayname, array):
+        '''send image to display on remote server'''
+        #if array.flags['C_CONTIGUOUS']:
+        #    # if array is already contiguous in memory just send it
+        #    self.zmq_socket.send_array(array, arrayname, copy=False)
+        #else:
+            # else make it contiguous before sending
+        array = np.ascontiguousarray(array)
+        self.zmq_socket.send_array(array, arrayname, copy=False)
+
+        message = self.zmq_socket.recv()

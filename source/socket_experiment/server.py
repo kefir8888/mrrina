@@ -9,9 +9,10 @@ from common import *
 # socket = context.socket(zmq.PAIR)
 # socket.bind("tcp://*:%s" % port)
 
-img = cv2.imread ("test_img.png")
+img = cv2.resize (cv2.imread ("test_img.png"), (300, 200))
 
-sender = zmqConnect (port)
+sender = zmqConnect (port1)
+receiver = zmqImageShowServer (port2)
 
 while True:
     # socket.send_string("Server message to client3")
@@ -19,7 +20,11 @@ while True:
     # print (msg)
     time.sleep(1)
 
-    sender.imshow ("img", img)
+    print ("sending image")
+    sender.send_image ("img", img)
+
+    num_list = receiver.receive_image ()
+    print ("received list: ", num_list)
 
     key = cv2.waitKey(1) & 0xFF
 
