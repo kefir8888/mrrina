@@ -281,7 +281,7 @@ for instance the robot model is recursive. Aborting operation.")
 
     def _send_command (self, actions):
         for action in actions:
-            print ("Sim action [0]: ", action [0])
+            #print ("Sim action [0]: ", action [0])
             if (action [0] in self.available_commands.keys ()):
                 self.updated = True
                 # print ("sending command [simulated]: ", action)
@@ -466,6 +466,7 @@ class Real_robot(Robot):
                 #else:
                 text_str += "&" + robot_joint + "=" + str(angle)
                 #print(text_str)
+
         elif (action [0] [0] in self.available_commands.keys ()):
             action_str = action [0] [0]
             text_str   = str (action [0] [1] [0])
@@ -602,13 +603,15 @@ class Real_robot_qi(Robot):
         self.name = "real_qi"
 
     def __del__ (self):
-        motionProxy.wbEnable(False)
-
+        self.motionProxy.wbEnable(False)
 
     def _send_command (self):#, action):
         action = self.queue [self.commands_sent]
         action_ = action
-        print("GAF")
+
+        action_time = 0.8
+
+        print ("action (time)", action)
 
         while (True):
             action_ = self.queue [self.commands_sent]
@@ -631,7 +634,7 @@ class Real_robot_qi(Robot):
             # print(list(self.synchronized_joints.keys ()))
             names = []
             angles = []
-            timeList = [0.8]*20
+            timeList = [action_time] * 20
             for key in self.synchronized_joints.keys ():
                 joint, _ = self.simulated.find_joint (key)
                 robot_joint = self.synchronized_joints [key]
@@ -648,9 +651,9 @@ class Real_robot_qi(Robot):
                 # text_str += "&" + robot_joint + "=" + str(angle)
 
         elif (action [0] [0] in self.available_commands.keys ()):
-            print("MYAU")
             action_str = action [0] [0]
-            print(action_str[1:])
+            #print(action_str[1:])
+
             if action_str[1:] == "Rest":
                 self.motionProxy.rest()
 
@@ -691,8 +694,6 @@ class Real_robot_qi(Robot):
 
 
         if (len (self.queue) > self.commands_sent):
-            print("Lupa")
-
             self._send_command ()#command)
             #self.commands_sent += 1
 
