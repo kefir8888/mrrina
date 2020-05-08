@@ -1,7 +1,7 @@
 from modalities.keyboard_modality   import Computer_keyboard
 from modalities.video_modality      import Video
 from modalities.skeleton_modalities import Skeleton_3D
-from modalities.realsense_modality  import RealSense
+#from modalities.realsense_modality  import RealSense
 
 import robots
 import input_output
@@ -26,7 +26,7 @@ def main():
 
     if (AUTONOMOUS == False):
         ip = paths [user] ["robot_ip"]
-        manager.add_robots ({"physical" : robots.Real_robot (ip, "9569", logger_ = manager.tracker)})
+        manager.add_robots ({"physical" : robots.Real_robot_qi (ip, "9569", logger_ = manager.tracker)})
 
     while (True):
         if (manager.on_idle () ["quit"] == True):
