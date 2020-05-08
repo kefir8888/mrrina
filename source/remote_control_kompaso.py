@@ -19,14 +19,11 @@ def main():
     AUTONOMOUS = False #without physical robot
 
     manager = Manager ()
-    manager.create_window (300, 260)
+    manager.create_window (600, 600)
     manager.init ()
 
     inputs = {"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
-                                    logger_ = manager.tracker), ["physical", "simulated2"]),
-
-              "Realsense input": (RealSense(video_path_ = "", model_path_ = paths [user] ["model_path"],
-              base_height_ = 300, logger_ = manager.tracker), ["physical", "simulated2"])}
+                                    logger_ = manager.tracker), ["physical", "simulated2"])}
 
               # "archive skeleton"  : (Skeleton_3D (skeleton_path_ = "/home/kompaso/diplom_modules/S001C001P001R001A010.skeleton", logger_ = tracker),
               #                       ["simulated2"])}
