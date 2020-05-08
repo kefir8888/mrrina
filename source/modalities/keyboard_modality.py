@@ -23,10 +23,10 @@ class Computer_keyboard (Modality):
 
         self.all_keys = ["w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l", "v", "b", "m", "z", "x", "c", "n"]
 
-        self.common_commands = {"z"        : [("/stand",    ["heh"])],
-                                "c"        : [("/rest",     ["kek"])],
+        self.common_commands = {"z"        : [("Stand",    ["heh"])],
+                                "c"        : [("Rest",     ["kek"])],
                                 #"n"        : [("next",      [""])],
-                                "x"        : [("/sit",      [""])],
+                                "x"        : [("Sit",      [""])],
                                 "noaction" : [("noaction",  [""])],
                                 "w"        : [("/play_mp3", ["Molodec.mp3"])],
                                 "e"        : [("/play_mp3", ["Otlichnopoluchaetsja.mp3"])],
@@ -40,7 +40,7 @@ class Computer_keyboard (Modality):
 
         self.repeating =   {"z"        : [("/stand",    ["heh"])],
                             "c"        : [("/rest",     ["kek"])],
-                            "x"        : [("/sit",      [""])],
+                            "x"        : [("Sit",      [""])],
                             "noaction" : [("noaction",  [""])],
                             "w"        : [("/play_mp3", ["Molodec.mp3"])],
                             "e"        : [("/play_mp3", ["Povtorjajzamnoj.mp3"])],
@@ -154,8 +154,8 @@ class Computer_keyboard (Modality):
 
                      "noaction" : [("noaction",  [""])]}
 
-        self.direct_control =  {"z"        : [("/stand",   ["heh"])],
-                                "x"        : [("/rest",    ["kek"])],
+        self.direct_control =  {"z"        : [("/Stand",   ["heh"])],
+                                "x"        : [("/Crouch",    ["kek"])],
                                 "w"        : [("/increment_joint_angle", ["l_sho_roll", "0.21"])],
                                 "e"        : [("/increment_joint_angle", ["l_sho_roll", "-0.21"])],
                                 "r"        : [("/increment_joint_angle", ["l_elb_roll", "0.21"])],
@@ -319,7 +319,7 @@ class Computer_keyboard (Modality):
 
     def _read_data (self):
         self.read_data = cv2.waitKey (1)
-        print ("read data", self.read_data)
+        # print ("read data", self.read_data)
 
     def get_read_data (self):
         return self.read_data

@@ -11,9 +11,9 @@ class Robot:
 
         self.logger = logger_
 
-        self.available_commands = {"/rest"  : ("/action=/rest&text=", "a"),
-                                   "/stand" : ("/action=/stand&text=", "a"),
-                                   "/sit" : ("/action=/stand&text=", "a"),
+        self.available_commands = {"/Crouch"  : ("/action=/rest&text=", "a"),
+                                   "/Stand" : ("/action=/stand&text=", "a"),
+                                   "/Sit" : ("/action=/stand&text=", "a"),
                                    "/free"  : ("/action=/free&text=", "a"),
                                    "/increment_joint_angle" : (),
                                    "/set_joint_angle" : (),
@@ -619,6 +619,10 @@ class Real_robot_qi(Robot):
             action_str = "/raise_hands"
             text_str   = ""
 
+            # print(list(self.synchronized_joints.keys ()))
+            names = []
+            angles = []
+            timeList = [0.8]*20
             for key in self.synchronized_joints.keys ():
                 joint, _ = self.simulated.find_joint (key)
                 robot_joint = self.synchronized_joints [key]
@@ -628,13 +632,19 @@ class Real_robot_qi(Robot):
                     joint.angle = 0
 
                 angle = joint.angle * joint.angle_multiplier + init_angle
-                # self.motionProxy.angleInterpolation(key,angle, True)
-                text_str += "&" + robot_joint + "=" + str(angle)
+                names.append(robot_joint)
+                angles.append([angle])
+                # print(angle)
+            self.motionProxy.angleInterpolation(names, angles,timeList, True)
+                # text_str += "&" + robot_joint + "=" + str(angle)
 
         elif (action [0] [0] in self.available_commands.keys ()):
             print("MYAU")
-            # self.postureProxy.goToPosture("Stand", 2)
             action_str = action [0] [0]
+            print(action_str[1:])
+            self.postureProxy.goToPosture(action_str[1:], 2)
+
+
             text_str   = str (action [0] [1] [0])
 
         else:
@@ -663,11 +673,7 @@ class Real_robot_qi(Robot):
         #print ("queue", self.queue [self.commands_sent:])
         #print (len (self.queue), self.commands_sent, self.free)
 
-        # print ("len and sent", len (self.queue), self.commands_sent)
-        print("Pupa", len (self.queue))
-        print("Lupa",self.commands_sent)
-        print("Zarplata", self.timeout_module.timeout_passed(len (self.queue) > self.commands_sent) )
-        print("Buhgalteriya",len (self.queue) > self.commands_sent )
+
 
         if (len (self.queue) > self.commands_sent):
             print("Lupa")
@@ -675,7 +681,7 @@ class Real_robot_qi(Robot):
             self._send_command ()#command)
             #self.commands_sent += 1
 
-            #self.commands_sent = len (self.queue)
+            self.commands_sent = len (self.queue)
 
     def plot_state (self, img, x, y, scale = 1):
         self.simulated.plot_state (img, x, y, scale)
