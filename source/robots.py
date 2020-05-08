@@ -11,7 +11,7 @@ class Robot:
 
         self.logger = logger_
 
-        self.available_commands = {"/Crouch"  : ("/action=/rest&text=", "a"),
+        self.available_commands = {"/Rest"  : ("/action=/rest&text=", "a"),
                                    "/Stand" : ("/action=/stand&text=", "a"),
                                    "/Sit" : ("/action=/stand&text=", "a"),
                                    "/free"  : ("/action=/free&text=", "a"),
@@ -642,7 +642,13 @@ class Real_robot_qi(Robot):
             print("MYAU")
             action_str = action [0] [0]
             print(action_str[1:])
-            self.postureProxy.goToPosture(action_str[1:], 2)
+            if action_str[1:] == "Rest":
+                self.motionProxy.rest()
+
+            elif action_str[1:] == "Stand":
+            #     self.motionProxy.wakeUp()
+            # else:
+                self.postureProxy.goToPosture(action_str[1:], 2)
 
 
             text_str   = str (action [0] [1] [0])

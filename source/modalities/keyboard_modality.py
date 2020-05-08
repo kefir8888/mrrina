@@ -155,7 +155,7 @@ class Computer_keyboard (Modality):
                      "noaction" : [("noaction",  [""])]}
 
         self.direct_control =  {"z"        : [("/Stand",   ["heh"])],
-                                "x"        : [("/Crouch",    ["kek"])],
+                                "x"        : [("/Rest",    ["kek"])],
                                 "w"        : [("/increment_joint_angle", ["l_sho_roll", "0.21"])],
                                 "e"        : [("/increment_joint_angle", ["l_sho_roll", "-0.21"])],
                                 "r"        : [("/increment_joint_angle", ["l_elb_roll", "0.21"])],
