@@ -658,19 +658,19 @@ class Real_robot_qi(Robot):
         #
         #     else:
         #         self.free = True
-        #
-        # #print ("queue", self.queue [self.commands_sent:])
-        # #print (len (self.queue), self.commands_sent, self.free)
-        #
-        # # print ("len and sent", len (self.queue), self.commands_sent)
-        #
-        # if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent) and
-        #     self.free == True):
-        #     #command = self.queue [self.commands_sent]
+
+        #print ("queue", self.queue [self.commands_sent:])
+        #print (len (self.queue), self.commands_sent, self.free)
+
+        # print ("len and sent", len (self.queue), self.commands_sent)
+
+        if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent)):# and
+            #self.free == True):
+            #command = self.queue [self.commands_sent]
 
             #print ("command", command)
 
-        self._send_command ()#command)
+            self._send_command ()#command)
             #self.commands_sent += 1
 
             #self.commands_sent = len (self.queue)
