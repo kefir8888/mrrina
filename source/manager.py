@@ -68,7 +68,7 @@ class Manager:
 
             command = self.inputs [modality] [0].get_command (skip_reading_data)
 
-            #print ("command", command)
+            # print ("command", command)
 
             self.logfile.write (str (self.curr_time) + str (command))
 
@@ -77,7 +77,7 @@ class Manager:
             if (self.silent_mode == False):
                 for key in self.inputs [modality] [1]:
                     if (key in self.robots_list.keys ()):
-                        #print ("adding action", key, action)
+                        # print ("adding action", key, action)
                         self.robots_list [key].add_action (action)
 
             modality_frames = self.inputs [modality] [0].draw (self.canvas)
@@ -93,6 +93,7 @@ class Manager:
 
         if (self.silent_mode == False):
             for key in self.robots_list.keys ():
+                # print(key)
                 self.robots_list [key].on_idle ()
 
         list (self.robots_list.items ()) [0] [1].plot_state (canvas_, 150, 40, 2.5)

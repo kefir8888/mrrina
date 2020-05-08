@@ -317,7 +317,7 @@ class Computer_keyboard (Modality):
 
     def _read_data (self):
         self.read_data = cv2.waitKey (1)
-        #print ("read data", self.read_data)
+        # print ("read data", self.read_data)
 
     def get_read_data (self):
         return self.read_data
@@ -339,7 +339,7 @@ class Computer_keyboard (Modality):
 
             if (key in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]):
                 self.curr_mode = int (key) % len (self.key_to_command)
-                #print ("curr mode ", self.curr_mode)
+                print ("curr mode ", self.curr_mode)
 
         return self.key_to_command [self.curr_mode] ["noaction"]
 

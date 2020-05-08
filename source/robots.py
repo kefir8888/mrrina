@@ -281,7 +281,7 @@ for instance the robot model is recursive. Aborting operation.")
 
     def _send_command (self, actions):
         for action in actions:
-            #print ("action [0]: ", action [0])
+            print ("Sim action [0]: ", action [0])
             if (action [0] in self.available_commands.keys ()):
                 self.updated = True
                 # print ("sending command [simulated]: ", action)
@@ -400,7 +400,7 @@ class Real_robot(Robot):
         #if (action [0] == "noaction"):
         #    pass
 
-        #print ("command to simulated: ", action)
+        # print ("command to simulated: ", action)
         action = self.queue [self.commands_sent]
         #self.commands_sent += 1
         action_ = action
@@ -664,12 +664,13 @@ class Real_robot_qi(Robot):
         #print (len (self.queue), self.commands_sent, self.free)
 
         # print ("len and sent", len (self.queue), self.commands_sent)
+        print("Pupa", len (self.queue))
+        print("Lupa",self.commands_sent)
+        print("Zarplata", self.timeout_module.timeout_passed(len (self.queue) > self.commands_sent) )
+        print("Buhgalteriya",len (self.queue) > self.commands_sent )
 
-        if (self.timeout_module.timeout_passed (len (self.queue) > self.commands_sent) and
-            self.free == True):
-            #command = self.queue [self.commands_sent]
-
-            #print ("command", command)
+        if (len (self.queue) > self.commands_sent):
+            print("Lupa")
 
             self._send_command ()#command)
             #self.commands_sent += 1
