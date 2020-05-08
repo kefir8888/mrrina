@@ -536,7 +536,15 @@ class Real_robot_qi(Robot):
 
         self.ip_num = ip_num_
         self.motionProxy = ALProxy("ALMotion", self.ip_num, 9559)
+        
         self.postureProxy = ALProxy("ALRobotPosture", self.ip_num, 9559)
+
+        self.motionProxy.wbEnable(False)
+        self.postureProxy.goToPosture("Stand", 0.5)
+        self.motionProxy.wbEnable(True)
+
+        self.motionProxy.wbFootState("Fixed", "Legs")
+        self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
 
         self.simulated = Simulated_robot (logger_ = self.logger)
 ########################################################################################################################################33
@@ -594,7 +602,8 @@ class Real_robot_qi(Robot):
         self.name = "real_qi"
 
     def __del__ (self):
-        pass
+        motionProxy.wbEnable(False)
+
 
     def _send_command (self):#, action):
         action = self.queue [self.commands_sent]
