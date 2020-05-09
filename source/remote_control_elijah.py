@@ -2,6 +2,7 @@ from modalities.keyboard_modality   import Computer_keyboard
 from modalities.video_modality      import Video
 from modalities.skeleton_modalities import Skeleton_3D
 #from modalities.realsense_modality  import RealSense
+from modalities.music_modality import Cyclic
 
 import robots
 import input_output
@@ -12,24 +13,30 @@ from common import *
 user = "elijah"
 
 def main():
-    AUTONOMOUS = True#False
+    #AUTONOMOUS = True
+    AUTONOMOUS = False
+    #KB_ONLY = False
+    KB_ONLY = True
 
-    manager = Manager ()
+    manager = Manager (draw_tracker_ = False)
 
     manager.create_window (800, 700)
+
     manager.init ()
 
+
     manager.add_inputs ({"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
-                         logger_ = manager.tracker), ["physical", "simulated2"]),#},
-                         "video input": (Video(video_path_ = "/Users/elijah/Downloads/sort/snoop_ponomareva.mp4", model_path_ = paths [user] ["model_path"],
-                         base_height_ = 170, logger_ = manager.tracker), ["physical", "simulated2"]) }
-                        )
+                         logger_ = manager.tracker), ["physical", "simulated2"])})
+
+    if (KB_ONLY == False):
+        manager.add_inputs ({"music": (Cyclic ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/music/gorillaz_collar_part.mp3",
+                              logger_ = manager.tracker), ["physical", "simulated2"])})
 
     manager.add_robots ({"simulated2" : robots.Simulated_robot (logger_ = manager.tracker)})
 
     if (AUTONOMOUS == False):
         ip = paths [user] ["robot_ip"]
-        manager.add_robots ({"physical" : robots.Real_robot_qi (ip, "9569", logger_ = manager.tracker)})
+        manager.add_robots ({"physical" : robots.Real_robot_qi (ip, "9569", logger_ = manager.tracker, action_time_ = 0.4)})
 
     while (True):
         if (manager.on_idle () ["quit"] == True):
