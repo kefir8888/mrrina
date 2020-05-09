@@ -577,25 +577,25 @@ class Real_robot_qi(Robot):
                                     "r_ank_roll"  : "RAnkleRoll"
                                     }
 
-        self.init_positions = {"RShoulderPitch" : 0,
+        self.init_positions = {"RShoulderPitch" : 1.1,
                                "RShoulderRoll"  : 0,
                                "RElbowRoll"     : 0,
                                "RElbowYaw"      : 0,
                                "RHipRoll"       : 0,
                                "RHipPitch"      : 0,
                                "RKneePitch"     : 0,
-                               "RAnklePitch"      : 0,
-                               "RAnkleRoll"       : 0,
+                               "RAnklePitch"    : 0,
+                               "RAnkleRoll"     : 0,
 
-                               "LShoulderPitch" : 0,
+                               "LShoulderPitch" : 1.1,
                                "LShoulderRoll"  : 0,
                                "LElbowRoll"     : 0,
                                "LElbowYaw"      : 0,
                                "LHipRoll"       : 0,
                                "LHipPitch"      : 0,
                                "LKneePitch"     : 0,
-                               "LAnklePitch"      : 0,
-                               "LAnkleRoll"       : 0,
+                               "LAnklePitch"    : 0,
+                               "LAnkleRoll"     : 0,
 
                                "HeadYaw"        : 0,
                                "HeadPitch"      : -0.3}
