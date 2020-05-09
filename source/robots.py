@@ -530,9 +530,12 @@ class Real_robot(Robot):
         self.simulated.plot_state (img, x, y, scale)
 
 class Real_robot_qi(Robot):
-    def __init__(self, ip_num_, timeout_ = 0.04, logger_ = 0):
+    def __init__(self, ip_num_, timeout_ = 0.04, logger_ = 0, action_time_ = 0.8):
         Robot.__init__ (self, timeout_)
         self.logger = logger_
+
+        self.action_time = action_time_
+
         print("Hello")
 
         self.ip_num = ip_num_
@@ -609,9 +612,8 @@ class Real_robot_qi(Robot):
         action = self.queue [self.commands_sent]
         action_ = action
 
-        action_time = 0.8
-
-        print ("action (time)", action)
+        #action_time = 0.8
+        #print ("action (time)", self.action_time)
 
         while (True):
             action_ = self.queue [self.commands_sent]
@@ -634,7 +636,7 @@ class Real_robot_qi(Robot):
             # print(list(self.synchronized_joints.keys ()))
             names = []
             angles = []
-            timeList = [action_time] * 20
+            timeList = [self.action_time] * 20
             for key in self.synchronized_joints.keys ():
                 joint, _ = self.simulated.find_joint (key)
                 robot_joint = self.synchronized_joints [key]
