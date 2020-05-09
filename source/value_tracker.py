@@ -2,8 +2,9 @@ import numpy as np
 import cv2
 
 class Value_tracker:
-    def __init__ (self):
+    def __init__ (self, draw_ = True):
         self.tracked = {}
+        self.draw = draw_
 
     def name (self):
         return "value_tracker"
@@ -12,6 +13,9 @@ class Value_tracker:
         self.tracked.update ({value_name : value})
 
     def draw (self, img):
+        if (self.draw == False):
+            return []
+
         result = np.array (img)
 
         i = 0

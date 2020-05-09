@@ -5,13 +5,14 @@ from value_tracker import Value_tracker
 import input_output
 
 class Manager:
-    def __init__ (self, config_ = "", silent_mode_ = True, time_to_not_silent_ =  0, color_ = 190):
+    def __init__ (self, config_ = "", silent_mode_ = True, time_to_not_silent_ =  0, color_ = 190, draw_tracker_ = True):
         self.inputs = {}
         self.robots_list = {}
         self.silent_mode = silent_mode_
         self.time_to_not_silent = time_to_not_silent_
         self.color = color_
         self.quit = False
+        self.draw_tracker = draw_tracker_
 
     def __del__ (self):
         self.logfile.close ()
@@ -28,7 +29,7 @@ class Manager:
     def init (self):
         self.curr_time = time()
         self.logfile = open("log/" + str(self.curr_time) + ".txt", "w+")
-        self.tracker = Value_tracker()
+        self.tracker = Value_tracker (self.draw_tracker)
         self.fsm_processor = fsm.FSM_processor ()
         self.start_time = self.curr_time
 
@@ -82,6 +83,8 @@ class Manager:
 
             modality_frames = self.inputs [modality] [0].draw (self.canvas)
 
+            #print ("shape", modality, modality_frames [0].shape [0])
+
             if (modality_frames [0].shape [0] > 1):
                 self.output_images += modality_frames
                 self.output_names.append (modality)
@@ -89,7 +92,7 @@ class Manager:
     def handle_robots (self):
         self.canvas = np.ones ((self.WIND_Y, self.WIND_X, 3), np.uint8) * self.color
         canvas_ = self.canvas.copy ()
-        self.output_images += self.tracker.draw (self.canvas)
+        #self.output_images += self.tracker.draw (self.canvas)
 
         if (self.silent_mode == False):
             for key in self.robots_list.keys ():
