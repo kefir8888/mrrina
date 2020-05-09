@@ -274,7 +274,7 @@ class Computer_keyboard (Modality):
         self.key_to_command.append (self.repeating2)
         self.key_to_command.append (self.eyes)
 
-        print "key to command", len (self.key_to_command)
+        #print "key to command", len (self.key_to_command)
 
         if (phrases_path == ""):
             f = io.open (phrases_path, "r", encoding='utf-8')
@@ -334,7 +334,7 @@ class Computer_keyboard (Modality):
         if (self.interpreted_data >= 0):
             # key = str (chr (self.interpreted_data))
             key = (chr (self.interpreted_data)).encode('utf-8')
-            print ("key in get_command", key)
+            #print ("key in get_command", key)
 
             if (key in self.key_to_command [self.curr_mode].keys ()):
                 return self.key_to_command [self.curr_mode] [key]

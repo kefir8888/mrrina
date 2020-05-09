@@ -288,7 +288,7 @@ for instance the robot model is recursive. Aborting operation.")
 
                 if (action [0] == "/increment_joint_angle"):
                     self.set_joint_angle (action [1] [0], float (action [1] [1]), increment = True)
-                    print((action [1] [0], float (action [1] [1])))
+                    #print((action [1] [0], float (action [1] [1])))
 
                 if (action [0] == "/set_joint_angle"):
                     self.set_joint_angle (action [1] [0], float (action [1] [1]))
@@ -620,7 +620,7 @@ class Real_robot_qi(Robot):
             self.commands_sent += 1
 
             self.simulated._send_command (action_)
-            print ("action: ", action_)
+            #print ("action: ", action_)
 
             if (not ((action [0] [0] == "/increment_joint_angle" or
                  action [0] [0] == "/set_joint_angle") and
