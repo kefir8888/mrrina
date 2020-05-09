@@ -8,7 +8,7 @@ class FSM_processor:
 
         if (config_file == ""):
             files = sorted (Path ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/tasks/").glob('*.txt'))
-            print (files)
+            #print (files)
 
             fsm_num = 0
 
