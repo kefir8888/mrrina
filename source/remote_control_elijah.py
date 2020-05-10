@@ -24,7 +24,6 @@ def main():
 
     manager.init ()
 
-
     manager.add_inputs ({"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
                          logger_ = manager.tracker), ["physical", "simulated2"])})
 

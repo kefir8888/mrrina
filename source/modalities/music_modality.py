@@ -11,12 +11,12 @@ import cv2
 
 import multiprocessing
 
-class Motion_source:
-    def __init__ (self):
-        pass
+#class Motion_source:
+#    def __init__ (self):
+#        pass
 
-    def get_motion (self, time):
-        return np.zeros (18, np.float32)
+#    def get_motion (self, time):
+#        return np.zeros (18, np.float32)
 
 #from skeleton_modalities import smth
 #class Cyclic
@@ -32,26 +32,13 @@ class Motion_source:
 class Music (Modality):
     def __init__ (self, music_path_ = "", logger_ = 0):
         self.logger = logger_
+        self.music_path = music_path_
 
         self.tick = 0
 
         self.commands = {"noaction": [("noaction", [""])],
-                         "1": [("/stand", [""])],
-                         "2": [("/left_shoulder_up", [""])],
-                         "3": [("/right_shoulder_up", [""])],
-                         "4": [("/head_yes", [""])],
-                         "5": [("/right_hand_front", [""])],
-                         "6": [("/left_hand_left", [""])],
-                         "7": [("/left_hand_front", [""])],
-                         "8": [("/right_hand_right", [""])],
-                         "9": [("/stand", [""])],
-                         "10": [("/bend_right", [""])],
-                         "11": [("/bend_left", [""])],
-                         "12": [("/stand", [""])],
-                         "13": [("/play_airplane_1", [""])],
-                         "14": [("/play_airplane_2", [""])],
-                         "15": [("/play_airplane_1", [""])],
-                         "16": [("/hands_sides", [""])]
+                         "0": [("/increment_joint_angle", ["l_sho_roll", "-0.11"])],
+                         "1": [("/increment_joint_angle", ["l_sho_roll", "0.11"])]
                          }
 
         self.rate, self.audio = self.read(music_path_)
@@ -101,7 +88,7 @@ class Music (Modality):
         self.rhythm = f [1]
 
     def name(self):
-        return "Dance generation with audio input"
+        return "Baseline dance generation with audio input"
 
     def _read_data (self):
         pass
@@ -119,9 +106,66 @@ class Music (Modality):
             l = len (self.commands)
 
             comm = self.commands[str (np.random.randint (1, l))]
+
             self.tick += 1
 
-        #print ("com", comm)
+        return comm
+
+    def get_command(self, skip_reading_data=False):
+        self._read_data()
+        self._process_data()
+        self._interpret_data()
+
+        return self._get_command()
+
+    def draw (self, canvas = np.ones ((700, 700, 3), np.uint8) * 220):
+        result = canvas.copy ()
+
+        cv2.putText (result, self.music_path, (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 50, 31), 1, cv2.LINE_AA)
+
+        return [result]
+
+class Cyclic (Music):
+    def __init__ (self, music_path_ = "", logger_ = 0):
+        Music.__init__ (self, music_path_, logger_)
+
+        self.tick = 0
+
+        self.rate, self.audio = self.read (self.music_path)
+        self._extract_rhythm ()
+        self.timeout = common.Timeout_module(1 / self.rhythm / 8)
+
+        print ("timeout:", self.timeout)
+
+        #song = AudioSegment.from_mp3 (music_path_)
+        #play (song)
+
+    def play_song (self):
+        pass
+
+
+    def name(self):
+        return "Cyclic moves performing"
+
+    def _read_data (self):
+        pass
+
+    def _process_data(self):
+        pass
+
+    def _interpret_data(self):
+        pass
+
+    def _get_command(self):
+        comm = self.commands ["noaction"]
+
+        if (self.timeout.timeout_passed ()):
+            l = len (self.commands)
+
+            comm = self.commands[str (self.tick % (l - 1))]
+            #[("/increment_joint_angle", ["l_sho_roll", "-0.11"])]
+
+            self.tick += 1
 
         return comm
 

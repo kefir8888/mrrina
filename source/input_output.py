@@ -221,6 +221,7 @@ def form_grid (images_, window_x_sz = -1, one_img_x_sz = -1, names = []):
         shape = [int(x*rescale_factor) for x in shape]
 
     if window_x_sz != -1:
+        #print ("tezd", float (window_x_sz), shape, form[0])
         rescale_factor = float (window_x_sz) / shape[1] / form[0]
         shape = [int(x*rescale_factor) for x in shape]
         #print("2 case, rescale factor", rescale_factor)

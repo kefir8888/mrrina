@@ -105,7 +105,9 @@ class Manager:
         self.output_names.append  ("remote controller")
 
     def on_idle (self):
-        self.curr_time = time ()
+        new_time = time ()
+        #print (new_time - self.curr_time)
+        self.curr_time = new_time
         # tracker.update("time", curr_time)
 
         self.handle_modalities ()
