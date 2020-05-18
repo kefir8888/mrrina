@@ -57,9 +57,13 @@ class Modality:
 class WorkWithPoints(Modality):
     def __init__ (self, logger_=0, maxlen_ = 10):
         Modality.__init__(self, logger_)
-        self.necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip","l_knee", "l_ank", "r_sho", "r_elb", "r_wri", "r_hip","r_knee", "r_ank", "neck",'mid_hip',  "nose", 'r_eye', 'l_eye', "r_ear", "l_ear"]
+        self.necessary_keypoints_names = ["l_sho", "l_elb", "l_wri", "l_hip","l_knee", "l_ank", "r_sho", "r_elb", "r_wri",
+                                          "r_hip","r_knee", "r_ank", "neck",'mid_hip',  "nose", 'r_eye', 'l_eye', "r_ear",
+                                          "l_ear"]
         maxlen__ = 10
+
         self.kps_mean = {kp : {"x": deque(maxlen = maxlen__),"y": deque(maxlen = maxlen__),"z": deque(maxlen = maxlen__)} for kp in self.necessary_keypoints_names}
+
         self.angles_mean    = {"r_sho_roll"  : deque(maxlen = maxlen_),
                                "r_sho_pitch" : deque(maxlen = maxlen_),
                                "r_elb_roll"  : deque(maxlen = maxlen_),
@@ -87,16 +91,37 @@ class WorkWithPoints(Modality):
                                "head_Yaw"    : deque(maxlen = maxlen_),
                                "head_Pitch"  : deque(maxlen = maxlen_)}
 
+        # self.kpt_names   = ['neck', 'nose', 'mid_hip',
+        #          'l_sho', 'l_elb',
+        #          'l_wri', 'l_hip',
+        #          'l_knee', 'l_ank',
+        #          'r_sho', 'r_elb',
+        #          'r_wri', 'r_hip',
+        #          'r_knee', 'r_ank',
+        #          'r_eye', 'l_eye',
+        #          'r_ear', 'l_ear']
 
-        self.kpt_names   = ['neck', 'nose', 'mid_hip',
-                 'l_sho', 'l_elb',
-                 'l_wri', 'l_hip',
-                 'l_knee', 'l_ank',
-                 'r_sho', 'r_elb',
-                 'r_wri', 'r_hip',
-                 'r_knee', 'r_ank',
-                 'r_eye', 'l_eye',
-                 'r_ear', 'l_ear']
+        self.kpt_names   = ['r_eye',
+                            'l_eye',
+                            'mid_hip',
+                            'l_sho',
+                            'l_elb',
+                            'l_wri',
+                            'l_hand',
+                            'l_hip',
+                            'l_knee',
+                            'l_ank',
+                            'neck', #'l_heel',
+                            'l_ear', #'l_toe',
+                            'r_sho',
+                            'r_elb',
+                            'r_wri',
+                            'r_hand',
+                            'r_hip',
+                            'r_knee',
+                            'r_ank',
+                            'nose', #'r_heel',
+                            'r_ear'] #"'r_toe']
 
     def get_mean(self, dict_):
         return np.mean(np.asarray(dict_))

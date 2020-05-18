@@ -5,10 +5,13 @@ import os
 import cv2
 import numpy as np
 
-from test.input_reader import VideoReader, ImageReader
-from test.draw import Plotter3d, draw_poses
-from test.parse_poses import parse_poses
+# from test.input_reader import VideoReader, ImageReader
+# from test.draw import Plotter3d, draw_poses
+# from test.parse_poses import parse_poses
 
+from input_reader import VideoReader, ImageReader
+from draw import Plotter3d, draw_poses
+from parse_poses import parse_poses
 
 def rotate_poses(poses_3d, R, t):
     R_inv = np.linalg.inv(R)
@@ -22,7 +25,7 @@ def rotate_poses(poses_3d, R, t):
 def draww(frame):
     stride = 8
 
-    from test.inference_engine_pytorch import InferenceEnginePyTorch
+    from inference_engine_pytorch import InferenceEnginePyTorch
 
     #net = InferenceEnginePyTorch("/home/kompaso/DEBUG/Debug/remote control/source/test/human-pose-estimation-3d.pth", "GPU")
     net = InferenceEnginePyTorch("/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/test/human-pose-estimation-3d.pth", "GPU")
@@ -46,7 +49,7 @@ def draww(frame):
     # if args.video != '':
     #     frame_provider = VideoReader(args.video)
     is_video = True
-    base_height = 50 #256
+    base_height = 80 #256
     fx = -1
 
     delay = 1

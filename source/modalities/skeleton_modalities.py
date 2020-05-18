@@ -6,6 +6,249 @@ import os
 import numpy as np
 import cv2
 import math
+import json
+
+class Skeleton_3D_Music_to_dance (WorkWithPoints):
+    def __init__ (self, skeleton_path_ = "", logger_ = 0):
+        WorkWithPoints.__init__(self, logger_, maxlen_=20)
+        self.all_data         = []
+        self.dataframe_num = 0
+        self.previous_knee = 0
+        self.previous_hip = 0
+        self.previous_ankl = 0
+        self.mode = 0.0
+
+        self.skeleton_path = skeleton_path_
+
+        if (skeleton_path_ != ""):
+            verbose = False
+            if( os.path.isfile (self.skeleton_path) == True ):
+                print( "Skeleton file: ", self.skeleton_path)
+
+                #skeleton_data = open(skeleton_path_, 'r')
+                #all_skeleton_frames = self.read_skeleton_data_from_NTU(skeleton_data, verbose )
+
+                f = open (skeleton_path_, )
+                data = json.load (f)
+                all_skeleton_frames = data["skeletons"] [10:1550]
+
+                self.all_data = all_skeleton_frames
+            else:
+                print("\nNo skeleton file with name: ", data_path)
+                exit(0)
+
+    def name (self):
+        return "skeleton"
+
+    def _read_data (self):
+        if (self.dataframe_num >= len (self.all_data)):
+            read_data = 0
+            return
+
+        self.read_data = self.all_data [self.dataframe_num]
+        self.dataframe_num += 1
+
+    def create_dicts_with_coords_3D(self):
+        kps = {}
+        if self.read_data != []:
+            for kp in self.necessary_keypoints_names:
+                ind = self.kpt_names.index(kp)
+                if kp == 'mid_hip':
+                    if (kps["l_hip"][0] > 0 and kps["r_hip"][0] > 0):
+                        kps.update ({kp : [(self.read_data[6][0] + self.read_data[12][0]) / 2, (self.read_data[6][1] +
+                                            self.read_data[12][1]) / 2, (self.read_data[6][2] + self.read_data[12][2]) / 2]})
+                    else:
+                        kps.update ({kp : [self.read_data[0][0], self.read_data[0][1] + 200,  self.read_data[0][2]]})
+                else:
+                    kps.update ({kp : [self.read_data[ind][0], self.read_data[ind][1],  self.read_data[ind][2]]})
+
+                self.kps_mean[kp]["x"].append(kps[kp][0])
+                self.kps_mean[kp]["y"].append(kps[kp][1])
+                self.kps_mean[kp]["z"].append(kps[kp][2])
+        return kps
+
+    def get_read_data (self):
+        return self.read_data
+
+    def _process_data (self, frame = None):
+        # name = self.read_data
+        # self.read_data = self.read_data
+
+        self.interpreted_data = self.create_dicts_with_coords_3D()
+
+        kps = self.get_mean_cords(self.kps_mean)
+
+        # self.processed_data["mode"] = 1
+
+        ##################################################left_full_hand##############################################################
+        l_hip_neck = common.create_vec(kps["mid_hip"], kps["neck"])
+        neck_l_sho = common.create_vec(kps["neck"], kps["l_sho"])
+        l_elb_sho = common.create_vec(kps["l_elb"], kps["l_sho"])
+        l_sho_elb = common.create_vec(kps["l_sho"], kps["l_elb"])
+        l_elb_wri = common.create_vec(kps["l_elb"], kps["l_wri"])
+
+        N_l_body_plane = np.cross(neck_l_sho, l_hip_neck)
+        N_neck_l_sho_elb = np.cross(neck_l_sho, l_elb_sho)
+        N_l_sho_elb_wri = np.cross(l_elb_sho, l_elb_wri)
+
+        R_l_body_plane = np.cross(l_hip_neck, N_l_body_plane)
+        R_l_arm = np.cross(l_elb_sho, N_neck_l_sho_elb)
+        R_lbp_lse = np.cross(R_l_body_plane, l_sho_elb)
+
+        mod_N_neck_l_sho_elb = common.get_mod(N_neck_l_sho_elb)
+        mod_N_l_body_plane = common.get_mod(N_l_body_plane)
+        mod_N_l_sho_elb_wri = common.get_mod(N_l_sho_elb_wri)
+        mod_l_hip_neck = common.get_mod(l_hip_neck)
+        mod_l_sho_elb = common.get_mod(l_sho_elb)
+        mod_l_elb_sho = common.get_mod(l_elb_sho)
+        mod_l_elb_wri = common.get_mod(l_elb_wri)
+        mod_R_l_body_plane = common.get_mod(R_l_body_plane)
+        mod_R_lbp_lse = common.get_mod(R_lbp_lse)
+        mod_R_l_arm = common.get_mod(R_l_arm)
+
+        l_sho_pitch_raw = math.acos(np.dot(l_hip_neck, R_lbp_lse) / (mod_l_hip_neck * mod_R_lbp_lse)) - 0.65
+        l_elb_yaw_raw = math.acos(
+            np.dot(N_neck_l_sho_elb, N_l_sho_elb_wri) / (mod_N_neck_l_sho_elb * mod_N_l_sho_elb_wri))
+
+        phi_lsp = math.acos(np.dot(l_sho_elb, l_hip_neck) / (mod_l_hip_neck * mod_l_sho_elb))
+        phi_ley_1 = math.acos(np.dot(l_elb_wri, N_neck_l_sho_elb) / (mod_l_elb_wri * mod_N_neck_l_sho_elb))
+        phi_ley_2 = math.acos(np.dot(l_elb_wri, R_l_arm) / (mod_l_elb_wri * mod_R_l_arm))
+
+        l_elb_yaw = 0
+        if phi_ley_1 <= 1.57:
+            l_elb_yaw = - l_elb_yaw_raw
+        if phi_ley_1 > 1.57 and phi_ley_2 > 1.57:
+            l_elb_yaw = l_elb_yaw_raw
+        if phi_ley_1 > 1.57 and phi_ley_2 <= 1.57:
+            l_elb_yaw = l_elb_yaw_raw - 6.28
+
+        if phi_lsp <= 1.57:
+            l_sho_pitch = -l_sho_pitch_raw
+        else:
+            l_sho_pitch = l_sho_pitch_raw
+
+        l_sho_roll = 1.57 - math.acos(np.dot(l_sho_elb, R_l_body_plane) / (mod_l_sho_elb * mod_R_l_body_plane))
+        l_elb_roll = -(3.14 - math.acos(np.dot(l_elb_wri, l_elb_sho) / (mod_l_elb_wri * mod_l_elb_sho)))
+
+        #####################################################################################################################
+        self.angles_mean["l_sho_pitch"].append(l_sho_pitch)
+        self.angles_mean["l_sho_roll"].append(l_sho_roll)
+        self.angles_mean["l_elb_yaw"].append(l_elb_yaw)
+        self.angles_mean["l_elb_roll"].append(l_elb_roll)
+
+        # self.logger.update("l shoul pitch", round(self.get_mean(self.angles_mean["l_sho_pitch"]), 2))
+        # self.logger.update("l shoul roll", round(self.get_mean(self.angles_mean["l_sho_roll"]), 2))
+        # self.logger.update("l elb yaw", round(self.get_mean(self.angles_mean["l_elb_yaw"]), 2))
+        # self.logger.update("l elb roll", round(self.get_mean(self.angles_mean["l_elb_roll"]), 2))
+
+        self.processed_data ["l_sho_pitch"]  = round(self.get_mean(self.angles_mean["l_sho_pitch"]), 2)
+        self.processed_data ["l_sho_roll"]  = round(self.get_mean(self.angles_mean["l_sho_roll"]), 2)
+        self.processed_data ["l_elb_yaw"]  = round(self.get_mean(self.angles_mean["l_elb_yaw"]), 2)
+        self.processed_data ["l_elb_roll"]  = round(self.get_mean(self.angles_mean["l_elb_roll"]), 2)
+        ##############################################################################################################################
+
+        ##########################################r_full_hand###############################################################
+        r_hip_neck = common.create_vec(kps["mid_hip"], kps["neck"])
+        neck_r_sho = common.create_vec(kps["neck"], kps["r_sho"])
+        r_elb_sho = common.create_vec(kps["r_elb"], kps["r_sho"])
+        r_sho_elb = common.create_vec(kps["r_sho"], kps["r_elb"])
+        r_elb_wri = common.create_vec(kps["r_elb"], kps["r_wri"])
+
+        N_r_body_plane = -np.cross(neck_r_sho, r_hip_neck)
+        N_neck_r_sho_elb = np.cross(neck_r_sho, r_elb_sho)
+        N_r_sho_elb_wri = np.cross(r_elb_sho, r_elb_wri)
+
+        R_r_body_plane = np.cross(r_hip_neck, N_r_body_plane)
+        R_r_arm = np.cross(r_elb_sho, N_neck_r_sho_elb)
+        R_rbp_rse = np.cross(R_r_body_plane, r_sho_elb)
+
+        mod_N_neck_r_sho_elb = common.get_mod(N_neck_r_sho_elb)
+        mod_N_r_sho_elb_wri = common.get_mod(N_r_sho_elb_wri)
+        mod_r_hip_neck = common.get_mod(r_hip_neck)
+        mod_r_sho_elb = common.get_mod(r_sho_elb)
+        mod_r_elb_sho = common.get_mod(r_elb_sho)
+        mod_r_elb_wri = common.get_mod(r_elb_wri)
+        mod_R_rbp_rse = common.get_mod(R_rbp_rse)
+        mod_R_r_body_plane = common.get_mod(R_r_body_plane)
+        mod_R_r_arm = common.get_mod(R_r_arm)
+
+        r_sho_pitch_raw = math.acos(np.dot(r_hip_neck, R_rbp_rse) / (mod_r_hip_neck * mod_R_rbp_rse)) - 0.65
+        r_elb_yaw_raw = math.acos(
+            np.dot(N_neck_r_sho_elb, N_r_sho_elb_wri) / (mod_N_neck_r_sho_elb * mod_N_r_sho_elb_wri))
+
+        phi_rsp = math.acos(np.dot(r_sho_elb, r_hip_neck) / (mod_r_hip_neck * mod_r_sho_elb))
+        phi_rey_1 = math.acos(np.dot(r_elb_wri, N_neck_r_sho_elb) / (mod_r_elb_wri * mod_N_neck_r_sho_elb))
+        phi_rey_2 = math.acos(np.dot(r_elb_wri, R_r_arm) / (mod_r_elb_wri * mod_R_r_arm))
+
+        r_elb_yaw = 0
+        if phi_rey_1 <= 1.57:
+            r_elb_yaw = r_elb_yaw_raw
+        if phi_rey_1 > 1.57 and phi_rey_2 > 1.57:
+            r_elb_yaw = -r_elb_yaw_raw
+        if phi_rey_1 > 1.57 and phi_rey_2 <= 1.57:
+            r_elb_yaw = r_elb_yaw_raw - 6.28
+
+        if phi_rsp <= 1.57:
+            r_sho_pitch = -r_sho_pitch_raw
+        else:
+            r_sho_pitch = r_sho_pitch_raw
+
+        r_sho_roll = 1.57 - math.acos(np.dot(r_sho_elb, R_r_body_plane) / (mod_r_sho_elb * mod_R_r_body_plane))
+        r_elb_roll = 3.14 - math.acos(np.dot(r_elb_wri, r_elb_sho) / (mod_r_elb_wri * mod_r_elb_sho))
+        #####################################################################################################################
+        self.angles_mean["r_sho_pitch"].append(r_sho_pitch)
+        self.angles_mean["r_sho_roll"].append(r_sho_roll)
+        self.angles_mean["r_elb_yaw"].append(r_elb_yaw)
+        self.angles_mean["r_elb_roll"].append(r_elb_roll)
+
+        # self.logger.update("r shoul pitch" , round(self.get_mean(self.angles_mean["r_sho_pitch"]), 2))
+        # self.logger.update("r shoul roll", round(self.get_mean(self.angles_mean["r_sho_roll"]), 2))
+        # self.logger.update("r elb yaw", round(self.get_mean(self.angles_mean["r_elb_yaw"]), 2))
+        # self.logger.update("r elb roll", round(self.get_mean(self.angles_mean["r_elb_roll"]), 2))
+
+        self.processed_data ["r_sho_pitch"] = round(self.get_mean(self.angles_mean["r_sho_pitch"]), 2)
+        self.processed_data ["r_sho_roll"]  = round(self.get_mean(self.angles_mean["r_sho_roll"]), 2)
+        self.processed_data ["r_elb_yaw"]   = round(self.get_mean(self.angles_mean["r_elb_yaw"]), 2)
+        self.processed_data ["r_elb_roll"]  = round(self.get_mean(self.angles_mean["r_elb_roll"]), 2)
+        #################################################################################################################################
+
+    def _interpret_data (self):
+        self.interpreted_data = self.processed_data
+
+    def _get_command (self):
+        commands = []
+
+        #print ("keys:", self.processed_data.keys ())
+
+        smol_listb = ["l_sho_roll", "l_elb_roll", "l_sho_pitch",
+                      "r_sho_roll", "r_elb_roll", "r_sho_pitch"]
+
+        smol_dict = {}
+
+        for key in smol_listb:
+            smol_dict.update ({key : self.processed_data [key]})
+
+        #for key in self.processed_data.keys ():
+        for key in smol_dict.keys ():
+            commands.append (("/set_joint_angle", [key, str (self.processed_data [key])]))
+
+        return commands
+
+    def get_command (self, skip_reading_data = False):
+        if (skip_reading_data == False):
+            self._read_data ()
+
+        self._process_data   ()
+        self._interpret_data ()
+
+        return self._get_command ()
+
+    def draw (self, canvas = np.ones ((700, 700, 3), np.uint8) * 220):
+        result = canvas.copy ()
+
+        cv2.putText (result, self.skeleton_path, (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 50, 31), 1, cv2.LINE_AA)
+
+        return [result]
 
 class Skeleton_2D(WorkWithPoints):
     def __init__ (self, skeleton_path_ = "", logger_ = 0):

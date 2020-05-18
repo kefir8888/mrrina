@@ -1,11 +1,11 @@
 import numpy as np
 
-from test.pose import Pose, propagate_ids
+from pose import Pose, propagate_ids
 try:
     from pose_extractor import extract_poses
 except:
     print('#### Cannot load fast pose extraction, switched to legacy slow implementation. ####')
-    from test.legacy_pose_extractor import extract_poses
+    from legacy_pose_extractor import extract_poses
 
 AVG_PERSON_HEIGHT = 180
 

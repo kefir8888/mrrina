@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from naoqi import ALProxy
+#from naoqi import ALProxy
 from common import *
 
 class Robot:
@@ -325,6 +325,58 @@ for instance the robot model is recursive. Aborting operation.")
             line_num += 1
         self.base_point.draw(img, x, y, 0, scale)
 
+# class Simulated_robot_3D(Robot):
+#     def __init__(self, timeout_ = 0.01, path_ = "", logger_ = 0):
+#         Robot.__init__ (self, timeout_)
+#
+#         self.config_path = path_
+#         self.logger = logger_
+#
+#         self.joints_to_track = ["r_sho_roll", "l_sho_roll", "r_sho_pitch", "l_sho_pitch", "r_elb_roll", "l_elb_roll"]
+#
+#         self.updated = False
+#         self.name = "simulated"
+#
+#     def set_joint_angle (self, joint_name, new_angle, increment = False):
+#
+#
+#         self.updated = True
+#
+#     def _send_command (self, actions):
+#         for action in actions:
+#             #print ("Sim action [0]: ", action [0])
+#             if (action [0] in self.available_commands.keys ()):
+#                 self.updated = True
+#                 # print ("sending command [simulated]: ", action)
+#
+#                 if (action [0] == "/increment_joint_angle"):
+#                     self.set_joint_angle (action [1] [0], float (action [1] [1]), increment = True)
+#                     #print((action [1] [0], float (action [1] [1])))
+#
+#                 if (action [0] == "/set_joint_angle"):
+#                     self.set_joint_angle (action [1] [0], float (action [1] [1]))
+#
+#                 elif (action [0] == "/stand"):
+#                     #self.set_joint_angle ("righthand", -0.2)
+#                     self.base_point.children = []
+#                     self.load_configuration (self.config_path)
+#                     self.set_joint_angle ("base", 0)
+#
+#                 elif (action [0] == "/rest"):
+#                     self.set_joint_angle ("base", 5)
+#
+#                 elif (action [0] == "/hands_sides"):
+#                     self.set_joint_angle ("righthand", 1)
+#
+#             else:
+#                 print ("action :", action, " is not supported")
+#
+#     def plot_state (self, img, x, y, scale = 1):
+#         line_num = 0
+#
+
+
+
 class Real_robot(Robot):
     def __init__(self, ip_num, port_ = 9559, timeout_ = 0.04, logger_ = 0):
         Robot.__init__ (self, timeout_)
@@ -533,6 +585,7 @@ class Real_robot_qi(Robot):
     def __init__(self, ip_num_, timeout_ = 0.04, logger_ = 0, action_time_ = 0.8):
         Robot.__init__ (self, timeout_)
         self.logger = logger_
+        self.first_frame = True
 
         self.action_time = action_time_
 
@@ -544,11 +597,17 @@ class Real_robot_qi(Robot):
         self.postureProxy = ALProxy("ALRobotPosture", self.ip_num, 9559)
 
         self.motionProxy.wbEnable(False)
-        self.postureProxy.goToPosture("Stand", 0.5)
+        self.postureProxy.goToPosture("Stand", 1.5)
         self.motionProxy.wbEnable(True)
+        self.motionProxy.setBreathEnabled('Body', False)
 
         self.motionProxy.wbFootState("Fixed", "Legs")
         self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
+
+        pNames = "Body"
+        pStiffnessLists = 0.6
+        pTimeLists = 1.0
+        self.motionProxy.stiffnessInterpolation (pNames, pStiffnessLists, pTimeLists)
 
         self.simulated = Simulated_robot (logger_ = self.logger)
 ########################################################################################################################################33
@@ -636,7 +695,14 @@ class Real_robot_qi(Robot):
             # print(list(self.synchronized_joints.keys ()))
             names = []
             angles = []
-            timeList = [self.action_time] * 20
+
+            if (self.first_frame == False):
+                timeList = [self.action_time] * 20
+
+            else:
+                timeList = [1.0] * 20
+                self.first_frame = False
+
             for key in self.synchronized_joints.keys ():
                 joint, _ = self.simulated.find_joint (key)
                 robot_joint = self.synchronized_joints [key]

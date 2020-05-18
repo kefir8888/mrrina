@@ -6,8 +6,8 @@ class InferenceEnginePyTorch:
     def __init__(self, checkpoint_path, device,
                  img_mean=np.array([128, 128, 128], dtype=np.float32),
                  img_scale=np.float32(1/255)):
-        from test.with_mobilenet import PoseEstimationWithMobileNet
-        from test.load_state import load_state
+        from with_mobilenet import PoseEstimationWithMobileNet
+        from load_state import load_state
         self.img_mean = img_mean
         self.img_scale = img_scale
         self.device = 'cpu'

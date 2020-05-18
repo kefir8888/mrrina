@@ -51,6 +51,8 @@ class Manager:
         self.inputs["computer keyboard"][0]._read_data()
         keyboard_data = self.inputs["computer keyboard"][0].get_read_data()
 
+        #print ("kb data:",keyboard_data)
+
         if (keyboard_data == ord("q")):
             self.quit = True
 
