@@ -7,7 +7,7 @@ import math
 from pathlib import Path
 from time import time, sleep
 import sys
-from value_tracker import Value_tracker
+from service.value_tracker import Value_tracker
 
 #from IPython.display import clear_output
 

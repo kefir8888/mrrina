@@ -5,10 +5,10 @@ from collections import deque
 import numpy as np
 import common
 import torch
-from test.draw import Plotter3d, draw_poses
+from pose_estimation.draw import Plotter3d, draw_poses
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from adam_sender import *
+# from adam_sender import *
 
 import torch
 import torch.nn as nn
@@ -79,8 +79,7 @@ class RealSense (GetPoints):
                  'r_eye', 'l_eye',
                  'r_ear', 'l_ear']
 
-        self.sender = zmqConnect (port1)
-        self.receiver = zmqImageShowServer (port2)
+
 
 
         self.joints_framework_in_work = ['nose','l_sho', 'l_elb','l_wri','r_sho','r_elb', 'r_wri', 'l_hip','l_knee','l_ank','r_hip','r_kne','r_ank','neck']
@@ -95,9 +94,9 @@ class RealSense (GetPoints):
 
         n_categories = 6
         self.model = LSTM(n_joints,n_hidden,n_categories,n_layer)
-        self.model.load_state_dict(torch.load("/home/kompaso/diplom_modules/RNN-for-Human-Activity-Recognition-using-2D-Pose-Input-master/clap_sit_hop_stand.pth"))
-        self.model.to(self.device)
-        self.model.eval()
+        # self.model.load_state_dict(torch.load("/home/kompaso/diplom_modules/RNN-for-Human-Activity-Recognition-using-2D-Pose-Input-master/clap_sit_hop_stand.pth"))
+        # self.model.to(self.device)
+        # self.model.eval()
 
 
         if (video_path_ == ""):
@@ -234,9 +233,9 @@ class RealSense (GetPoints):
                     new_frame = np.array(list(dict_new.values()))
                     return new_frame
 
-                frame_rec_ = simplification(coords_3D, self.joints_framework, self.joints_framework_in_work)
-                frame_rec = normalization(frame_rec_)
-                self.for_recon.append(frame_rec.flatten())
+                # frame_rec_ = simplification(coords_3D, self.joints_framework, self.joints_framework_in_work)
+                # frame_rec = normalization(frame_rec_)
+                # self.for_recon.append(frame_rec.flatten())
 
 
 
@@ -303,7 +302,7 @@ class RealSense (GetPoints):
         if (self.timeout.timeout_passed ()):
             for key in self.processed_data.keys():
                 commands.append(("/set_joint_angle", [key, str(self.processed_data[key])]))
-            print("COMM", commands)
+            # print("COMM", commands)
 
         else:
             commands.append (("noaction", [""]))

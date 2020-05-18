@@ -2,7 +2,7 @@
 from modalities.skeleton_modalities import  Skeleton_3D
 from modalities.modality import GetPoints
 
-from test.draw import Plotter3d, draw_poses
+from pose_estimation.draw import Plotter3d, draw_poses
 
 import numpy as np
 import common

@@ -1,8 +1,8 @@
-import fsm
+import service.fsm as fsm
 from common import *
 from time import time, sleep
-from value_tracker import Value_tracker
-import input_output
+from service.value_tracker import Value_tracker
+import service.input_output
 
 class Manager:
     def __init__ (self, config_ = "", silent_mode_ = True, time_to_not_silent_ =  0, color_ = 190, draw_tracker_ = True):

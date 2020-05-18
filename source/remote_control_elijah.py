@@ -6,9 +6,9 @@ from modalities.music_modality import Cyclic
 from modalities.skeleton_modalities import Skeleton_3D, Skeleton_3D_Music_to_dance
 
 import robots
-import input_output
+import service.input_output
 
-from manager import Manager
+from service.manager import Manager
 from common import *
 
 user = "elijah"

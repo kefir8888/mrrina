@@ -3,10 +3,10 @@ import numpy as np
 import common
 from collections import deque
 import cv2
-from test.inference_engine_pytorch import InferenceEnginePyTorch
-from test.parse_poses import parse_poses
-from test.draw import draw_poses
-from test.draw import Plotter3d
+from pose_estimation.inference_engine_pytorch import InferenceEnginePyTorch
+from pose_estimation.parse_poses import parse_poses
+from pose_estimation.draw import draw_poses
+from pose_estimation.draw import Plotter3d
 import os
 import json
 
@@ -178,7 +178,7 @@ class GetPoints(Modality):
         self.t = t_
 
         if self.R == [] or self.t.all() == []:
-            file_path = os.path.join('data', 'extrinsics.json')
+            file_path = os.path.join('modalities/data', 'extrinsics.json')
             with open(file_path, 'r') as f:
                 extrinsics = json.load(f)
             self.R = np.array(extrinsics['R'], dtype=np.float32)

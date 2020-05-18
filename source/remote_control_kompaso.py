@@ -6,7 +6,7 @@ from modalities.skeleton_modalities import Skeleton_3D
 from modalities.realsense_modality  import RealSense
 
 import robots
-from manager import Manager
+from service.manager import Manager
 
 from common import *
 
