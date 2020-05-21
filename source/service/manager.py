@@ -2,7 +2,7 @@ import service.fsm as fsm
 from common import *
 from time import time, sleep
 from service.value_tracker import Value_tracker
-import service.input_output
+import service.input_output as input_output
 
 class Manager:
     def __init__ (self, config_ = "", silent_mode_ = True, time_to_not_silent_ =  0, color_ = 190, draw_tracker_ = True):
@@ -94,7 +94,9 @@ class Manager:
     def handle_robots (self):
         self.canvas = np.ones ((self.WIND_Y, self.WIND_X, 3), np.uint8) * self.color
         canvas_ = self.canvas.copy ()
-        #self.output_images += self.tracker.draw (self.canvas)
+
+        if (self.draw_tracker == True):
+            self.output_images += self.tracker.draw (self.canvas)
 
         if (self.silent_mode == False):
             for key in self.robots_list.keys ():
