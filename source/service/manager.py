@@ -61,7 +61,7 @@ class Manager:
 
         if (self.curr_time - self.start_time >= self.time_to_not_silent):
             self.silent_mode = False
-            self.time_to_not_silent = 1000000000
+            self.time_to_not_silent = 100000
 
         for modality in self.inputs.keys ():
             skip_reading_data = False

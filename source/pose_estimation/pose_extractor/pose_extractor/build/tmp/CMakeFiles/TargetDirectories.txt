@@ -1,3 +1,0 @@
-/home/kompaso/NAO_PROJECT/wenhai/source/pose_extractor/build/tmp/CMakeFiles/rebuild_cache.dir
-/home/kompaso/NAO_PROJECT/wenhai/source/pose_extractor/build/tmp/CMakeFiles/pose_extractor.dir
-/home/kompaso/NAO_PROJECT/wenhai/source/pose_extractor/build/tmp/CMakeFiles/edit_cache.dir
