@@ -2,7 +2,7 @@ import service.fsm as fsm
 from common import *
 from time import time, sleep
 from service.value_tracker import Value_tracker
-import service.input_output
+import service.input_output as input_output
 
 class Manager:
     def __init__ (self, config_ = "", silent_mode_ = True, time_to_not_silent_ =  0, color_ = 190, draw_tracker_ = True):
@@ -61,7 +61,7 @@ class Manager:
 
         if (self.curr_time - self.start_time >= self.time_to_not_silent):
             self.silent_mode = False
-            self.time_to_not_silent = 1000000000
+            self.time_to_not_silent = 100000
 
         for modality in self.inputs.keys ():
             skip_reading_data = False

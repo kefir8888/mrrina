@@ -1,8 +1,9 @@
 import numpy as np
 
 from pose_estimation.pose import Pose, propagate_ids
+# from pose_estimation.pose_extractor import extract_poses
 try:
-    from pose_estimation.pose_extractor import extract_poses
+    from pose_estimation.pose_extractor.pose_extractor import extract_poses
 except:
     print('#### Cannot load fast pose extraction, switched to legacy slow implementation. ####')
     from pose_estimation.legacy_pose_extractor import extract_poses

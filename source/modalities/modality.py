@@ -91,15 +91,15 @@ class WorkWithPoints(Modality):
                                "head_Yaw"    : deque(maxlen = maxlen_),
                                "head_Pitch"  : deque(maxlen = maxlen_)}
 
-        # self.kpt_names   = ['neck', 'nose', 'mid_hip',
-        #          'l_sho', 'l_elb',
-        #          'l_wri', 'l_hip',
-        #          'l_knee', 'l_ank',
-        #          'r_sho', 'r_elb',
-        #          'r_wri', 'r_hip',
-        #          'r_knee', 'r_ank',
-        #          'r_eye', 'l_eye',
-        #          'r_ear', 'l_ear']
+        self.kpt_names_lw   = ['neck', 'nose', 'mid_hip',
+                 'l_sho', 'l_elb',
+                 'l_wri', 'l_hip',
+                 'l_knee', 'l_ank',
+                 'r_sho', 'r_elb',
+                 'r_wri', 'r_hip',
+                 'r_knee', 'r_ank',
+                 'r_eye', 'l_eye',
+                 'r_ear', 'l_ear']
 
         self.kpt_names   = ['r_eye',
                             'l_eye',
@@ -189,14 +189,14 @@ class GetPoints(Modality):
         current_time = cv2.getTickCount()
         mean_time = 0
         edges = []
-        print("B", self.base_height)
-        print("C", frame.shape[0])
+        # print("B", self.base_height)
+        # print("C", frame.shape[0])
         input_scale = float(self.base_height / float(frame.shape[0]))
-        print("A", input_scale)
+        # print("A", input_scale)
         scaled_img = cv2.resize(frame, dsize=None, fx=input_scale, fy=input_scale)
         scaled_img = scaled_img[:,0:scaled_img.shape[1] - (scaled_img.shape[1] % self.stride)]
 
-        print ("shakal", scaled_img.shape)
+        # print ("shakal", scaled_img.shape)
 
         if self.fx < 0:
             self.fx = np.float32(0.8 * frame.shape[1])

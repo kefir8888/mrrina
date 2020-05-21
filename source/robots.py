@@ -126,16 +126,20 @@ class Joint:
 
     def draw (self, img, x, y, parent_angle, scale = 1):
         # print("DRAW", y)
-        if y != None: #тут была проверка на флоат, но сейчас координаты уже в инт
+        if y != None and x is not None: #тут была проверка на флоат, но сейчас координаты уже в инт
+
             # print ("joint: ", self.length, self.angle)
 
             angle = self.init_angle - self.angle + parent_angle
 
+            print("HENLO", x, self.init_angle, self.angle, parent_angle, self.name())
             x1 = x + self.length * math.cos (angle)
             y1 = y + self.length * math.sin (angle)
 
             x_  = int (x * scale)
             y_  = int (y * scale)
+
+
             x1_ = int (float (x1 * scale))
             y1_ = int (float (y1 * scale))
 
@@ -145,6 +149,7 @@ class Joint:
                 cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 250, 231), 1, cv2.LINE_AA)
 
             for child in self.children:
+                print("Child", angle)
                 child.draw (img, x1, y1, angle, scale)
 
     def set_angle (self, new_angle):
@@ -203,6 +208,7 @@ class Simulated_robot(Robot):
             name   = str   (data [1])
             length = float (data [2])
             angle  = float (data [3])
+            # print("HElllLO", angle)
             angle_multiplier = float (data [4])
             min_angle = float (data [5])
             max_angle = float (data [6])
@@ -323,6 +329,7 @@ for instance the robot model is recursive. Aborting operation.")
                 cv2.FONT_HERSHEY_SIMPLEX, 0.4, (200, 50, 231), 1, cv2.LINE_AA)
 
             line_num += 1
+        print("HENLO")
         self.base_point.draw(img, x, y, 0, scale)
 
 # class Simulated_robot_3D(Robot):
@@ -593,7 +600,7 @@ class Real_robot_qi(Robot):
 
         self.ip_num = ip_num_
         self.motionProxy = ALProxy("ALMotion", self.ip_num, 9559)
-        
+
         self.postureProxy = ALProxy("ALRobotPosture", self.ip_num, 9559)
 
         self.motionProxy.wbEnable(False)
