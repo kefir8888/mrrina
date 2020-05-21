@@ -30,6 +30,7 @@ class Manager:
         self.curr_time = time()
         self.logfile = open("log/" + str(self.curr_time) + ".txt", "w+")
         self.tracker = Value_tracker (self.draw_tracker)
+
         self.fsm_processor = fsm.FSM_processor ()
         self.start_time = self.curr_time
 
@@ -112,7 +113,7 @@ class Manager:
         new_time = time ()
         #print (new_time - self.curr_time)
         self.curr_time = new_time
-        # tracker.update("time", curr_time)
+        self.tracker.update("time", self.curr_time)
 
         self.handle_modalities ()
         self.handle_robots     ()

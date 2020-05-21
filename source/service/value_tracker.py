@@ -4,7 +4,7 @@ import cv2
 class Value_tracker:
     def __init__ (self, draw_ = True):
         self.tracked = {}
-        self.draw = draw_
+        self.draw_ = draw_
 
     def name (self):
         return "value_tracker"
@@ -13,7 +13,7 @@ class Value_tracker:
         self.tracked.update ({value_name : value})
 
     def draw (self, img):
-        if (self.draw == False):
+        if (self.draw_ == False):
             return []
 
         result = np.array (img)
