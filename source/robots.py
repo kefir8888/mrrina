@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 
-#from naoqi import ALProxy
+from naoqi import ALProxy
 from common import *
+import copy
+
+markup_color = (250, 250, 250)
+axes = {"x" : 0, "y" : 1, "z" : 2}
 
 class Robot:
-    def __init__(self, timeout_ = 0.1, logger_ = 0):
+    def __init__(self, timeout_ = 0.001, logger_ = 0):
         self.queue         = []
         self.commands_sent = 0
         self.name = "base"
@@ -132,7 +136,7 @@ class Joint:
 
             angle = self.init_angle - self.angle + parent_angle
 
-            print("HENLO", x, self.init_angle, self.angle, parent_angle, self.name())
+            #print("HENLO", x, self.init_angle, self.angle, parent_angle, self.name())
             x1 = x + self.length * math.cos (angle)
             y1 = y + self.length * math.sin (angle)
 
@@ -149,18 +153,23 @@ class Joint:
                 cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 250, 231), 1, cv2.LINE_AA)
 
             for child in self.children:
-                print("Child", angle)
+                #print("Child", angle)
                 child.draw (img, x1, y1, angle, scale)
 
-    def set_angle (self, new_angle):
+    def set_angle (self, new_angle, omit_warnings = False):
         if (new_angle < self.min_angle):
             self.angle = self.min_angle
-            print ("warning: cannot set joint " + self.joint_name + " to " + str (new_angle) +\
-                     ": the constraints are [" + str (self.min_angle) + ", " + str (self.max_angle) + "]")
+
+            if (omit_warnings == False):
+                print ("warning: cannot set joint " + self.joint_name + " to " + str (new_angle) +\
+                         ": the constraints are [" + str (self.min_angle) + ", " + str (self.max_angle) + "]")
+
         elif (new_angle > self.max_angle):
             self.angle=self.max_angle
-            print ("warning: cannot set joint " + self.joint_name + " to " + str (new_angle) +\
-                     ": the constraints are [" + str (self.min_angle) + ", " + str (self.max_angle) + "]")
+
+            if (omit_warnings == False):
+                print ("warning: cannot set joint " + self.joint_name + " to " + str (new_angle) +\
+                         ": the constraints are [" + str (self.min_angle) + ", " + str (self.max_angle) + "]")
         else:
             self.angle = new_angle
         # if (new_angle >= self.min_angle and new_angle <= self.max_angle):
@@ -176,11 +185,12 @@ class Joint:
         self.children.append (Joint (length, angle, angle_multiplier, self.col1, self.col2, name, min_angle, max_angle, angle_shift))
 
 class Simulated_robot(Robot):
-    def __init__(self, timeout_ = 0.01, path_ = "", logger_ = 0):
+    def __init__(self, timeout_ = 0.01, path_ = "", logger_ = 0, omit_warnings_ = False):
         Robot.__init__ (self, timeout_)
 
         self.config_path = path_
         self.logger = logger_
+        self.omit_warnings = omit_warnings_
 
         self.base_point = Joint (0, 0, 1, (10, 100, 200), (230, 121, 2), "base", -10, 10, 69*420)
         #(self, length_, angle_, angle_multiplier_, col1_, col2_, name_, min_angle_, max_angle_)
@@ -268,7 +278,7 @@ for instance the robot model is recursive. Aborting operation.")
             new_angle += target_joint.angle
             # print(new_angle)
 
-        set_angle = target_joint.set_angle (new_angle)
+        set_angle = target_joint.set_angle (new_angle, self.omit_warnings)
 
         # print ("joint: ", joint_name, set_angle)
 
@@ -329,60 +339,480 @@ for instance the robot model is recursive. Aborting operation.")
                 cv2.FONT_HERSHEY_SIMPLEX, 0.4, (200, 50, 231), 1, cv2.LINE_AA)
 
             line_num += 1
-        print("HENLO")
+        #print("HENLO")
         self.base_point.draw(img, x, y, 0, scale)
 
-# class Simulated_robot_3D(Robot):
-#     def __init__(self, timeout_ = 0.01, path_ = "", logger_ = 0):
-#         Robot.__init__ (self, timeout_)
-#
-#         self.config_path = path_
-#         self.logger = logger_
-#
-#         self.joints_to_track = ["r_sho_roll", "l_sho_roll", "r_sho_pitch", "l_sho_pitch", "r_elb_roll", "l_elb_roll"]
-#
-#         self.updated = False
-#         self.name = "simulated"
-#
-#     def set_joint_angle (self, joint_name, new_angle, increment = False):
-#
-#
-#         self.updated = True
-#
-#     def _send_command (self, actions):
-#         for action in actions:
-#             #print ("Sim action [0]: ", action [0])
-#             if (action [0] in self.available_commands.keys ()):
-#                 self.updated = True
-#                 # print ("sending command [simulated]: ", action)
-#
-#                 if (action [0] == "/increment_joint_angle"):
-#                     self.set_joint_angle (action [1] [0], float (action [1] [1]), increment = True)
-#                     #print((action [1] [0], float (action [1] [1])))
-#
-#                 if (action [0] == "/set_joint_angle"):
-#                     self.set_joint_angle (action [1] [0], float (action [1] [1]))
-#
-#                 elif (action [0] == "/stand"):
-#                     #self.set_joint_angle ("righthand", -0.2)
-#                     self.base_point.children = []
-#                     self.load_configuration (self.config_path)
-#                     self.set_joint_angle ("base", 0)
-#
-#                 elif (action [0] == "/rest"):
-#                     self.set_joint_angle ("base", 5)
-#
-#                 elif (action [0] == "/hands_sides"):
-#                     self.set_joint_angle ("righthand", 1)
-#
-#             else:
-#                 print ("action :", action, " is not supported")
-#
-#     def plot_state (self, img, x, y, scale = 1):
-#         line_num = 0
-#
+        return img
 
+class Vector:
+    def __init__(self, coords_=[]):
+        self.coords = coords_
 
+    def get_coords(self):
+        return self.coords
+
+    def dotproduct(self, v):
+        return sum((a * b) for a, b in zip(self.coords, v.coords))
+
+    def length(self):
+        return math.sqrt(self.dotproduct(self))
+
+    def subtr(self, v):
+        return Vector([a - b for a, b in zip(self.coords, v.coords)])
+
+    def add(self, v):
+        return Vector([a + b for a, b in zip(self.coords, v.coords)])
+
+    def mul(self, coeff):
+        return Vector([a * coeff for a in self.coords])
+
+    def cos(self, v):
+        return self.dotproduct(v) / (self.length() * v.length() + 0.0001)
+
+    def change_coord(self, coord, val=0, increment=False, invert=False):
+        if (invert == True):
+            self.coords[axes[coord]] *= -1
+
+        else:
+            if (increment == True):
+                self.coords[axes[coord]] += val
+
+            else:
+                self.coords[axes[coord]] = val
+
+    def rotate_2d(self, axis1, axis2, angle):
+        orig1 = self.coords[axes[axis1]]
+        orig2 = self.coords[axes[axis2]]
+
+        rot1 = orig1 * math.cos(angle) + orig2 * math.sin(angle)
+        rot2 = - orig1 * math.sin(angle) + orig2 * math.cos(angle)
+
+        self.coords[axes[axis1]] = rot1
+        self.coords[axes[axis2]] = rot2
+
+    def copy(self):
+        return Vector(copy.deepcopy(self.coords))
+
+    def scale(self, coeff):
+        for i in range(len(self.coords)):
+            self.coords[i] *= coeff
+
+class Canvas:
+    def __init__(self, xsz_, ysz_, zsz_, centerx_, centery_, WIND_X_, WIND_Y_):
+        self.xsz = xsz_
+        self.ysz = ysz_
+        self.zsz = zsz_
+        self.centerx = centerx_
+        self.centery = centery_
+        self.WIND_X = WIND_X_
+        self.WIND_Y = WIND_Y_
+
+        self.canvas = np.ones ((self.WIND_Y, self.WIND_X, 3), np.uint8) * 55
+        self.canvas_ = np.ones ((self.WIND_Y, self.WIND_X, 3), np.uint8) * 55
+
+        self.tick = 0
+
+    def get_canvas(self):
+        return self.canvas
+
+    def refresh(self):
+        self.canvas = np.ones ((self.WIND_Y, self.WIND_X, 3), np.uint8) * 55
+
+        # if (self.tick > 0):
+        #     #root.draw(canvas, int(440), 700, 2, tick)
+        #
+        #     shadow = self.canvas.astype("float") * 0.99
+        #     new_canvas = self.canvas_.copy()
+        #
+        #     shift = 13
+        #     new_canvas[: -7, shift:, :] = shadow[7:, : -shift, :]
+        #
+        #     self.canvas = new_canvas
+        #
+        # cv2.imwrite ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/skel_imgs/img" + str (self.tick) + ".jpg", self.canvas)
+
+        self.tick += 1
+
+        #self.draw_space_box()
+
+    def _transform_point(self, p):
+        coords = p.get_coords()
+
+        x = int((coords[0] / (coords[2] + 0) + self.centerx) * self.WIND_X / self.xsz)
+        y = int((coords[1] / (coords[2] + 0) + self.centery) * self.WIND_Y / self.ysz)
+
+        return x, y
+
+    def draw_3d_line(self, p1, p2, color = markup_color, thickness=1):
+        if (thickness == - 1):
+            return
+
+        x1, y1 = self._transform_point(p1)
+        x2, y2 = self._transform_point(p2)
+
+        cv2.line(self.canvas, (x1, y1), (x2, y2), color, thickness)
+
+    def draw_3d_triangle(self, p1, p2, p3, color):
+        x1, y1 = self._transform_point(p1)
+        x2, y2 = self._transform_point(p2)
+        x3, y3 = self._transform_point(p3)
+
+        contour = np.array([(x1, y1), (x2, y2), (x3, y3)])
+
+        cv2.drawContours(self.canvas, [contour], 0, color, -1)
+
+    def draw_3d_circle(self, p, r, color):
+        x, y = self._transform_point(p)
+
+        cv2.circle(self.canvas, (x, y), int(r / p.get_coords()[2]), color, 1)
+
+    def draw_space_box(self):
+        lucc = Vector([- self.centerx, - self.centery, 1])  # left-upper-close corner
+        ludc = Vector([- self.centerx, - self.centery, self.zsz])
+        ldcc = Vector([- self.centerx, self.ysz - self.centery, 1])
+        lddc = Vector([- self.centerx, self.ysz - self.centery, self.zsz])
+
+        rucc = Vector([self.xsz - self.centerx, - self.centery, 1])
+        rudc = Vector([self.xsz - self.centerx, - self.centery, self.zsz])
+        rdcc = Vector([self.xsz - self.centerx, self.ysz - self.centery, 1])
+        rddc = Vector([self.xsz - self.centerx, self.ysz - self.centery, self.zsz])
+
+        self.draw_3d_line(lucc, ludc, markup_color)
+        self.draw_3d_line(ldcc, lddc, markup_color)
+        self.draw_3d_line(rucc, rudc, markup_color)
+        self.draw_3d_line(rdcc, rddc, markup_color)
+
+        self.draw_3d_line(ludc, rudc, markup_color)
+        self.draw_3d_line(rudc, rddc, markup_color)
+        self.draw_3d_line(rddc, lddc, markup_color)
+        self.draw_3d_line(lddc, ludc, markup_color)
+
+    def put_text (self, text, x, y, color=(100, 250, 130)):
+        cv2.putText(self.canvas, text, (x, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 1, cv2.LINE_AA)
+
+    def put_text_3d (self, text, p, color=(100, 250, 130)):
+        x, y = self._transform_point(p)
+
+        self.put_text (text, x, y)
+
+# class Limb_3D:
+#     def __init__ (self, name_, limb_, coords_, init_angle_, axis_ = "x"):
+#         self.name   = name_
+#         self.limb   = limb_
+#         self.coords = coords_
+#         self.angle  = init_angle_
+#         self.axis   = axis_
+#
+#         #self.children = []
+#
+#     def draw (self, canvas):
+#         canvas.draw_3d_line (self.coords, self.coords.add (self.limb), thickness = 3)
+
+class Limb_3D:
+    def __init__(self, name_, limb_, axis_, col1_, col2_, angle_multiplier_):
+        self.init_limb = limb_
+        self.limb = copy.deepcopy (self.init_limb)
+        self.angle_multiplier = angle_multiplier_
+
+        self.axis  = axis_
+        self.angle = 0
+
+        self.col1       = col1_
+        self.col2       = col2_
+        self.joint_name = name_
+
+        self.children = []
+
+    def name (self):
+        return self.joint_name
+
+    #def translate (self, vec):
+    #    self.limb = self.limb.add (vec)
+
+    def rot_inds (self):
+        ind1, ind2 = [ax for ax in axes if ax not in [self.axis]][:]
+
+        return ind1, ind2
+
+    def construct_configuration (self):
+        configuration = []
+
+        ind1, ind2 = self.rot_inds ()
+
+        for child in self.children:
+            configuration += copy.deepcopy (child.construct_configuration ())
+
+        for el in configuration:
+            el [1].rotate_2d (ind1, ind2, self.angle)
+            el[1] = el[1].add (self.limb)
+
+            el [2].rotate_2d (ind1, ind2, self.angle)
+            el [2] = el [2].add (self.limb)
+
+        #print(self.name (), self.limb.get_coords())
+
+        configuration.append ([self.joint_name, Vector ([0, 0, 0]), self.limb])
+
+        return configuration
+
+    def set_angle (self, new_angle):
+        self.angle = new_angle * self.angle_multiplier
+
+        ind1, ind2 = self.rot_inds ()
+
+        self.limb = self.init_limb.copy ()
+        self.limb.rotate_2d (ind1, ind2, self.angle)
+
+        #print ("axis", self.axis, self.angle, self.limb.get_coords ())
+
+        return self.angle
+
+    def add_child (self, name, limb, axis, angle_multiplier):
+        self.children.append (Limb_3D (name, limb, axis, self.col1, self.col2, angle_multiplier))
+
+class Simulated_robot_3D (Robot):
+    def __init__(self, timeout_ = 0.01, path_ = "", logger_ = 0, WIND_X_ = 800, WIND_Y_ = 700, omit_warnings_ = False):
+        Robot.__init__ (self, timeout_)
+
+        self.config_path = path_
+        self.logger = logger_
+
+        self.canvas = Canvas (1.6, 1.4, 2.5, 0.8, 0.7, WIND_X_, WIND_Y_)
+
+        self.col1 = (10, 100, 200)
+        self.col2 = (230, 121, 2)
+
+        self.base_point = Limb_3D ("base", Vector ([-0.25, -0.4, 1.0]), "z", self.col1, self.col2, 1)
+        self.load_configuration (self.config_path)
+
+        self.joints_to_track = ["r_sho_roll", "l_sho_roll", "r_sho_pitch", "l_sho_pitch", "r_elb_roll", "l_elb_roll", "r_elb_yaw", "l_elb_yaw"]
+        #self.joints_to_track = ["l_sho_roll"]
+
+        self.updated = False
+        self.name = "simulated3d"
+
+        self.simulated = Simulated_robot (logger_=self.logger, omit_warnings_ = omit_warnings_)
+
+    def load_configuration (self, path = ""):
+        if (path == ""):
+            path = "robot_configuration_3d.txt"
+
+        config = open (path, "r")
+
+        string = config.readline ()
+
+        while (string != ""):
+            data = string [:-1].split (" ")
+
+            parent = str (data [0])
+            name   = str (data [1])
+
+            x = float (data [2])
+            y = float (data [3])
+            z = float (data [4])
+            limb = Vector ([x, y, z])
+
+            axis = str (data [5])
+            angle_multiplier = float (data [6])
+
+            #print (name, x, y, z)
+
+            self.add_limb (parent, name, limb, axis, self.col1, self.col2, angle_multiplier)
+
+            string = config.readline ()
+
+    def find_joint (self, joint_name = ""):
+        stack = [self.base_point]
+        all_joints = []
+
+        target = stack [0]
+        found  = False
+
+        if (joint_name == ""):
+            found = True
+
+        while (len (stack) != 0):
+            if (len (stack) >= 1000):
+                print ("Stack size has reached 1000. Probably smth went wrong, \
+for instance the robot model is recursive. Aborting operation.")
+                break
+
+            curr = stack [0]
+
+            if (joint_name != ""):
+                if (curr.name () == joint_name):
+                    target = curr
+                    found = True
+
+                    break
+            else:
+                all_joints.append (curr)
+
+            for child in curr.children:
+                stack.append (child)
+
+            stack.remove (curr)
+
+        if (found == False):
+            print ("Warning: requested joint ", joint_name, " not found")
+
+        if (joint_name != ""):
+            return target, found
+
+        return all_joints
+
+    def set_joint_angle (self, joint_name, new_angle, increment = False):
+        target_joint, succ = self.find_joint (joint_name)
+
+        if (succ == False):
+            print ("Unable to set ", joint_name, " to ", new_angle, ": no such joint")
+
+        if (increment == True):
+            new_angle += target_joint.angle
+
+        set_angle = target_joint.set_angle (new_angle)
+
+        if (set_angle == new_angle):
+            self.updated = True
+
+        return set_angle
+
+    def add_limb (self, parent_name, new_limb_name, limb, axis, col1, col2, angle_multiplier):
+        target_joint, succ = self.find_joint (parent_name)
+
+        if (succ == False):
+            print ("Unable to add child ", new_limb_name, " to ", parent_name, ": no such joint")
+
+        target_joint.add_child (new_limb_name, limb, axis, angle_multiplier)
+
+    def _send_command (self):
+        action = self.queue[self.commands_sent]
+
+        while (True):
+            action_ = self.queue[self.commands_sent]
+            self.commands_sent += 1
+
+            self.simulated._send_command(action_)
+
+            if (not ((action[0][0] == "/increment_joint_angle" or
+                      action[0][0] == "/set_joint_angle") and
+                     action[0][0] == action_[0][0] and
+                     len(self.queue) > self.commands_sent)):
+                break
+
+        if (action[0][0] == "/increment_joint_angle" or
+                action[0][0] == "/set_joint_angle"):
+            action_str = "/raise_hands"
+            text_str = ""
+
+            #for key in self.synchronized_joints.keys():
+            for j in self.joints_to_track:
+                joint, _ = self.simulated.find_joint (j)
+                #robot_joint = self.synchronized_joints [key]
+                #init_angle = self.init_positions [robot_joint]
+
+                #if (joint.angle is None):
+                #    joint.angle = 0
+
+                #angle = joint.angle * joint.angle_multiplier + init_angle
+                #names.append(robot_joint)
+                #angles.append([angle])
+
+            #self.motionProxy.angleInterpolation(names, angles, timeList, True)
+            #if (action[0] == "/increment_joint_angle"):
+                #print ("ang", joint.angle)
+                self.set_joint_angle (j, joint.angle)
+
+        # elif (action[0][0] in self.available_commands.keys()):
+        #     action_str = action[0][0]
+        #
+        #     if action_str[1:] == "Rest":
+        #         self.motionProxy.rest()
+        #
+        #     elif action_str[1:] == "Stand":
+        #         self.postureProxy.goToPosture(action_str[1:], 2)
+        #
+        #     text_str = str(action[0][1][0])
+        #
+        # else:
+        #     print("action :", action, " is not implemented")
+        #     return -1
+        #
+        # if (self.simulated.updated == True or action[0] == "/free"):
+        #     request_str = self.ip_num + "/?" + "action=" \
+        #                   + action_str + "&" + "text=" + text_str
+        #
+        #     self.simulated.updated = False
+        #
+        # for action in actions:
+        #     if (action [0] in self.available_commands.keys ()):
+        #         self.updated = True
+        #         # print ("sending command [simulated]: ", action)
+        #
+        #         if (action [0] == "/increment_joint_angle"):
+        #             self.set_joint_angle (action [1] [0], float (action [1] [1]), increment = True)
+        #             #print((action [1] [0], float (action [1] [1])))
+        #
+        #         if (action [0] == "/set_joint_angle"):
+        #             self.set_joint_angle (action [1] [0], float (action [1] [1]))
+        #
+        #         elif (action [0] == "/stand"):
+        #             #self.set_joint_angle ("righthand", -0.2)
+        #             self.base_point.children = []
+        #             self.load_configuration (self.config_path)
+        #             self.set_joint_angle ("base", 0)
+        #
+        #         elif (action [0] == "/rest"):
+        #             self.set_joint_angle ("base", 5)
+        #
+        #         elif (action [0] == "/hands_sides"):
+        #             self.set_joint_angle ("righthand", 1)
+        #
+        #     else:
+        #         print ("action :", action, " is not supported")
+
+    def plot_state (self, img, x, y, scale = 1):
+        # line_num = 0
+        #
+        # for joint in self.find_joint (""):
+        #     if (joint.name () not in self.joints_to_track):
+        #         continue
+        #
+        #     text = joint.name () + ":  [" + "{0:.2f}".format(joint.min_angle) \
+        #                          + " / " + "{0:.2f}".format(joint.angle) \
+        #                          + " /  " + "{0:.2f}".format(joint.max_angle) + "]"
+        #
+        #     cv2.putText (img, text, (30, 30 * (1 + line_num)),
+        #         cv2.FONT_HERSHEY_SIMPLEX, 0.4, (200, 50, 231), 1, cv2.LINE_AA)
+        #
+        #     line_num += 1
+        #print("HENLO")
+
+        self.canvas.refresh ()
+        skeleton = self.base_point.construct_configuration ()
+
+        #print ("aa")
+
+        for element in skeleton:
+            thickness = 3
+
+            if (element [0] == "base"):
+                thickness = -1
+
+            #print (element [0], element [1].get_coords ())
+
+            self.canvas.draw_3d_line (element [1], element [2], self.col1, thickness)
+            self.canvas.draw_3d_circle (element [2], 9, self.col2)
+            #self.canvas.put_text_3d (element [0] [:7], element [2])
+
+        return self.canvas.get_canvas ()
+
+    def on_idle (self):
+        if (len (self.queue) > self.commands_sent):
+            self._send_command ()#command)
+
+            self.commands_sent = len (self.queue)
 
 class Real_robot(Robot):
     def __init__(self, ip_num, port_ = 9559, timeout_ = 0.04, logger_ = 0):
@@ -589,7 +1019,7 @@ class Real_robot(Robot):
         self.simulated.plot_state (img, x, y, scale)
 
 class Real_robot_qi(Robot):
-    def __init__(self, ip_num_, timeout_ = 0.04, logger_ = 0, action_time_ = 0.8):
+    def __init__(self, ip_num_, timeout_ = 0.04, logger_ = 0, action_time_ = 0.8, omit_warnings_ = False):
         Robot.__init__ (self, timeout_)
         self.logger = logger_
         self.first_frame = True
@@ -616,8 +1046,9 @@ class Real_robot_qi(Robot):
         pTimeLists = 1.0
         self.motionProxy.stiffnessInterpolation (pNames, pStiffnessLists, pTimeLists)
 
-        self.simulated = Simulated_robot (logger_ = self.logger)
-########################################################################################################################################33
+        self.simulated = Simulated_robot (logger_=self.logger, omit_warnings_ = omit_warnings_)
+
+        ########################################################################################################################################33
         self.synchronized_joints = {"head_Yaw"    : "HeadYaw",
                                     "head_Pitch"  : "HeadPitch",
 
@@ -676,17 +1107,12 @@ class Real_robot_qi(Robot):
 
     def _send_command (self):#, action):
         action = self.queue [self.commands_sent]
-        action_ = action
-
-        #action_time = 0.8
-        #print ("action (time)", self.action_time)
 
         while (True):
             action_ = self.queue [self.commands_sent]
             self.commands_sent += 1
 
             self.simulated._send_command (action_)
-            #print ("action: ", action_)
 
             if (not ((action [0] [0] == "/increment_joint_angle" or
                  action [0] [0] == "/set_joint_angle") and
@@ -699,8 +1125,7 @@ class Real_robot_qi(Robot):
             action_str = "/raise_hands"
             text_str   = ""
 
-            # print(list(self.synchronized_joints.keys ()))
-            names = []
+            names  = []
             angles = []
 
             if (self.first_frame == False):
@@ -721,22 +1146,17 @@ class Real_robot_qi(Robot):
                 angle = joint.angle * joint.angle_multiplier + init_angle
                 names.append(robot_joint)
                 angles.append([angle])
-                # print(angle)
-            self.motionProxy.angleInterpolation(names, angles,timeList, True)
-                # text_str += "&" + robot_joint + "=" + str(angle)
+
+            self.motionProxy.angleInterpolation (names, angles, timeList, True)
 
         elif (action [0] [0] in self.available_commands.keys ()):
             action_str = action [0] [0]
-            #print(action_str[1:])
 
             if action_str[1:] == "Rest":
                 self.motionProxy.rest()
 
             elif action_str[1:] == "Stand":
-            #     self.motionProxy.wakeUp()
-            # else:
                 self.postureProxy.goToPosture(action_str[1:], 2)
-
 
             text_str   = str (action [0] [1] [0])
 
@@ -751,28 +1171,10 @@ class Real_robot_qi(Robot):
             self.simulated.updated = False
 
     def on_idle (self):
-        # if (self.free_timeout_module.timeout_passed ()):
-        #     #r = self._send_command ([["/free", "a"]])
-        #     #print ("resp", r)
-        #
-        #     free = 6#int (str (r) [13:14]) #6 free, 7 not free; don't ask, don't tell
-        #
-        #     if (free == 6):
-        #         self.free = True
-        #
-        #     else:
-        #         self.free = True
-
-        #print ("queue", self.queue [self.commands_sent:])
-        #print (len (self.queue), self.commands_sent, self.free)
-
-
-
         if (len (self.queue) > self.commands_sent):
             self._send_command ()#command)
-            #self.commands_sent += 1
 
             self.commands_sent = len (self.queue)
 
     def plot_state (self, img, x, y, scale = 1):
-        self.simulated.plot_state (img, x, y, scale)
+        return self.simulated.plot_state (img, x, y, scale)

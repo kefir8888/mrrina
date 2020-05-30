@@ -9,6 +9,14 @@ class Value_tracker:
     def name (self):
         return "value_tracker"
 
+    def get_value (self, key):
+        if (key in self.tracked.keys ()):
+            return self.tracked [key]
+
+        else:
+            print ("Warning: no tracked value named ", key)
+            return 0
+
     def update (self, value_name, value):
         self.tracked.update ({value_name : value})
 

@@ -4,7 +4,12 @@ from modalities.modality import  Modality
 from modalities.modality import WorkWithPoints
 
 import numpy as np
-from common import *
+
+import math
+import os
+import sys
+sys.path.append("..")
+import common
 
 import pydub
 from pydub import AudioSegment
@@ -13,6 +18,17 @@ import scipy.fftpack
 import cv2
 
 import multiprocessing
+import json
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torchvision import datasets, transforms
+from torch.utils.data import Dataset
+import torchaudio
+#import pandas as pd
+import numpy as np
 
 #class Motion_source:
 #    def __init__ (self):
@@ -26,11 +42,1119 @@ import multiprocessing
 #class Markov_chain
 #class Rhytmic_sine
 
-#class Archieve_data
-#class Archieve_data_format1
-#class Archieve_data_format2
+smol_listb = ["l_sho_roll", "l_elb_roll", "l_sho_pitch",
+              "r_sho_roll", "r_elb_roll", "r_sho_pitch"]
 
-#class External_model_loader
+class Archive_angles (Modality):
+    def __init__ (self, angles_path_ = "", logger_ = 0):
+        Modality.__init__(self, logger_)
+
+        self.all_data = []
+        self.angles_path = angles_path_
+        self.dataframe_num = 0
+
+        if (self.angles_path != ""):
+            if( os.path.isfile (self.angles_path) == True ):
+                print( "Angles file: ", self.angles_path)
+
+                f = open (self.angles_path, )
+                data = json.load (f)
+
+                self.folder_path = self.angles_path [:-11]
+
+                self.all_data = data ["angles"]
+
+            else:
+                print("\nNo angles file with name: ", self.angles_path)
+                exit(0)
+
+    def name (self):
+        return "archive angles"
+
+    def _read_data (self):
+        if (self.dataframe_num >= len (self.all_data)):
+            read_data = 0
+            return
+
+        self.read_data = self.all_data [self.dataframe_num]
+        self.dataframe_num += 2
+
+    def get_read_data (self):
+        return self.read_data
+
+    def _process_data (self, frame = None):
+        self.processed_data = self.read_data
+
+    def _interpret_data (self):
+        self.interpreted_data = self.processed_data
+
+    def _get_command (self):
+        commands = []
+
+        smol_dict = {}
+
+        #for key in smol_listb:
+        #    smol_dict.update ({key : self.processed_data [key]})
+
+        for key, i in zip (smol_listb, range (len (smol_listb))):
+            commands.append (("/set_joint_angle", [key, str (self.processed_data [i])]))
+
+        return commands
+
+    def get_command (self, skip_reading_data = False):
+        if (skip_reading_data == False):
+            self._read_data ()
+
+        self._process_data   ()
+        self._interpret_data ()
+
+        return self._get_command ()
+
+    def draw (self, canvas = np.ones ((700, 700, 3), np.uint8) * 220):
+        result = canvas.copy ()
+
+        cv2.putText (result, self.angles_path, (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 50, 31), 1, cv2.LINE_AA)
+
+        return [result]
+
+
+# class Net(nn.Module):
+#     def __init__(self):
+#         super(Net, self).__init__()
+#         self.hidden_size = 300
+#
+#         self.avgPool = nn.AvgPool1d(10)  # padding=1)
+#         self.fc1 = nn.Linear(3200, self.hidden_size)
+#         self.lstm = nn.LSTMCell(input_size=self.hidden_size, hidden_size=self.hidden_size)
+#
+#         self.hidden_state = torch.zeros(self.hidden_size)#.cuda()
+#         self.cell_state = torch.zeros(self.hidden_size)#.cuda()
+#
+#         self.fc2 = nn.Linear(self.hidden_size, 6)
+#         # ------------------------------------
+#         self.lstm = torch.nn.LSTM(self.hidden_size, self.hidden_size)
+#         # self.fc = torch.nn.Linear(hidden_dim,output_dim)
+#         # self.bn = nn.BatchNorm1d(32)
+#
+#     def forward(self, x):
+#         x = self.avgPool(x.view(1, 1, 32000))
+#
+#         x = self.fc1(x)
+#         x = F.relu(x)
+#         # self.hidden_state, self.cell_state = self.lstm (x.view(30, 1, -1), self.hidden_state.view(30, 1, -1))
+#         # x = self.fc2 (self.hidden_state)
+#
+#         lstm_out, (hn, cn) = self.lstm(x.view(1, 1, self.hidden_size))
+#         x = self.fc2(lstm_out[:, -1, :])
+#
+#         return x  # F.log_softmax(x, dim = 2)
+
+
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+
+        self.hidden_size = 300
+        self.conv_channels = 1
+
+        self.conv1 = nn.Conv1d(1, self.conv_channels, 10, 10)
+        self.conv2 = nn.Conv1d(10, 1, 1)
+
+        self.avgPool = nn.AvgPool1d(10)  # padding=1)
+
+        self.fc1 = nn.Linear(6400, self.hidden_size)
+        self.lstm = nn.LSTMCell(input_size=self.hidden_size, hidden_size=self.hidden_size)
+
+        self.fc3 = nn.Linear(self.hidden_size, 6)
+
+        self.lstm = torch.nn.LSTM(self.hidden_size, self.hidden_size)
+
+    def forward(self, x):
+        x = self.avgPool(x.view(1, 1, 64000))
+        x = self.fc1(x)
+        x = F.relu(x)
+
+        lstm_out, (hn, cn) = self.lstm(x.view(1, self.conv_channels, self.hidden_size))
+        x = F.relu(x)
+        x = self.fc3(lstm_out[:, -1, :])
+
+        return x
+
+#
+# class Net(nn.Module):
+#     def __init__(self):
+#         super(Net, self).__init__()
+#         self.conv1 = nn.Conv1d(1, 128, 80, 4)
+#         self.bn1 = nn.BatchNorm1d(128)
+#         self.pool1 = nn.MaxPool1d(4)
+#         self.conv2 = nn.Conv1d(128, 128, 3)
+#         self.bn2 = nn.BatchNorm1d(128)
+#         self.pool2 = nn.MaxPool1d(4)
+#         self.conv3 = nn.Conv1d(128, 256, 3)
+#         self.bn3 = nn.BatchNorm1d(256)
+#         self.pool3 = nn.MaxPool1d(4)
+#         self.conv4 = nn.Conv1d(256, 512, 3)
+#         self.bn4 = nn.BatchNorm1d(512)
+#         self.pool4 = nn.MaxPool1d(4)
+#         self.avgPool = nn.AvgPool1d(30)  # input should be 512x30 so this outputs a 512x1
+#
+#         self.hidden_size = 512
+#         self.out_size = 6
+#         self.fc1 = nn.Linear(self.hidden_size, self.out_size)
+#         self.conv5 = nn.Conv1d(2, 1, 1)
+#
+#         self.lstm = torch.nn.LSTM(self.hidden_size, self.hidden_size)
+#
+#     def forward(self, x):
+#         x = self.conv1(x.view(1, 1, 64000))
+#
+#         #x = F.relu(self.bn1(x))
+#         x = F.relu(x)
+#
+#         x = self.pool1(x)
+#         x = self.conv2(x)
+#         x = F.relu(self.bn2(x))
+#         x = self.pool2(x)
+#         x = self.conv3(x)
+#         x = F.relu(self.bn3(x))
+#         x = self.pool3(x)
+#         x = self.conv4(x)
+#         x = F.relu(self.bn4(x))
+#         x = self.pool4(x)
+#         x = self.avgPool(x)
+#         x = x.permute(0, 2, 1)  # change the 512x1 to 1x512
+#
+#         x, (hn, cn) = self.lstm(x.view(1, 2, 512))
+#
+#         # print ("shape", x.shape)
+#         x = self.fc1(x)
+#
+#         # print ("shape2", x.shape)
+#         x = self.conv5(x)
+#
+#         # print ("shape3", x.shape)
+#
+#         return x[0, :]
+
+# class Net(nn.Module):
+#     def __init__(self):
+#         super(Net, self).__init__()
+#         self.conv1 = nn.Conv1d(1, 128, 80, 4)
+#         self.bn1 = nn.BatchNorm1d(128)
+#         self.pool1 = nn.MaxPool1d(4)
+#         self.conv2 = nn.Conv1d(128, 128, 3)
+#         self.bn2 = nn.BatchNorm1d(128)
+#         self.pool2 = nn.MaxPool1d(4)
+#         self.conv3 = nn.Conv1d(128, 256, 3)
+#         self.bn3 = nn.BatchNorm1d(256)
+#         self.pool3 = nn.MaxPool1d(4)
+#         self.conv4 = nn.Conv1d(256, 512, 3)
+#         self.bn4 = nn.BatchNorm1d(512)
+#         self.pool4 = nn.MaxPool1d(4)
+#         self.avgPool = nn.AvgPool1d(30)  # input should be 512x30 so this outputs a 512x1
+#
+#         self.before_lstm_sz = 512
+#         self.lstm_sz = int(512 / 16)
+#         self.hidden = 32
+#
+#         self.out_size = 6
+#         self.fc1 = nn.Linear(int(self.before_lstm_sz / 16), self.lstm_sz)
+#         self.fc2 = nn.Linear(self.lstm_sz, self.out_size)
+#         self.conv5 = nn.Conv1d(2, 1, 1)
+#
+#         self.lstm = torch.nn.LSTM(self.lstm_sz, self.hidden)
+#
+#         self.pool5 = nn.MaxPool1d(16)
+#
+#     def forward(self, x):
+#         x = self.conv1(x.view(1, 1, 64000))
+#         # x = F.relu(self.bn1(x))
+#         x = F.relu(x)
+#         x = self.pool1(x)
+#         x = self.conv2(x)
+#         x = F.relu(x)
+#         x = self.pool2(x)
+#         x = self.conv3(x)
+#         x = F.relu(x)
+#         x = self.pool3(x)
+#         x = self.conv4(x)
+#         x = F.relu(x)
+#         x = self.pool4(x)
+#         x = self.avgPool(x)
+#         x = x.permute(0, 2, 1)  # change the 512x1 to 1x512
+#
+#         x = self.pool5(x)
+#
+#         # x = self.fc1 (x)
+#         # x = F.relu (x)
+#
+#         x, (hn, cn) = self.lstm(x.view(1, 2, self.lstm_sz))
+#
+#         # print ("shape", x.shape)
+#         x = self.fc2(x)
+#         x = F.relu(x)
+#
+#         # print ("shape2", x.shape)
+#         x = self.conv5(x)
+#
+#         # print ("shape3", x.shape)
+#
+#         return x[0, :]
+
+#Conditional LSTM SinGAN
+
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv1d(1, 128, 80, 4)
+        self.bn1 = nn.BatchNorm1d(128)
+        self.pool1 = nn.MaxPool1d(4)
+        self.conv2 = nn.Conv1d(128, 128, 3)
+        self.bn2 = nn.BatchNorm1d(128)
+        self.pool2 = nn.MaxPool1d(4)
+        self.conv3 = nn.Conv1d(128, 256, 3)
+        self.bn3 = nn.BatchNorm1d(256)
+        self.pool3 = nn.MaxPool1d(4)
+        self.conv4 = nn.Conv1d(256, 512, 3)
+        self.bn4 = nn.BatchNorm1d(512)
+        self.pool4 = nn.MaxPool1d(4)
+        self.avgPool = nn.AvgPool1d(30)  # input should be 512x30 so this outputs a 512x1
+
+        self.before_lstm_sz = 512
+        self.lstm_sz = int(512 / 16)
+        self.hidden = 32
+
+        self.out_size = 6
+        self.fc1 = nn.Linear(int(self.before_lstm_sz / 16), self.lstm_sz)
+        self.fc2 = nn.Linear(self.lstm_sz, self.out_size)
+        self.conv5 = nn.Conv1d(2, 1, 1)
+
+        self.lstm = torch.nn.LSTM(self.lstm_sz, self.hidden)
+
+        self.pool5 = nn.MaxPool1d(16)
+
+        self.fc0 = nn.Linear(512, self.out_size)
+
+    def forward(self, x):
+        x = self.conv1(x.view(1, 1, 64000))
+        # x = F.relu(self.bn1(x))
+        x = F.relu(x)
+        x = self.pool1(x)
+        x = self.conv2(x)
+        # x = F.relu(self.bn2(x))
+        x = F.relu(x)
+        x = self.pool2(x)
+        x = self.conv3(x)
+        # x = F.relu(self.bn3(x))
+        x = F.relu(x)
+        x = self.pool3(x)
+        x = self.conv4(x)
+        # x = F.relu(self.bn4(x))
+        x = F.relu(x)
+        x = self.pool4(x)
+        x = self.avgPool(x)
+        x = x.permute(0, 2, 1)  # change the 512x1 to 1x512
+
+        x = self.fc0(x)
+        x = F.relu(x)
+        x = self.conv5(x)
+
+        return x[0, :]
+
+
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv1d(1, 8, 80, 4)
+        # self.bn1 = nn.BatchNorm1d(128)
+        self.pool1 = nn.MaxPool1d(4)
+        self.conv2 = nn.Conv1d(8, 8, 3)
+        # self.bn2 = nn.BatchNorm1d(128)
+        self.pool2 = nn.MaxPool1d(4)
+        self.conv3 = nn.Conv1d(8, 16, 3)
+        # self.bn3 = nn.BatchNorm1d(256)
+        self.pool3 = nn.MaxPool1d(4)
+        self.conv4 = nn.Conv1d(16, 32, 3)
+        # self.bn4 = nn.BatchNorm1d(512)
+        self.pool4 = nn.MaxPool1d(4)
+        self.avgPool = nn.AvgPool1d(30)  # input should be 512x30 so this outputs a 512x1
+
+        self.before_lstm_sz = 512
+        self.lstm_sz = int(512 / 16)
+        self.hidden = 32
+
+        self.out_size = 6
+        self.fc1 = nn.Linear(int(self.before_lstm_sz / 16), self.lstm_sz)
+        self.fc2 = nn.Linear(self.lstm_sz, self.out_size)
+        self.conv5 = nn.Conv1d(2, 1, 1)
+
+        self.lstm = torch.nn.LSTM(self.lstm_sz, self.hidden)
+
+        self.pool5 = nn.MaxPool1d(16)
+
+        self.fc0 = nn.Linear(32, self.out_size)
+        self.lrelu = nn.LeakyReLU()
+
+    def forward(self, x):
+        x = self.conv1(x.view(1, 1, 64000))
+        # x = F.relu(self.bn1(x))
+        x = F.relu(x)
+        x = self.pool1(x)
+        x = self.conv2(x)
+        # x = F.relu(self.bn2(x))
+        x = F.relu(x)
+        x = self.pool2(x)
+        x = self.conv3(x)
+        # x = F.relu(self.bn3(x))
+        x = F.relu(x)
+        x = self.pool3(x)
+        x = self.conv4(x)
+        # x = F.relu(self.bn4(x))
+        x = F.relu(x)
+        x = self.pool4(x)
+        x = self.avgPool(x)
+        x = x.permute(0, 2, 1)  # change the 512x1 to 1x512
+
+        x = self.fc0(x)
+        x = self.lrelu(x)
+        x = self.conv5(x)
+
+        return x[0, :]
+
+
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        # self.conv1 = nn.Conv1d(1, 128, 80, 4)
+        # #self.bn1 = nn.BatchNorm1d(128)
+        # self.pool1 = nn.MaxPool1d(4)
+        # self.conv2 = nn.Conv1d(128, 128, 3)
+        # #self.bn2 = nn.BatchNorm1d(128)
+        # self.pool2 = nn.MaxPool1d(4)
+        # self.conv3 = nn.Conv1d(128, 256, 3)
+        # #self.bn3 = nn.BatchNorm1d(256)
+        # self.pool3 = nn.MaxPool1d(4)
+        # self.conv4 = nn.Conv1d(256, 512, 3)
+        # #self.bn4 = nn.BatchNorm1d(512)
+        # self.pool4 = nn.MaxPool1d(4)
+        # self.avgPool = nn.AvgPool1d(30) #input should be 512x30 so this outputs a 512x1
+
+        self.conv1 = nn.Conv1d(1, 8, 80, 4)
+        self.bn1 = nn.BatchNorm1d(8)
+        self.pool1 = nn.MaxPool1d(4)
+        self.conv2 = nn.Conv1d(8, 8, 3)
+        self.bn2 = nn.BatchNorm1d(8)
+        self.pool2 = nn.MaxPool1d(4)
+        self.conv3 = nn.Conv1d(8, 16, 3)
+        self.bn3 = nn.BatchNorm1d(16)
+        self.pool3 = nn.MaxPool1d(4)
+        self.conv4 = nn.Conv1d(16, 32, 3)
+        self.bn4 = nn.BatchNorm1d(32)
+        self.pool4 = nn.MaxPool1d(4)
+        self.avgPool = nn.AvgPool1d(30)  # input should be 512x30 so this outputs a 512x1
+
+        self.before_lstm_sz = 512
+        self.lstm_sz = int(512 / 16)
+        self.hidden = 32
+
+        self.out_size = 6
+        self.fc1 = nn.Linear(int(self.before_lstm_sz / 16), self.lstm_sz)
+        self.fc2 = nn.Linear(self.lstm_sz, self.out_size)
+        self.conv5 = nn.Conv1d(2, 1, 1)
+
+        self.lstm = torch.nn.LSTM(self.lstm_sz, self.hidden)
+
+        self.pool5 = nn.MaxPool1d(16)
+
+        self.fc0 = nn.Linear(32, self.out_size)
+        self.lrelu = nn.LeakyReLU()
+
+    def forward(self, x):
+        x = self.conv1(x.view(2, 1, 64000))
+        x = F.relu(self.bn1(x))
+
+        x = self.pool1(x)
+        x = self.conv2(x)
+        x = F.relu(self.bn2(x))
+
+        x = self.pool2(x)
+        x = self.conv3(x)
+        x = F.relu(self.bn3(x))
+
+        x = self.pool3(x)
+        x = self.conv4(x)
+        x = F.relu(self.bn4(x))
+
+        x = self.pool4(x)
+        x = self.avgPool(x)
+        x = x.permute(0, 2, 1)
+
+        x = self.fc0(x)
+        x = self.conv5(x)
+
+        return x[:, 0, :]
+
+
+class Net(nn.Module):
+    def __init__(self, batch_size_):
+        super(Net, self).__init__()
+
+        self.batch_size = batch_size_
+
+        # self.conv1 = nn.Conv1d(1, 128, 80, 4)
+        # #self.bn1 = nn.BatchNorm1d(128)
+        # self.pool1 = nn.MaxPool1d(4)
+        # self.conv2 = nn.Conv1d(128, 128, 3)
+        # #self.bn2 = nn.BatchNorm1d(128)
+        # self.pool2 = nn.MaxPool1d(4)
+        # self.conv3 = nn.Conv1d(128, 256, 3)
+        # #self.bn3 = nn.BatchNorm1d(256)
+        # self.pool3 = nn.MaxPool1d(4)
+        # self.conv4 = nn.Conv1d(256, 512, 3)
+        # #self.bn4 = nn.BatchNorm1d(512)
+        # self.pool4 = nn.MaxPool1d(4)
+        # self.avgPool = nn.AvgPool1d(30) #input should be 512x30 so this outputs a 512x1
+
+        self.conv1 = nn.Conv1d(1, 8, 80, 4)
+        self.bn1 = nn.BatchNorm1d(8)
+        self.pool1 = nn.MaxPool1d(4)
+        self.conv2 = nn.Conv1d(8, 8, 3)
+        self.bn2 = nn.BatchNorm1d(8)
+        self.pool2 = nn.MaxPool1d(4)
+        self.conv3 = nn.Conv1d(8, 16, 3)
+        self.bn3 = nn.BatchNorm1d(16)
+        self.pool3 = nn.MaxPool1d(4)
+        self.conv4 = nn.Conv1d(16, 32, 3)
+        self.bn4 = nn.BatchNorm1d(32)
+        self.pool4 = nn.MaxPool1d(4)
+        self.avgPool = nn.AvgPool1d(30)  # input should be 512x30 so this outputs a 512x1
+
+        self.before_lstm_sz = 512
+        self.lstm_sz = int(512 / 16)
+        self.hidden = 32
+
+        self.out_size = 6
+        self.fc1 = nn.Linear(int(self.before_lstm_sz / 16), self.lstm_sz)
+        self.fc2 = nn.Linear(self.lstm_sz, self.out_size)
+        self.conv5 = nn.Conv1d(2, 1, 1)
+
+        self.lstm = torch.nn.LSTM(self.lstm_sz, self.hidden)
+
+        self.pool5 = nn.MaxPool1d(16)
+
+        self.fc0 = nn.Linear(32, self.out_size)
+        self.lrelu = nn.LeakyReLU()
+
+        # self.conv_channels = 10
+
+        # self.conv1 = nn.Conv1d(1, self.conv_channels, 80, 4)
+        # self.conv2 = nn.Conv1d(self.conv_channels, self.conv_channels * self.conv_channels, 4, 4)
+        # #self.conv2 = nn.Conv1d(10, 1, 1)
+
+        # #self.avgPool = nn.AvgPool1d(10)#padding=1)
+        # self.pool1 = nn.MaxPool1d(4)
+        # self.pool2 = nn.MaxPool1d(4)
+
+        # self.fc1 = nn.Linear (100, self.hidden_size)
+
+        # #self.lstm = nn.LSTMCell(input_size=self.hidden_size, hidden_size=self.hidden_size)
+        # #self.lstm = nn.LSTMCell(input_size=6, hidden_size=self.hidden_size)
+
+        # #self.hidden_state = torch.zeros(self.hidden_size).cuda()
+        # #self.cell_state = torch.zeros(self.hidden_size).cuda()
+
+        # #self.fc2 = nn.Linear (self.hidden_size, self.hidden_size)
+        # self.fc3 = nn.Linear (self.hidden_size, 6)
+
+        # ------------------------------------
+        # self.fc = torch.nn.Linear(hidden_dim,output_dim)
+        # self.bn = nn.BatchNorm1d(32)
+
+    def forward(self, x):
+        x = self.conv1(x.view(self.batch_size, 1, 64000))
+        x = F.relu(self.bn1(x))
+
+        x = self.pool1(x)
+        x = self.conv2(x)
+        x = F.relu(self.bn2(x))
+
+        x = self.pool2(x)
+        x = self.conv3(x)
+        x = F.relu(self.bn3(x))
+
+        x = self.pool3(x)
+        x = self.conv4(x)
+        x = F.relu(self.bn4(x))
+
+        x = self.pool4(x)
+        x = self.avgPool(x)
+        x = x.permute(0, 2, 1)
+
+        x = self.fc0(x)
+        x = self.conv5(x)
+
+        return x[:, 0, :]
+
+class Music_data:
+    def __init__(self, music_path):
+        self.music_path = music_path
+        self.load_data()
+
+    def load_data(self):
+        sound = torchaudio.load(self.music_path, out=None, normalization=True)
+        # load returns a tensor with the sound data and the sampling frequency (44.1kHz for UrbanSound8K)
+        self.sound_data = sound[0][0, :]  # self.mixer(sound[0])
+
+        # downsample the audio to ~8kHz
+        # tempData = torch.zeros([160000, 1]) #tempData accounts for audio clips that are too short
+
+        # if soundData.numel() < 160000:
+        #    tempData[:soundData.numel()] = soundData[:]
+        # else:
+        #    tempData[:] = soundData[:160000]
+
+        # soundData = tempData
+
+    def get_sample(self, index):
+        # sound_sample = torch.zeros([64000])
+        #
+        # lower_ind = index * 1764
+        # upper_ind = index * 1764 + 320000
+        #
+        # sound_sample[:64000] = self.sound_data[lower_ind: upper_ind]  [::5] #take every fifth sample of soundData
+        #
+        # return torch.tensor(sound_sample)
+
+        sound_sample = torch.zeros([32000])
+        sound_sample_ = torch.zeros([64000])
+
+        lower_ind = index * 1764
+        upper_ind = index * 1764 + 320000
+
+        sound_sample_[:64000] = self.sound_data[lower_ind: upper_ind][::5]
+
+        #specgram = torchaudio.transforms.MelSpectrogram()(sound_sample_)
+        #sound_sample[:32000] = specgram.reshape(-1)[:32000]
+
+        sound_sample = torch.zeros([1, 3200])
+        specgram = torchaudio.transforms.MelSpectrogram(n_mels=10)(sound_sample_)
+
+        # print ("sound shape", sample.shape, specgram.shape)
+
+        sound_sample[:3200] = specgram.reshape(-1)[:3200]
+
+        return torch.tensor(sound_sample)
+
+class Net(nn.Module):
+    def __init__(self, batch_size_):
+        super(Net, self).__init__()
+
+        self.batch_size = batch_size_
+
+        self.conv1 = nn.Conv1d(1, 8, 80, 4, padding=38)
+        self.bn1 = nn.BatchNorm1d(8)
+        self.pool1 = nn.MaxPool1d(4)
+        self.conv2 = nn.Conv1d(8, 8, 3, padding=1)
+        self.bn2 = nn.BatchNorm1d(8)
+        self.pool2 = nn.MaxPool1d(4)
+        self.conv3 = nn.Conv1d(8, 16, 3, padding=1)
+        self.bn3 = nn.BatchNorm1d(16)
+        self.pool3 = nn.MaxPool1d(4)
+        self.conv4 = nn.Conv1d(16, 32, 3, padding=1)
+        self.bn4 = nn.BatchNorm1d(32)
+        self.pool4 = nn.MaxPool1d(4)
+        self.avgPool = nn.AvgPool1d(62)
+
+        self.out_sz = 6
+
+        self.lstm = torch.nn.LSTM(self.out_sz, self.out_sz)
+
+        self.pool5 = nn.MaxPool1d(16)
+
+        self.fc0 = nn.Linear(32, self.out_sz)
+        self.lrelu = nn.LeakyReLU()
+
+        self.lstm = nn.LSTMCell(input_size=self.out_sz, hidden_size=self.out_sz)
+
+    def forward(self, x):
+        x = self.conv1(x.view(self.batch_size, 1, 64000))
+        x = F.relu(self.bn1(x))
+
+        x = self.pool1(x)
+        x = self.conv2(x)
+        x = F.relu(self.bn2(x))
+
+        x = self.pool2(x)
+        x = self.conv3(x)
+        x = F.relu(self.bn3(x))
+
+        x = self.pool3(x)
+        x = self.conv4(x)
+        x = F.relu(self.bn4(x))
+
+        x = self.pool4(x)
+        x = self.avgPool(x)
+
+        x = x.permute(0, 2, 1)
+
+        x = self.fc0(x)
+
+        return x[:, 0, :]
+
+class Net(nn.Module):
+    def __init__(self, batch_size_):
+        super(Net, self).__init__()
+
+        self.batch_size = batch_size_
+
+        # self.conv1 = nn.Conv1d(1, 128, 80, 4)
+        # #self.bn1 = nn.BatchNorm1d(128)
+        # self.pool1 = nn.MaxPool1d(4)
+        # self.conv2 = nn.Conv1d(128, 128, 3)
+        # #self.bn2 = nn.BatchNorm1d(128)
+        # self.pool2 = nn.MaxPool1d(4)
+        # self.conv3 = nn.Conv1d(128, 256, 3)
+        # #self.bn3 = nn.BatchNorm1d(256)
+        # self.pool3 = nn.MaxPool1d(4)
+        # self.conv4 = nn.Conv1d(256, 512, 3)
+        # #self.bn4 = nn.BatchNorm1d(512)
+        # self.pool4 = nn.MaxPool1d(4)
+        # self.avgPool = nn.AvgPool1d(30) #input should be 512x30 so this outputs a 512x1
+
+        self.conv1 = nn.Conv1d(1, 8, 80, 4, padding=38)
+        self.bn1 = nn.BatchNorm1d(8)
+        self.pool1 = nn.MaxPool1d(4)
+        self.conv2 = nn.Conv1d(8, 8, 3, padding=1)
+        self.bn2 = nn.BatchNorm1d(8)
+        self.pool2 = nn.MaxPool1d(4)
+        self.conv3 = nn.Conv1d(8, 16, 3, padding=1)
+        self.bn3 = nn.BatchNorm1d(16)
+        self.pool3 = nn.MaxPool1d(4)
+        self.conv4 = nn.Conv1d(16, 32, 3, padding=1)
+        self.bn4 = nn.BatchNorm1d(32)
+        self.pool4 = nn.MaxPool1d(4)
+        self.avgPool = nn.AvgPool1d(31)  # input should be 512x30 so this outputs a 512x1
+
+        # self.before_lstm_sz = 512
+        # self.lstm_sz = int (512 / 16)
+        # self.hidden = 32
+
+        self.out_sz = 6
+        # self.fc1 = nn.Linear (int (self.before_lstm_sz / 16), self.lstm_sz)
+        # self.fc2 = nn.Linear (self.lstm_sz, self.out_sz)
+        # self.conv5 = nn.Conv1d (2, 1, 1)
+
+        self.lstm = torch.nn.LSTM(self.out_sz, self.out_sz)
+
+        self.pool5 = nn.MaxPool1d(16)
+
+        self.fc0 = nn.Linear(32, self.out_sz)
+        self.lrelu = nn.LeakyReLU()
+
+        # self.conv_channels = 10
+
+        # self.conv1 = nn.Conv1d(1, self.conv_channels, 80, 4)
+        # self.conv2 = nn.Conv1d(self.conv_channels, self.conv_channels * self.conv_channels, 4, 4)
+        # #self.conv2 = nn.Conv1d(10, 1, 1)
+
+        # #self.avgPool = nn.AvgPool1d(10)#padding=1)
+        # self.pool1 = nn.MaxPool1d(4)
+        # self.pool2 = nn.MaxPool1d(4)
+
+        # self.fc1 = nn.Linear (100, self.hidden_size)
+
+        self.lstm = nn.LSTMCell(input_size=self.out_sz, hidden_size=self.out_sz)
+        # #self.lstm = nn.LSTMCell(input_size=6, hidden_size=self.hidden_size)
+
+        # #self.hidden_state = torch.zeros(self.hidden_size).cuda()
+        # #self.cell_state = torch.zeros(self.hidden_size).cuda()
+
+        # #self.fc2 = nn.Linear (self.hidden_size, self.hidden_size)
+        # self.fc3 = nn.Linear (self.hidden_size, 6)
+
+        # ------------------------------------
+        # self.fc = torch.nn.Linear(hidden_dim,output_dim)
+        # self.bn = nn.BatchNorm1d(32)
+
+    def forward(self, x):
+        # print ("shape0", x.shape)
+
+        x = self.conv1(x.view(self.batch_size, 1, 32000))
+        x = F.relu(self.bn1(x))
+        # print ("shape1", x.shape)
+
+        x = self.pool1(x)
+        x = self.conv2(x)
+        x = F.relu(self.bn2(x))
+        # print ("shape2", x.shape)
+
+        x = self.pool2(x)
+        x = self.conv3(x)
+        x = F.relu(self.bn3(x))
+        # print ("shape3", x.shape)
+
+        x = self.pool3(x)
+        x = self.conv4(x)
+        x = F.relu(self.bn4(x))
+        # print ("shape4", x.shape)
+
+        x = self.pool4(x)
+        # print ("shape5", x.shape)
+
+        x = self.avgPool(x)
+
+        # print ("shape6", x.shape)
+
+        x = x.permute(0, 2, 1)
+        # print ("shape7", x.shape)
+
+        x = self.fc0(x)
+        # print ("shape8", x.shape)
+
+        # x = self.conv5 (x)
+
+        # print ("shape9", x.shape)
+
+        # x, (hn,cn) = self.lstm (x.view (self.batch_size, self.out_sz, 1))
+        # x, (hn,cn) = self.lstm (x)
+
+        # print ("shape10", x.shape)
+        # print ("shape11", x [:, 0, :].shape)
+
+        return x[:, 0, :]
+
+
+class Net(nn.Module):
+    def __init__(self, batch_size_):
+        super(Net, self).__init__()
+
+        self.batch_size = batch_size_
+
+        # self.conv1 = nn.Conv1d(1, 128, 80, 4)
+        # #self.bn1 = nn.BatchNorm1d(128)
+        # self.pool1 = nn.MaxPool1d(4)
+        # self.conv2 = nn.Conv1d(128, 128, 3)
+        # #self.bn2 = nn.BatchNorm1d(128)
+        # self.pool2 = nn.MaxPool1d(4)
+        # self.conv3 = nn.Conv1d(128, 256, 3)
+        # #self.bn3 = nn.BatchNorm1d(256)
+        # self.pool3 = nn.MaxPool1d(4)
+        # self.conv4 = nn.Conv1d(256, 512, 3)
+        # #self.bn4 = nn.BatchNorm1d(512)
+        # self.pool4 = nn.MaxPool1d(4)
+        # self.avgPool = nn.AvgPool1d(30) #input should be 512x30 so this outputs a 512x1
+
+        self.conv1 = nn.Conv1d(1, 8, 8, 4, padding=2)
+        self.bn1 = nn.BatchNorm1d(8)
+        self.pool1 = nn.MaxPool1d(4)
+        self.conv2 = nn.Conv1d(8, 8, 3, padding=1)
+        self.bn2 = nn.BatchNorm1d(8)
+        self.pool2 = nn.MaxPool1d(4)
+        self.conv3 = nn.Conv1d(8, 16, 3, padding=1)
+        self.bn3 = nn.BatchNorm1d(16)
+        self.pool3 = nn.MaxPool1d(4)
+        self.conv4 = nn.Conv1d(16, 32, 3, padding=1)
+        self.bn4 = nn.BatchNorm1d(32)
+        self.pool4 = nn.MaxPool1d(4)
+        self.avgPool = nn.AvgPool1d(3)  # input should be 512x30 so this outputs a 512x1
+
+        # self.before_lstm_sz = 512
+        # self.lstm_sz = int (512 / 16)
+        # self.hidden = 32
+
+        self.out_sz = 6
+        # self.fc1 = nn.Linear (int (self.before_lstm_sz / 16), self.lstm_sz)
+        # self.fc2 = nn.Linear (self.lstm_sz, self.out_sz)
+        # self.conv5 = nn.Conv1d (2, 1, 1)
+
+        self.lstm = torch.nn.LSTM(self.out_sz, self.out_sz)
+
+        self.pool5 = nn.MaxPool1d(16)
+
+        self.fc0 = nn.Linear(32, self.out_sz)
+        self.lrelu = nn.LeakyReLU()
+
+        # self.conv_channels = 10
+
+        # self.conv1 = nn.Conv1d(1, self.conv_channels, 80, 4)
+        # self.conv2 = nn.Conv1d(self.conv_channels, self.conv_channels * self.conv_channels, 4, 4)
+        # #self.conv2 = nn.Conv1d(10, 1, 1)
+
+        # #self.avgPool = nn.AvgPool1d(10)#padding=1)
+        # self.pool1 = nn.MaxPool1d(4)
+        # self.pool2 = nn.MaxPool1d(4)
+
+        # self.fc1 = nn.Linear (100, self.hidden_size)
+
+        self.lstm = nn.LSTMCell(input_size=self.out_sz, hidden_size=self.out_sz)
+        # #self.lstm = nn.LSTMCell(input_size=6, hidden_size=self.hidden_size)
+
+        # #self.hidden_state = torch.zeros(self.hidden_size).cuda()
+        # #self.cell_state = torch.zeros(self.hidden_size).cuda()
+
+        # #self.fc2 = nn.Linear (self.hidden_size, self.hidden_size)
+        # self.fc3 = nn.Linear (self.hidden_size, 6)
+
+        # ------------------------------------
+        # self.fc = torch.nn.Linear(hidden_dim,output_dim)
+        # self.bn = nn.BatchNorm1d(32)
+
+    def forward(self, x):
+        # print ("shape0", x.shape)
+
+        x = self.conv1(x.view(self.batch_size, 1, 3200))
+        x = F.relu(self.bn1(x))
+        # print ("shape1", x.shape)
+
+        x = self.pool1(x)
+        x = self.conv2(x)
+        x = F.relu(self.bn2(x))
+        # print ("shape2", x.shape)
+
+        x = self.pool2(x)
+        x = self.conv3(x)
+        x = F.relu(self.bn3(x))
+        # print ("shape3", x.shape)
+
+        x = self.pool3(x)
+        x = self.conv4(x)
+        x = F.relu(self.bn4(x))
+        # print ("shape4", x.shape)
+
+        x = self.pool4(x)
+        # print ("shape5", x.shape)
+
+        x = self.avgPool(x)
+
+        # print ("shape6", x.shape)
+
+        x = x.permute(0, 2, 1)
+        # print ("shape7", x.shape)
+
+        x = self.fc0(x)
+        # print ("shape8", x.shape)
+
+        # x = self.conv5 (x)
+
+        # print ("shape9", x.shape)
+
+        # x, (hn,cn) = self.lstm (x.view (self.batch_size, self.out_sz, 1))
+        # x, (hn,cn) = self.lstm (x)
+
+        # print ("shape10", x.shape)
+        # print ("shape11", x [:, 0, :].shape)
+
+        return x[:, 0, :]
+
+
+class Net(nn.Module):
+    def __init__(self, batch_size_):
+        super(Net, self).__init__()
+
+        self.batch_size = batch_size_
+
+        # self.conv1 = nn.Conv1d(1, 128, 80, 4)
+        # #self.bn1 = nn.BatchNorm1d(128)
+        # self.pool1 = nn.MaxPool1d(4)
+        # self.conv2 = nn.Conv1d(128, 128, 3)
+        # #self.bn2 = nn.BatchNorm1d(128)
+        # self.pool2 = nn.MaxPool1d(4)
+        # self.conv3 = nn.Conv1d(128, 256, 3)
+        # #self.bn3 = nn.BatchNorm1d(256)
+        # self.pool3 = nn.MaxPool1d(4)
+        # self.conv4 = nn.Conv1d(256, 512, 3)
+        # #self.bn4 = nn.BatchNorm1d(512)
+        # self.pool4 = nn.MaxPool1d(4)
+        # self.avgPool = nn.AvgPool1d(30) #input should be 512x30 so this outputs a 512x1
+
+        self.conv1 = nn.Conv1d(1, 16, 80, 4, padding=38)
+        self.bn1 = nn.BatchNorm1d(16)
+        self.pool1 = nn.MaxPool1d(4)
+        self.conv2 = nn.Conv1d(16, 16, 3, padding=1)
+        self.bn2 = nn.BatchNorm1d(16)
+        self.pool2 = nn.MaxPool1d(4)
+        self.conv3 = nn.Conv1d(16, 32, 3, padding=1)
+        self.bn3 = nn.BatchNorm1d(32)
+        self.pool3 = nn.MaxPool1d(4)
+        self.conv4 = nn.Conv1d(32, 64, 3, padding=1)
+        self.bn4 = nn.BatchNorm1d(64)
+        self.pool4 = nn.MaxPool1d(4)
+        self.avgPool = nn.AvgPool1d(3)  # input should be 512x30 so this outputs a 512x1
+
+        # self.before_lstm_sz = 512
+        # self.lstm_sz = int (512 / 16)
+        # self.hidden = 32
+
+        self.out_sz = 6
+        # self.fc1 = nn.Linear (int (self.before_lstm_sz / 16), self.lstm_sz)
+        # self.fc2 = nn.Linear (self.lstm_sz, self.out_sz)
+        # self.conv5 = nn.Conv1d (2, 1, 1)
+
+        self.lstm = torch.nn.LSTM(self.out_sz, self.out_sz)
+
+        self.pool5 = nn.MaxPool1d(16)
+
+        self.fc0 = nn.Linear(64, self.out_sz)
+        self.lrelu = nn.LeakyReLU()
+
+        # self.conv_channels = 10
+
+        # self.conv1 = nn.Conv1d(1, self.conv_channels, 80, 4)
+        # self.conv2 = nn.Conv1d(self.conv_channels, self.conv_channels * self.conv_channels, 4, 4)
+        # #self.conv2 = nn.Conv1d(10, 1, 1)
+
+        # #self.avgPool = nn.AvgPool1d(10)#padding=1)
+        # self.pool1 = nn.MaxPool1d(4)
+        # self.pool2 = nn.MaxPool1d(4)
+
+        # self.fc1 = nn.Linear (100, self.hidden_size)
+
+        self.lstm = nn.LSTMCell(input_size=self.out_sz, hidden_size=self.out_sz)
+        # #self.lstm = nn.LSTMCell(input_size=6, hidden_size=self.hidden_size)
+
+        # #self.hidden_state = torch.zeros(self.hidden_size).cuda()
+        # #self.cell_state = torch.zeros(self.hidden_size).cuda()
+
+        # #self.fc2 = nn.Linear (self.hidden_size, self.hidden_size)
+        # self.fc3 = nn.Linear (self.hidden_size, 6)
+
+        # ------------------------------------
+        # self.fc = torch.nn.Linear(hidden_dim,output_dim)
+        # self.bn = nn.BatchNorm1d(32)
+
+    def forward(self, x):
+        # print ("shape0", x.shape)
+
+        x = self.conv1(x.view(self.batch_size, 1, 3200))
+        x = F.relu(self.bn1(x))
+        # print ("shape1", x.shape)
+
+        x = self.pool1(x)
+        x = self.conv2(x)
+        x = F.relu(self.bn2(x))
+        # print ("shape2", x.shape)
+
+        x = self.pool2(x)
+        x = self.conv3(x)
+        x = F.relu(self.bn3(x))
+        # print ("shape3", x.shape)
+
+        x = self.pool3(x)
+        x = self.conv4(x)
+        x = F.relu(self.bn4(x))
+        # print ("shape4", x.shape)
+
+        x = self.pool4(x)
+        # print ("shape5", x.shape)
+
+        x = self.avgPool(x)
+
+        # print ("shape6", x.shape)
+
+        x = x.permute(0, 2, 1)
+        # print ("shape7", x.shape)
+
+        x = self.fc0(x)
+        # print ("shape8", x.shape)
+
+        # x = self.conv5 (x)
+
+        # print ("shape9", x.shape)
+
+        # x, (hn,cn) = self.lstm (x.view (self.batch_size, self.out_sz, 1))
+        # x, (hn,cn) = self.lstm (x)
+
+        # print ("shape10", x.shape)
+        # print ("shape11", x [:, 0, :].shape)
+
+        return x[:, 0, :]
+
+
+class External_model (Modality):
+    def __init__ (self, model_path_ = "", music_path_ = "", logger_ = 0):
+        Modality.__init__(self, logger_)
+
+        self.all_data = []
+
+        self.model_path = model_path_
+        self.music_path = music_path_
+        self.music_data = Music_data (self.music_path)
+
+        self.sample_num = 0
+
+        self.processed_data_history = []
+
+        if (self.model_path != ""):
+            if( os.path.isfile (self.model_path) == True ):
+                #print( "Model file: ", self.model_path)
+
+                device = torch.device('cpu')
+                self.model = Net (1)
+                checkpoint = torch.load (self.model_path, map_location=device)
+                #print ("fgfg", checkpoint.keys ())
+                self.model.load_state_dict (checkpoint)
+                #self.model.to (device)
+                self.model.eval()
+
+            else:
+                print("\nNo angles file with name: ", data_path)
+                exit(0)
+
+    def name (self):
+        return "archive angles"
+
+    def _read_data (self):
+        # if (self.dataframe_num >= len (self.all_data)):
+        #     read_data = 0
+        #     return
+
+        #self.read_data = self.model (self.music_data.get_sample (self.sample_num))
+
+        #sample = self.music_data.get_sample (self.sample_num)
+        #feed = torch.stack ([sample, sample], dim=0)
+        #output = self.model.forward (feed)
+
+        sample = self.music_data.get_sample (self.sample_num)
+        self.read_data = self.model.forward (sample)
+
+        self.sample_num += 4
+
+    def get_read_data (self):
+        return self.read_data
+
+    def _process_data (self, frame = None):
+        self.processed_data = self.read_data.detach().cpu().numpy()
+        #print ("pred", self.processed_data)
+
+    def _interpret_data (self):
+        self.processed_data_history.append (self.processed_data)
+
+        self.interpreted_data = np.median (self.processed_data_history [-1: ], axis = 0)
+        #print ("inter", self.interpreted_data)
+
+    def _get_command (self):
+        commands = []
+
+        for key, i in zip (smol_listb, range (len (smol_listb))):
+            commands.append (("/set_joint_angle", [key, str (self.interpreted_data [0, i])]))
+
+        return commands
+
+    def get_command (self, skip_reading_data = False):
+        if (skip_reading_data == False):
+            self._read_data ()
+
+        self._process_data   ()
+        self._interpret_data ()
+
+        return self._get_command ()
+
+    def draw (self, canvas = np.ones ((700, 700, 3), np.uint8) * 220):
+        result = canvas.copy ()
+
+        cv2.putText (result, self.model_path, (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (20, 50, 31), 1, cv2.LINE_AA)
+
+        return [result]
 
 class Music (Modality):
     def __init__ (self, music_path_ = "", logger_ = 0):
@@ -44,9 +1168,9 @@ class Music (Modality):
                          "1": [("/increment_joint_angle", ["l_sho_roll", "0.11"])]
                          }
 
-        self.rate, self.audio = self.read(music_path_)
-        self._extract_rhythm ()
-        self.timeout = Timeout_module(1 / self.rhythm / 8)
+        #self.rate, self.audio = self.read(music_path_)
+        #self._extract_rhythm ()
+        self.timeout = common.Timeout_module(1)# / self.rhythm / 8)
 
         #song = AudioSegment.from_mp3 (music_path_)
         #play (song)
@@ -137,11 +1261,11 @@ class Cyclic (Music):
         self.tick = 0
         self.dance_length = dance_length_
 
-        self.rate, self.audio = self.read (self.music_path)
-        self._extract_rhythm ()
+        #self.rate, self.audio = self.read (self.music_path)
+        #self._extract_rhythm ()
 
         #self.timeout = Timeout_module (1 / self.rhythm / 8)
-        self.timeout = Timeout_module (0.01)
+        self.timeout = common.Timeout_module (0.01)
 
         print ("timeout:", self.timeout)
 
@@ -248,6 +1372,8 @@ class Cyclic (Music):
 
             comm = regular_part + unique_part
 
+            print (comm)
+
             self.tick += 1
 
         return comm
@@ -270,6 +1396,9 @@ class Skeleton_3D_Music_to_dance (WorkWithPoints):
         self.mode = 0.0
 
         self.skeleton_path = skeleton_path_
+        self.all_angles_data = []
+
+        self.folder_path = self.skeleton_path[:-14]
 
         if (skeleton_path_ != ""):
             verbose = False
@@ -279,20 +1408,36 @@ class Skeleton_3D_Music_to_dance (WorkWithPoints):
                 #skeleton_data = open(skeleton_path_, 'r')
                 #all_skeleton_frames = self.read_skeleton_data_from_NTU(skeleton_data, verbose )
 
-                f = open (skeleton_path_, )
+                f = open (self.skeleton_path, )
                 data = json.load (f)
-                all_skeleton_frames = data["skeletons"] [10:1550]
+
+                config_path = self.folder_path + "config.json"
+                config = open (config_path, )
+                config_data = json.load (config)
+
+                start_frame = config_data ["start_position"]
+                end_frame   = config_data ["end_position"]
+
+                all_skeleton_frames = data["skeletons"] [start_frame : end_frame]
 
                 self.all_data = all_skeleton_frames
+
             else:
                 print("\nNo skeleton file with name: ", data_path)
-                exit(0)
+
+    def __del__ (self):
+        data = {}
+        data ["angles"] = self.all_angles_data
+
+        with open (self.folder_path + "angles.json", 'w') as outfile:
+            json.dump (data, outfile)
 
     def name (self):
         return "skeleton"
 
     def _read_data (self):
         if (self.dataframe_num >= len (self.all_data)):
+            self.end_of_data_reached = True
             read_data = 0
             return
 
@@ -471,9 +1616,6 @@ class Skeleton_3D_Music_to_dance (WorkWithPoints):
 
         #print ("keys:", self.processed_data.keys ())
 
-        smol_listb = ["l_sho_roll", "l_elb_roll", "l_sho_pitch",
-                      "r_sho_roll", "r_elb_roll", "r_sho_pitch"]
-
         smol_dict = {}
 
         for key in smol_listb:
@@ -482,6 +1624,8 @@ class Skeleton_3D_Music_to_dance (WorkWithPoints):
         #for key in self.processed_data.keys ():
         for key in smol_dict.keys ():
             commands.append (("/set_joint_angle", [key, str (self.processed_data [key])]))
+
+        self.all_angles_data.append ([self.processed_data [key] for key in smol_listb])
 
         return commands
 

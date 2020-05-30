@@ -5,7 +5,8 @@ from service.value_tracker import Value_tracker
 import service.input_output as input_output
 
 class Manager:
-    def __init__ (self, config_ = "", silent_mode_ = True, time_to_not_silent_ =  0, color_ = 190, draw_tracker_ = True):
+    def __init__ (self, config_ = "", silent_mode_ = True, time_to_not_silent_ = 0, color_ = 190, draw_tracker_ = True,
+                  show_fps_ = True):
         self.inputs = {}
         self.robots_list = {}
         self.silent_mode = silent_mode_
@@ -13,6 +14,12 @@ class Manager:
         self.color = color_
         self.quit = False
         self.draw_tracker = draw_tracker_
+
+        self.ticks_story = []
+        self.averaging_window = 15
+        self.show_fps = show_fps_
+
+        self.init_time = time()
 
     def __del__ (self):
         self.logfile.close ()
@@ -104,16 +111,25 @@ class Manager:
                 # print(key)
                 self.robots_list [key].on_idle ()
 
-        list (self.robots_list.items ()) [0] [1].plot_state (canvas_, 150, 40, 2.5)
-
-        self.output_images.append (canvas_)
-        self.output_names.append  ("remote controller")
+        for key in self.robots_list.keys ():
+            #print (key)
+            robot_canvas = self.robots_list [key].plot_state (canvas_, 150, 40, 2.5)
+            self.output_images.append (robot_canvas)
+            self.output_names.append  (key)
 
     def on_idle (self):
         new_time = time ()
-        #print (new_time - self.curr_time)
+
+        if (self.show_fps == True):
+            tick_time = new_time - self.curr_time
+            self.ticks_story.append (tick_time)
+            tick_time_windowed = self.ticks_story [max (0, len (self.ticks_story) - self.averaging_window) :]
+            avg_tick_time = np.mean (tick_time_windowed)
+            self.tracker.update ("fps", 1 / avg_tick_time)
+
+        self.tracker.update("uptime", new_time - self.init_time)
+
         self.curr_time = new_time
-        self.tracker.update("time", self.curr_time)
 
         self.handle_modalities ()
         self.handle_robots     ()
@@ -125,3 +141,9 @@ class Manager:
         sleep  (0.02)
 
         return {"quit" : self.quit}
+
+class Transfer_manager:
+    def __init__ (self, database_path_):
+        self.database_path = database_path_
+
+

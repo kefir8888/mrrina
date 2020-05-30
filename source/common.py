@@ -30,7 +30,7 @@ paths = {"kompaso" : {"model_path"   : "/home/kompaso/NAO_PROJECT/wenhai/source/
          "elijah"  : {"model_path"   : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/test/human-pose-estimation-3d.pth",
                       "phrases_path" : "/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/sounds/phrases.txt",
                       "vision_path"  : "/Users/elijah/Dropbox/Programming/robotics_course/modules/",
-                      "robot_ip"     : "192.168.1.9"}}
+                      "robot_ip"     : "192.168.1.8"}}
 
 def get_available_cameras(upper_bound=10, lower_bound=0):
     available = []

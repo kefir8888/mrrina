@@ -12,10 +12,12 @@ import json
 
 class Modality:
     def __init__ (self, logger_=0):
-        self.timeout = common.Timeout_module (0.35)
+        self.timeout = common.Timeout_module (0)
         self.logger = logger_
         self.read_data        = []
         self.interpreted_data = []
+
+        self.end_of_data_reached = False
 
         self.processed_data = {"r_sho_roll"  : 0,
                                "r_sho_pitch" : 1.1,
@@ -48,11 +50,19 @@ class Modality:
 
                                "new_joints_time": 0.75}
 
+        self.data_loaded_succ = False
+
+    def data_loaded (self):
+        return self.data_loaded
+
     def name (self):
         return "not specified"
 
     def draw (self, img):
         return [np.array ((1, 1, 1), np.uint8)]
+
+    def end_of_data (self):
+        return self.end_of_data_reached
 
 class WorkWithPoints(Modality):
     def __init__ (self, logger_=0, maxlen_ = 10):

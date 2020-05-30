@@ -3,15 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="09311d07-103c-49a8-b68f-de07bcdb2b48" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../../adelaida" beforeDir="false" afterPath="$PROJECT_DIR$/../../adelaida" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../assist/scp.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../assist/scp.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/../manager.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/keyboard_modality.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard_modality.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modality.py" beforeDir="false" afterPath="$PROJECT_DIR$/modality.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/music_modality.py" beforeDir="false" afterPath="$PROJECT_DIR$/music_modality.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/skeleton_modalities.py" beforeDir="false" afterPath="$PROJECT_DIR$/skeleton_modalities.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../remote_control_elijah.py" beforeDir="false" afterPath="$PROJECT_DIR$/../remote_control_elijah.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../robots.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robots.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../service/manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/../service/manager.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

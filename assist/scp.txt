@@ -1,3 +1,3 @@
 scp -r sounds nao@192.168.43.117:/home/nao
 
-export PYTHONPATH=${PYTHONPATH}:/home/kompaso/NAO/pynaoqi-python2.7-2.8.5.10-linux64-20181203_200915/lib/python2.7/site-packages
+export PYTHONPATH=${PYTHONPATH}:/Users/elijah/Documents/pynaoqi-python2.7-2.8.5.10-mac64-20181203_210106/lib/python2.7/site-packages
