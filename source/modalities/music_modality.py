@@ -1117,7 +1117,7 @@ class External_model (Modality):
         sample = self.music_data.get_sample (self.sample_num)
         self.read_data = self.model.forward (sample)
 
-        self.sample_num += 4
+        self.sample_num += 1
 
     def get_read_data (self):
         return self.read_data
@@ -1129,7 +1129,7 @@ class External_model (Modality):
     def _interpret_data (self):
         self.processed_data_history.append (self.processed_data)
 
-        self.interpreted_data = np.median (self.processed_data_history [-1: ], axis = 0)
+        self.interpreted_data = np.median (self.processed_data_history [-10: ], axis = 0)
         #print ("inter", self.interpreted_data)
 
     def _get_command (self):
@@ -1137,6 +1137,9 @@ class External_model (Modality):
 
         for key, i in zip (smol_listb, range (len (smol_listb))):
             commands.append (("/set_joint_angle", [key, str (self.interpreted_data [0, i])]))
+
+        commands.append(("/set_joint_angle", ["head_Yaw", str(abs (self.interpreted_data[0, 0]) - abs (self.interpreted_data[0, 3]))]))
+        commands.append(("/set_joint_angle", ["head_Pitch", str(abs (self.interpreted_data[0, 1]) - abs (self.interpreted_data[0, 4]))]))
 
         return commands
 
@@ -1256,7 +1259,7 @@ class Music (Modality):
         return [result]
 
 class Cyclic (Music):
-    def __init__ (self, music_path_ = "", logger_ = 0, dance_length_ = 50):
+    def __init__ (self, music_path_ = "", logger_ = 0, dance_length_ = 50000):
         Music.__init__ (self, music_path_, logger_)
         self.tick = 0
         self.dance_length = dance_length_
@@ -1348,7 +1351,18 @@ class Cyclic (Music):
         if (self.timeout.timeout_passed ()):
             l = len (self.commands)
 
-            regular_part = self.commands[str (self.tick % (l - 1))]
+            #regular_part = self.commands[str (self.tick % (l - 1))]
+
+            cyclic_1 = math.sin (float (self.tick) / 8)
+
+            hip_ampl = 0.34
+
+            regular_part = [("/set_joint_angle", ["l_hip_pitch", str(-hip_ampl * cyclic_1)]),
+                            ("/set_joint_angle", ["l_knee_pitch", str(2 * hip_ampl * cyclic_1)]),
+                            ("/set_joint_angle", ["l_ank_pitch", str(-hip_ampl * cyclic_1)]),
+                            ("/set_joint_angle", ["r_hip_pitch", str(-hip_ampl * cyclic_1)]),
+                            ("/set_joint_angle", ["r_knee_pitch", str(2 * hip_ampl * cyclic_1)]),
+                            ("/set_joint_angle", ["r_ank_pitch", str(-hip_ampl * cyclic_1)])]
 
             # cyclic_angle_1 = math.sin (float (self.tick) / 3) / 4
             # cyclic_angle_2 = math.sin (float (self.tick + 1.5) / 3) / 4

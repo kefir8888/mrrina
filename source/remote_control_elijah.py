@@ -30,18 +30,18 @@ def main():
                          logger_ = manager.tracker), ["physical", "simulated2", "simulated3d"])})
 
     if (KB_ONLY == False):
-        #manager.add_inputs ({"music": (Cyclic ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/music/gorillaz_collar_part.mp3",
-        #    logger_ = manager.tracker, dance_length_ = 150), ["physical", "simulated3d"])})
+        manager.add_inputs ({"music": (Cyclic ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/music/gorillaz_collar_part.mp3",
+            logger_ = manager.tracker, dance_length_ = 15000), ["physical", "simulated3d"])})
 
-        manager.add_inputs ({"skeleton": (Skeleton_3D_Music_to_dance ( "/Users/elijah/Downloads/dataset/DANCE_R_10/skeletons.json",
-                             logger_ = manager.tracker), ["simulated3d"])})
+        #manager.add_inputs ({"skeleton": (Skeleton_3D_Music_to_dance ( "/Users/elijah/Downloads/dataset/DANCE_R_10/skeletons.json",
+        #                     logger_ = manager.tracker), ["simulated3d"])})
 
         #manager.add_inputs ({"angles": (Archive_angles ( "/Users/elijah/Downloads/dataset/DANCE_R_6/angles.json",
         #                     logger_ = manager.tracker), ["simulated3d"])})
 
-        #manager.add_inputs ({"model": (External_model ( "/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/generation/trained30.pth",
-        manager.add_inputs({"model": (External_model("/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/generation/trained39-2.pth",
-                                                            "/Users/elijah/Downloads/dataset/DANCE_R_4/audio.mp3",
+        #manager.add_inputs({"model": (External_model("/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/generation/trained39-2.pth",
+        manager.add_inputs({"model": (External_model("/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/generation/trained59.pth",
+                                                    "/Users/elijah/Downloads/dataset/DANCE_R_4/audio.mp3",
                              logger_ = manager.tracker), ["physical", "simulated2", "simulated3d2"])})
 
     manager.add_robots ({"simulated2" : robots.Simulated_robot (logger_ = manager.tracker, omit_warnings_ = True)})
@@ -54,7 +54,7 @@ def main():
     if (AUTONOMOUS == False):
         ip = paths [user] ["robot_ip"]
         manager.add_robots ({"physical" : robots.Real_robot_qi (ip, "9569", logger_ = manager.tracker,
-                            action_time_ = 0.21, omit_warnings_ = True)})
+                            action_time_ = 0.11, omit_warnings_ = True)})
 
     # common_prefix = "/Users/elijah/Downloads/dataset/DANCE_"
     # common_infix = "_"
