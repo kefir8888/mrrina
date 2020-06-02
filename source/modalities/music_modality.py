@@ -63,6 +63,7 @@ class Archive_angles (Modality):
                 self.folder_path = self.angles_path [:-11]
 
                 self.all_data = data ["angles"]
+                self.available_data_len = 400#len (self.all_data)
 
             else:
                 print("\nNo angles file with name: ", self.angles_path)
@@ -72,12 +73,15 @@ class Archive_angles (Modality):
         return "archive angles"
 
     def _read_data (self):
-        if (self.dataframe_num >= len (self.all_data)):
+        if (self.dataframe_num >= self.available_data_len):
+            self.end_of_data_reached = True
+            self.data_len = 0
+            self.available_data_len = 0
             read_data = 0
             return
 
         self.read_data = self.all_data [self.dataframe_num]
-        self.dataframe_num += 2
+        self.dataframe_num += 1
 
     def get_read_data (self):
         return self.read_data
@@ -600,6 +604,8 @@ class Music_data:
         self.music_path = music_path
         self.load_data()
 
+        self.end_of_data_reached = False
+
     def load_data(self):
         sound = torchaudio.load(self.music_path, out=None, normalization=True)
         # load returns a tensor with the sound data and the sampling frequency (44.1kHz for UrbanSound8K)
@@ -614,6 +620,9 @@ class Music_data:
         #    tempData[:] = soundData[:160000]
 
         # soundData = tempData
+
+    def end_of_data (self):
+        return self.end_of_data_reached
 
     def get_sample(self, index):
         # sound_sample = torch.zeros([64000])
@@ -630,6 +639,10 @@ class Music_data:
 
         lower_ind = index * 1764
         upper_ind = index * 1764 + 320000
+
+        if (upper_ind >= len (self.sound_data)):
+            self.end_of_data_reached = True
+            return self.get_sample (index - 1)
 
         sound_sample_[:64000] = self.sound_data[lower_ind: upper_ind][::5]
 
@@ -1084,6 +1097,11 @@ class External_model (Modality):
 
         self.processed_data_history = []
 
+        self.all_angles_data = []
+
+        self.folder_path = self.music_path[:-9]
+        print ("folder path:", self.folder_path)
+
         if (self.model_path != ""):
             if( os.path.isfile (self.model_path) == True ):
                 #print( "Model file: ", self.model_path)
@@ -1099,6 +1117,15 @@ class External_model (Modality):
             else:
                 print("\nNo angles file with name: ", data_path)
                 exit(0)
+
+    def __del__ (self):
+        #data = {}
+        #data["angles"] = self.all_angles_data
+
+        np.save (self.folder_path + 'angles_generated.json.npy', np.array (self.all_angles_data).T)
+
+        #with open(self.folder_path + "angles_generated.json", 'w') as outfile:
+        #    json.dump(data, outfile)
 
     def name (self):
         return "archive angles"
@@ -1117,7 +1144,8 @@ class External_model (Modality):
         sample = self.music_data.get_sample (self.sample_num)
         self.read_data = self.model.forward (sample)
 
-        self.sample_num += 1
+        if (self.music_data.end_of_data () == False):
+            self.sample_num += 1
 
     def get_read_data (self):
         return self.read_data
@@ -1129,7 +1157,7 @@ class External_model (Modality):
     def _interpret_data (self):
         self.processed_data_history.append (self.processed_data)
 
-        self.interpreted_data = np.median (self.processed_data_history [-10: ], axis = 0)
+        self.interpreted_data = np.median (self.processed_data_history [-1: ], axis = 0)
         #print ("inter", self.interpreted_data)
 
     def _get_command (self):
@@ -1140,6 +1168,8 @@ class External_model (Modality):
 
         commands.append(("/set_joint_angle", ["head_Yaw", str(abs (self.interpreted_data[0, 0]) - abs (self.interpreted_data[0, 3]))]))
         commands.append(("/set_joint_angle", ["head_Pitch", str(abs (self.interpreted_data[0, 1]) - abs (self.interpreted_data[0, 4]))]))
+
+        self.all_angles_data.append([self.interpreted_data [0, i] for _, i in zip (smol_listb, range (len (smol_listb)))])
 
         return commands
 
@@ -1259,16 +1289,17 @@ class Music (Modality):
         return [result]
 
 class Cyclic (Music):
-    def __init__ (self, music_path_ = "", logger_ = 0, dance_length_ = 50000):
+    def __init__ (self, music_path_ = "", logger_ = 0, dance_length_ = 50):
         Music.__init__ (self, music_path_, logger_)
         self.tick = 0
         self.dance_length = dance_length_
+        self.available_data_len = dance_length_
 
         #self.rate, self.audio = self.read (self.music_path)
         #self._extract_rhythm ()
 
         #self.timeout = Timeout_module (1 / self.rhythm / 8)
-        self.timeout = common.Timeout_module (0.01)
+        self.timeout = common.Timeout_module (0.0)
 
         print ("timeout:", self.timeout)
 
@@ -1346,6 +1377,7 @@ class Cyclic (Music):
         comm = self.commands ["noaction"]
 
         if (self.tick >= self.dance_length):
+            self.available_data_len = 0
             return comm
 
         if (self.timeout.timeout_passed ()):
@@ -1353,16 +1385,16 @@ class Cyclic (Music):
 
             #regular_part = self.commands[str (self.tick % (l - 1))]
 
-            cyclic_1 = math.sin (float (self.tick) / 8)
+            cyclic_1 = math.sin (float (self.tick) / 6)
 
-            hip_ampl = 0.34
+            hip_ampl = 0.13
 
-            regular_part = [("/set_joint_angle", ["l_hip_pitch", str(-hip_ampl * cyclic_1)]),
-                            ("/set_joint_angle", ["l_knee_pitch", str(2 * hip_ampl * cyclic_1)]),
-                            ("/set_joint_angle", ["l_ank_pitch", str(-hip_ampl * cyclic_1)]),
-                            ("/set_joint_angle", ["r_hip_pitch", str(-hip_ampl * cyclic_1)]),
-                            ("/set_joint_angle", ["r_knee_pitch", str(2 * hip_ampl * cyclic_1)]),
-                            ("/set_joint_angle", ["r_ank_pitch", str(-hip_ampl * cyclic_1)])]
+            regular_part = [("/set_joint_angle", ["l_hip_pitch", str(-hip_ampl * (cyclic_1 + 1))]),
+                            ("/set_joint_angle", ["l_knee_pitch", str(2 * hip_ampl * (cyclic_1 + 1))]),
+                            ("/set_joint_angle", ["l_ank_pitch", str(-hip_ampl * (cyclic_1 + 1))]),
+                            ("/set_joint_angle", ["r_hip_pitch", str(-hip_ampl * (cyclic_1 + 1))]),
+                            ("/set_joint_angle", ["r_knee_pitch", str(2 * hip_ampl * (cyclic_1 + 1))]),
+                            ("/set_joint_angle", ["r_ank_pitch", str(-hip_ampl * (cyclic_1 + 1))])]
 
             # cyclic_angle_1 = math.sin (float (self.tick) / 3) / 4
             # cyclic_angle_2 = math.sin (float (self.tick + 1.5) / 3) / 4

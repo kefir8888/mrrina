@@ -7,6 +7,8 @@ import copy
 markup_color = (250, 250, 250)
 axes = {"x" : 0, "y" : 1, "z" : 2}
 
+from modalities.music_modality import Archive_angles
+
 class Robot:
     def __init__(self, timeout_ = 0.001, logger_ = 0):
         self.queue         = []
@@ -93,9 +95,15 @@ class Robot:
         if (action is None):
             return
 
+        act_list = []
+
         for act in action [0]:
             if (act [0] != "noaction"):
-                self.queue.append ([act])
+                #print ("appending action", act)
+                act_list.append (act)
+
+        if (len (act_list) > 0):
+            self.queue.append (act_list)
 
 class Fake_robot(Robot):
     def __init__(self, timeout_ = 0.5):
@@ -185,7 +193,7 @@ class Joint:
         self.children.append (Joint (length, angle, angle_multiplier, self.col1, self.col2, name, min_angle, max_angle, angle_shift))
 
 class Simulated_robot(Robot):
-    def __init__(self, timeout_ = 0.01, path_ = "", logger_ = 0, omit_warnings_ = False):
+    def __init__(self, timeout_ = 0.0, path_ = "", logger_ = 0, omit_warnings_ = False):
         Robot.__init__ (self, timeout_)
 
         self.config_path = path_
@@ -1035,11 +1043,11 @@ class Real_robot_qi(Robot):
 
         self.motionProxy.wbEnable(False)
         self.postureProxy.goToPosture("Stand", 1.5)
-        self.motionProxy.wbEnable(True)
-        self.motionProxy.setBreathEnabled('Body', False)
+        #self.motionProxy.wbEnable(True)
+        #self.motionProxy.setBreathEnabled('Body', False)
 
-        self.motionProxy.wbFootState("Fixed", "Legs")
-        self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
+        #self.motionProxy.wbFootState("Fixed", "Legs")
+        #self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
 
         pNames = "Body"
         pStiffnessLists = 0.6
@@ -1108,67 +1116,105 @@ class Real_robot_qi(Robot):
     def _send_command (self):#, action):
         action = self.queue [self.commands_sent]
 
+        names = []
+
+        for key in self.synchronized_joints.keys():
+            #print ("key1", key)
+            robot_joint = self.synchronized_joints[key]
+            names.append(robot_joint)
+
+        angles = {name : [] for name in names}
+        times  = {name : [] for name in names}
+
+        first_turn = True
+
+        t = 0
+
+        print ("first action", action)
+
         while (True):
+            if (len (self.queue) <= self.commands_sent):
+                break
+
+            #print ("t", t)
+
             action_ = self.queue [self.commands_sent]
             self.commands_sent += 1
+
+            #print ("self.queue", self.queue)
 
             self.simulated._send_command (action_)
 
             if (not ((action [0] [0] == "/increment_joint_angle" or
                  action [0] [0] == "/set_joint_angle") and
-                 action [0] [0] == action_ [0] [0] and
-                 len (self.queue) > self.commands_sent)):
+                 action [0] [0] == action_ [0] [0])):
+                if (action[0][0] in self.available_commands.keys()):
+                    action_str = action[0][0]
+
+                    if action_str[1:] == "Rest":
+                        self.motionProxy.rest()
+
+                    elif action_str[1:] == "Stand":
+                        self.postureProxy.goToPosture(action_str[1:], 2)
+
+                    else:
+                        print("action :", action, " is not implemented")
+                        return -1
+
                 break
 
-        if (action [0] [0] == "/increment_joint_angle" or
-            action [0] [0] == "/set_joint_angle"):
-            action_str = "/raise_hands"
-            text_str   = ""
-
-            names  = []
-            angles = []
-
-            if (self.first_frame == False):
-                timeList = [self.action_time] * 20
+            curr_step_t = 0
+            if (self.first_frame == False or first_turn == False):
+                #timeList = [self.action_time] * 20
+                curr_step_t = self.action_time
 
             else:
-                timeList = [1.0] * 20
+                #timeList = [1.0] * 20
+                curr_step_t = 1.0
                 self.first_frame = False
 
-            for key in self.synchronized_joints.keys ():
-                joint, _ = self.simulated.find_joint (key)
-                robot_joint = self.synchronized_joints [key]
-                init_angle = self.init_positions [robot_joint]
+            t += curr_step_t
 
-                if (joint.angle is None):
-                    joint.angle = 0
+            if (action [0] [0] == "/increment_joint_angle" or
+                action [0] [0] == "/set_joint_angle"):
+                #print ("sync")
+                for key in self.synchronized_joints.keys ():
+                    #print("key2", key)
 
-                angle = joint.angle * joint.angle_multiplier + init_angle
-                names.append(robot_joint)
-                angles.append([angle])
+                    joint, _ = self.simulated.find_joint (key)
+                    robot_joint = self.synchronized_joints [key]
+                    init_angle = self.init_positions [robot_joint]
 
-            self.motionProxy.angleInterpolation (names, angles, timeList, True)
+                    if (joint.angle is None):
+                        joint.angle = 0
 
-        elif (action [0] [0] in self.available_commands.keys ()):
-            action_str = action [0] [0]
+                    angle = joint.angle * joint.angle_multiplier + init_angle
+                    angles [robot_joint].append (angle)
+                    times  [robot_joint].append (t)
 
-            if action_str[1:] == "Rest":
-                self.motionProxy.rest()
+            first_turn = False
 
-            elif action_str[1:] == "Stand":
-                self.postureProxy.goToPosture(action_str[1:], 2)
+        angles_ = [angles [key] for key in names]
+        times_  = [times  [key] for key in names]
 
-            text_str   = str (action [0] [1] [0])
+        #print ("times", times_, angles_)
 
-        else:
-            print ("action :", action, " is not implemented")
-            return -1
+        #curr_angles = self.motionProxy.getAngles ("Body", True)
+        #print ("curr angles", curr_angles)
+        #print ("angles [0]", angles_ [0])
 
-        if (self.simulated.updated == True or action [0] == "/free"):
-            request_str = self.ip_num  + "/?" + "action="\
-                + action_str + "&" + "text=" + text_str
+        if (len (angles_ [0]) > 0):
+            print ("sending angleinterpolation")
+            self.motionProxy.angleInterpolation (names, angles_, times_, True)
+            print ("angleinterpolation finished")
 
-            self.simulated.updated = False
+            #text_str   = str (action [0] [1] [0])
+
+        # if (self.simulated.updated == True or action [0] == "/free"):
+        #     request_str = self.ip_num  + "/?" + "action="\
+        #         + action_str + "&" + "text=" + text_str
+        #
+        #     self.simulated.updated = False
 
     def on_idle (self):
         if (len (self.queue) > self.commands_sent):
@@ -1178,3 +1224,128 @@ class Real_robot_qi(Robot):
 
     def plot_state (self, img, x, y, scale = 1):
         return self.simulated.plot_state (img, x, y, scale)
+
+# class Real_robot_timeline(Robot):
+#     def __init__(self, ip_num_, timeout_ = 0.04, logger_ = 0, action_time_ = 0.8, omit_warnings_ = False):
+#         Robot.__init__ (self, timeout_)
+#         self.logger = logger_
+#         self.action_time = action_time_
+#
+#         #-----------------------
+#         self.ip_num = ip_num_
+#         self.motionProxy = ALProxy("ALMotion", self.ip_num, 9559)
+#         self.postureProxy = ALProxy("ALRobotPosture", self.ip_num, 9559)
+#
+#         self.motionProxy.wbEnable(False)
+#         self.postureProxy.goToPosture("Stand", 1.5)
+#         self.motionProxy.wbEnable(True)
+#         self.motionProxy.setBreathEnabled('Body', False)
+#
+#         #self.motionProxy.wbFootState("Fixed", "Legs")
+#         #self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
+#
+#         #pNames = "Body"
+#         #pStiffnessLists = 0.6
+#         #pTimeLists = 1.0
+#         #self.motionProxy.stiffnessInterpolation (pNames, pStiffnessLists, pTimeLists)
+#         #------------------------
+#
+#         self.simulated = Simulated_robot (logger_=self.logger, omit_warnings_ = omit_warnings_)
+#
+#         self.smol_listb = ["l_sho_roll", "l_elb_roll", "l_sho_pitch",
+#                            "r_sho_roll", "r_elb_roll", "r_sho_pitch"]
+#
+#         self.name = "real_timeline"
+#
+#         self.command_sent = False
+#
+#     def __del__ (self):
+#         #self.motionProxy.wbEnable(False)
+#         pass
+#
+#     def _send_command (self):
+#         names = list ()
+#         times = list ()
+#         mot_keys  = list ()
+#
+#         robot_names = ["LShoulderRoll", "LElbowRoll", "LShoulderPitch"]
+#                        #"RShoulderRoll", "RElbowRoll", "RShoulderPitch"]
+#
+#         for i, robot_angle_name in enumerate (robot_names):
+#             l = 0
+#
+#             angles = Archive_angles("/Users/elijah/Downloads/dataset/DANCE_R_6/angles.json")
+#
+#             names.append (robot_angle_name)
+#
+#             k = []
+#             t = []
+#
+#             tim_step = 0.05
+#             tim = tim_step
+#
+#             while (angles.end_of_data () == False):
+#                 l += 1
+#                 if (l > 151):
+#                     break
+#
+#                 command = angles.get_command ()
+#                 #print ("command", command)
+#                 self.simulated.add_action ([command])
+#                 self.simulated.on_idle ()
+#
+#                 tim += tim_step
+#                 t.append (tim)
+#
+#                 joint_key = self.smol_listb [i]
+#
+#                 joint, _ = self.simulated.find_joint (joint_key)
+#
+#                 #robot_joint = self.synchronized_joints[key]
+#                 #init_angle = self.init_positions[robot_joint]
+#
+#                 #if (joint.angle is None):
+#                 #    joint.angle = 0
+#
+#                 #angle = joint.angle * joint.angle_multiplier + init_angle
+#                 #names.append(robot_joint)
+#                 #angles.append([angle])
+#
+#                 joint_angle = joint.angle
+#                 #joint_angle = math.sin (float (l) / 10)
+#
+#                 if (robot_angle_name == "RShoulderPitch" or robot_angle_name == "LShoulderPitch"):
+#                     joint_angle +=  1.1
+#
+#                 #print("s", joint_angle)
+#
+#                 k.append (joint_angle)
+#
+#             #print ("SaS")
+#
+#             mot_keys.append  (k)
+#             times.append (t)
+#
+#         # names = ["LShoulderRoll"]
+#         # times = [[0.92, 2, 3.4, 4.48, 5.8, 6.32, 6.84]]
+#         # keys = [[0.139697, 0.15506, 0.139697, 0.15506, 0.139697, 0.00609397, 0.116542]]
+#
+#         print ("a", mot_keys, times, names)
+#
+#         try:
+#             print("starting interpolation")
+#             #motion = ALProxy("ALMotion", "192.168.1.8", 9559)
+#             #motion.angleInterpolation (names, mot_keys, times, True)
+#             self.motionProxy.angleInterpolation(names, mot_keys, times, True)
+#             print ("interpolation over")
+#
+#         except BaseException, err:
+#             print ("mlem")
+#
+#     def on_idle (self):
+#         if (self.command_sent == False):
+#             self._send_command ()
+#             self.command_sent = True
+#
+#     def plot_state (self, img, x, y, scale = 1):
+#         return img

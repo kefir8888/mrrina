@@ -13,6 +13,7 @@ import cv2
 
 class Computer_keyboard (Modality):
     def __init__ (self, phrases_path = "", key_to_command_ = {"z" : "empty"}, logger_ = 0):
+        Modality.__init__ (self, logger_)
         self.logger = logger_
 
         self.read_data        = 0x00

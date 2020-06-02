@@ -17,7 +17,7 @@ WIND_X, WIND_Y = 800, 700
 
 def main():
     AUTONOMOUS = False
-    AUTONOMOUS = True
+    #AUTONOMOUS = True
 
     KB_ONLY = False
     #KB_ONLY = True
@@ -31,18 +31,20 @@ def main():
 
     if (KB_ONLY == False):
         manager.add_inputs ({"music": (Cyclic ("/Users/elijah/Dropbox/Programming/RoboCup/remote control/data/music/gorillaz_collar_part.mp3",
-            logger_ = manager.tracker, dance_length_ = 15000), ["physical", "simulated3d"])})
+            logger_ = manager.tracker, dance_length_ = 400), ["physical", "simulated3d"])})
 
         #manager.add_inputs ({"skeleton": (Skeleton_3D_Music_to_dance ( "/Users/elijah/Downloads/dataset/DANCE_R_10/skeletons.json",
-        #                     logger_ = manager.tracker), ["simulated3d"])})
+        #                      logger_ = manager.tracker), ["simulated3d", "physical"])})
 
-        #manager.add_inputs ({"angles": (Archive_angles ( "/Users/elijah/Downloads/dataset/DANCE_R_6/angles.json",
-        #                     logger_ = manager.tracker), ["simulated3d"])})
+        manager.add_inputs ({"angles": (Archive_angles ( "/Users/elijah/Downloads/dataset/DANCE_R_6/angles.json",
+                             logger_ = manager.tracker), ["simulated3d", "physical"])})
 
         #manager.add_inputs({"model": (External_model("/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/generation/trained39-2.pth",
-        manager.add_inputs({"model": (External_model("/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/generation/trained59.pth",
-                                                    "/Users/elijah/Downloads/dataset/DANCE_R_4/audio.mp3",
-                             logger_ = manager.tracker), ["physical", "simulated2", "simulated3d2"])})
+        #manager.add_inputs({"model": (External_model("/Users/elijah/Dropbox/Programming/RoboCup/remote control/source/generation/trained59.pth",
+        #                                            "/Users/elijah/Downloads/dataset/DANCE_W_4/audio.mp3",
+        #                     logger_ = manager.tracker), ["physical", "simulated2", "simulated3d2"])})
+
+    #manager.add_data_stream (["angles"], ["physical"], process_all_data = True)
 
     manager.add_robots ({"simulated2" : robots.Simulated_robot (logger_ = manager.tracker, omit_warnings_ = True)})
 
@@ -53,8 +55,10 @@ def main():
 
     if (AUTONOMOUS == False):
         ip = paths [user] ["robot_ip"]
-        manager.add_robots ({"physical" : robots.Real_robot_qi (ip, "9569", logger_ = manager.tracker,
-                            action_time_ = 0.11, omit_warnings_ = True)})
+        manager.add_robots({"physical": robots.Real_robot_qi(ip, "9569", logger_=manager.tracker,
+            action_time_=0.05, omit_warnings_=True)})
+        #manager.add_robots({"physical": robots.Real_robot_timeline(ip, "9569", logger_=manager.tracker,
+        #                    action_time_=0.11, omit_warnings_=True)})
 
     # common_prefix = "/Users/elijah/Downloads/dataset/DANCE_"
     # common_infix = "_"
@@ -95,29 +99,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-    # manager = Manager (draw_tracker_ = True)
-    # manager.create_window (WIND_X, WIND_Y)
-    # manager.init ()
-    #
-    # manager.add_inputs ({"computer keyboard" : (Computer_keyboard (paths [user] ["phrases_path"],
-    #                      logger_ = manager.tracker), ["physical", "simulated2", "simulated3d"])})
-    #
-    # manager.add_inputs ({"music": (Cyclic ("/data/music/gorillaz_collar_part.mp3",
-    #                      logger_ = manager.tracker, dance_length_ = 150), ["physical", "simulated2"])})
-    #
-    # manager.add_inputs ({"angles": (External_model ( "/generation/trained.pth",
-    #                      "/Users/elijah/Downloads/dataset/DANCE_W_3/audio.mp3",
-    #                      logger_ = manager.tracker), ["physical", "simulated2", "simulated3d"])})
-    #
-    # manager.add_robots ({"simulated3d" : robots.Simulated_robot_3D (WIND_X_ = WIND_X, WIND_Y_ = WIND_Y,
-    #                                         logger_ = manager.tracker, omit_warnings_ = True)})
-    #
-    # manager.add_robots ({"physical" : robots.Real_robot_qi (paths [user] ["robot_ip"], "9569",
-    #                      logger_ = manager.tracker, action_time_ = 0.21, omit_warnings_ = True)})
-    #
-    # while (True):
-    #     if (manager.on_idle () ["quit"] == True):
-    #         break
-    #
-    #     cv2.imshow ("remote_controller", manager.form_output_image (2700))

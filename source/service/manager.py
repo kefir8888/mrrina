@@ -71,25 +71,34 @@ class Manager:
             self.silent_mode = False
             self.time_to_not_silent = 100000
 
+        modalities_data = {}
+
         for modality in self.inputs.keys ():
+            modalities_data.update ({modality : []})
+
             skip_reading_data = False
 
             if (modality == "computer keyboard"):
                 skip_reading_data = True
 
-            command = self.inputs [modality] [0].get_command (skip_reading_data)
+            #commands_pack_len = 1
 
-            # print ("command", command)
+            #needs to be refactored by adding property of being read "completely" to the modalities
+            #if (modality == "angles"):
+            #if (modality):
+            #    commands_pack_len = self.inputs [modality] [0].data_length ()
 
-            self.logfile.write (str (self.curr_time) + str (command))
+            commands_pack_len = self.inputs [modality] [0].get_available_data_len ()
 
-            action = self.fsm_processor.handle_command (command)
+            for i in range (commands_pack_len):
+                command = self.inputs [modality] [0].get_command (skip_reading_data)
 
-            if (self.silent_mode == False):
-                for key in self.inputs [modality] [1]:
-                    if (key in self.robots_list.keys ()):
-                        # print ("adding action", key, action)
-                        self.robots_list [key].add_action (action)
+                # print ("command", command)
+
+                self.logfile.write (str (self.curr_time) + str (command))
+
+                action = self.fsm_processor.handle_command (command)
+                modalities_data [modality].append (action)
 
             modality_frames = self.inputs [modality] [0].draw (self.canvas)
 
@@ -98,6 +107,39 @@ class Manager:
             if (modality_frames [0].shape [0] > 1):
                 self.output_images += modality_frames
                 self.output_names.append (modality)
+
+        if (self.silent_mode == False):
+            for robot_key in self.robots_list.keys():
+                commands_pack_num = 0
+
+                #print ("robot", robot_key)
+
+                while (True):
+                    added = False
+
+                    commands_pack = [[]]
+
+                    for modality in self.inputs.keys ():
+                        if (robot_key in self.inputs [modality] [1] and
+                            commands_pack_num < len (modalities_data [modality])):
+                            for c in modalities_data [modality] [commands_pack_num] [0]:
+                                commands_pack [0].append (c)
+
+                            added = True
+                            #print ("added from modality", modality)
+
+                    if (added == False):
+                        break
+
+                    print ("commands_pack", commands_pack)
+
+                    self.robots_list[robot_key].add_action (commands_pack)
+                    commands_pack_num += 1
+
+            # for key in self.inputs[modality][1]:
+            #     if (key in self.robots_list.keys()):
+            #         # print ("adding action", key, action)
+            #         self.robots_list[key].add_action(action)
 
     def handle_robots (self):
         self.canvas = np.ones ((self.WIND_Y, self.WIND_X, 3), np.uint8) * self.color
@@ -138,12 +180,10 @@ class Manager:
             self.canvas = cv2.putText (self.canvas, "silent mode", (30, 100), cv2.FONT_HERSHEY_SIMPLEX,
                    1, (0, 255, 0), 2, cv2.LINE_AA)
 
-        sleep  (0.02)
+        sleep  (0.002)
 
         return {"quit" : self.quit}
 
-class Transfer_manager:
-    def __init__ (self, database_path_):
-        self.database_path = database_path_
-
-
+# class Transfer_manager:
+#     def __init__ (self, database_path_):
+#         self.database_path = database_path_

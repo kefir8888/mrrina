@@ -6,7 +6,7 @@ l_sho_roll l_elb_yaw 35 0 1 -1.92 1.92 0
 base rightshoulder 15 3.14 1 10 20 0
 rightshoulder r_sho_roll 40 0 1 -1.3 0.1 0
 rightshoulder r_sho_pitch 40 0 1 -1.92 1.92 0
-r_sho_roll r_elb_roll 35 0 1 0.05 1.5 0
+r_sho_roll r_elb_roll 35 0 1 0.05 1.1 0
 r_sho_roll r_elb_yaw 35 0 1 -1.92 1.92 0
 base head 20 -1.57 1 -30 30 0
 head head_Yaw 10 0 1 -2.08 2.08 0

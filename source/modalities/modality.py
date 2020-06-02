@@ -51,6 +51,10 @@ class Modality:
                                "new_joints_time": 0.75}
 
         self.data_loaded_succ = False
+        self.available_data_len = 1
+
+    def get_available_data_len (self):
+        return self.available_data_len
 
     def data_loaded (self):
         return self.data_loaded
