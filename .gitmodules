@@ -1,7 +1,3 @@
-[submodule "adelaida"]
-	path = adelaida
-	url = https://github.com/kefir8888/adelaida
-	branch = master
 [submodule "source/robotics_course"]
 	path = source/robotics_course
 	url = https://github.com/StarkitRobots/robotics_course.git
