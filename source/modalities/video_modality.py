@@ -1,13 +1,34 @@
 # -*- coding: utf-8 -*-
 from modalities.skeleton_modalities import  Skeleton_3D
-from modalities.modality import GetPoints
+from modalities.modality import GetPoints, Modality
 
 from pose_estimation.draw import Plotter3d, draw_poses
 
 import numpy as np
 import common
-
 import cv2
+
+import sys
+sys.path.append("../robotics_course/")
+
+from modules.input_output import Source
+
+class Video_source(Modality, Source):
+    def __init__ (self, path_, type_ = "images_source", logger_ = 0):
+        Modality.__init__ (self, logger_)
+        Source.__init__ (self, path_, type_)
+
+    def _read_data (self):
+        self.read_data = self.get_frame ()
+
+    def _process_data (self):
+        self.processed_data = self.read_data
+
+    def _interpret_data (self):
+        self.interpreted_data = self.processed_data
+
+    def get_read_data (self):
+        return self.read_data
 
 class Video (GetPoints):
     def __init__ (self, video_path_ = "", model_path_ = "", mode_ = "GPU", base_height_ = 512, logger_ = 0, focal_length = 3.67):

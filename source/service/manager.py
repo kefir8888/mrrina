@@ -4,6 +4,9 @@ from time import time, sleep
 from service.value_tracker import Value_tracker
 import service.input_output as input_output
 
+from multiprocessing import Process
+from multiprocessing.queues import Queue
+
 class Manager:
     def __init__ (self, config_ = "", silent_mode_ = True, time_to_not_silent_ = 0, color_ = 190, draw_tracker_ = True,
                   show_fps_ = True):
@@ -19,11 +22,19 @@ class Manager:
         self.averaging_window = 15
         self.show_fps = show_fps_
 
-        self.init_time = time()
+        self.init_time = time ()
+
+        self.connections = {}
+        self.processes = []
 
     def __del__ (self):
+        for p in self.processes:
+            p.join ()
+
+        #TODO: add connections.close
+
         self.logfile.close ()
-        cv2.destroyAllWindows()
+        cv2.destroyAllWindows ()
 
     def create_window (self, WIND_X, WIND_Y):
         self.WIND_X = WIND_X
@@ -41,11 +52,33 @@ class Manager:
         self.fsm_processor = fsm.FSM_processor ()
         self.start_time = self.curr_time
 
-    def add_inputs (self, inputs):
-        self.inputs.update (inputs)
+    def add_input (self, input):
+        print ("aa", list (input.values ()) [0] [0].get_name ())
 
-    def add_robots (self, robots):
-        self.robots_list.update (robots)
+        if (list (input.values ()) [0] [0].get_name () == "voice recognition"):
+            queue = Queue ()
+            self.connections.update ({input.keys () [0] : queue})
+
+            process = input.values () [0]
+            process.set_connection (queue)
+            process.start ()
+
+            self.processes.append (process)
+
+        self.inputs.update (input)
+
+    def add_robot (self, robot):
+        if (robot.values () [0].name == "real_qi"):
+            queue = Queue ()
+            self.connections.update ({robot.keys () [0] : queue})
+
+            process = robot.values () [0]
+            process.set_connection (queue)
+            process.start ()
+
+            self.processes.append (process)
+
+        self.robots_list.update (robot)
 
     def form_output_image (self, window_x_sz = -1, one_img_x_sz = -1):
         result = input_output.form_grid (self.output_images, window_x_sz, one_img_x_sz)
@@ -88,25 +121,33 @@ class Manager:
             #if (modality):
             #    commands_pack_len = self.inputs [modality] [0].data_length ()
 
-            commands_pack_len = self.inputs [modality] [0].get_available_data_len ()
+            if (self.inputs [modality].name () == "voice recognition" and
+                self.connections [modality].empty() == False):
+                message = self.connections [modality].get ()
 
-            for i in range (commands_pack_len):
-                command = self.inputs [modality] [0].get_command (skip_reading_data)
+                print ("message from voice recognition", message)
+                continue
 
-                # print ("command", command)
+            else:
+                commands_pack_len = self.inputs [modality] [0].get_available_data_len ()
 
-                self.logfile.write (str (self.curr_time) + str (command))
+                for i in range (commands_pack_len):
+                    command = self.inputs [modality] [0].get_command (skip_reading_data)
 
-                action = self.fsm_processor.handle_command (command)
-                modalities_data [modality].append (action)
+                    # print ("command", command)
 
-            modality_frames = self.inputs [modality] [0].draw (self.canvas)
+                    self.logfile.write (str (self.curr_time) + str (command))
 
-            #print ("shape", modality, modality_frames [0].shape [0])
+                    action = self.fsm_processor.handle_command (command)
+                    modalities_data [modality].append (action)
 
-            if (modality_frames [0].shape [0] > 1):
-                self.output_images += modality_frames
-                self.output_names.append (modality)
+                modality_frames = self.inputs [modality] [0].draw (self.canvas)
+
+                #print ("shape", modality, modality_frames [0].shape [0])
+
+                if (modality_frames [0].shape [0] > 1):
+                    self.output_images += modality_frames
+                    self.output_names.append (modality)
 
         if (self.silent_mode == False):
             for robot_key in self.robots_list.keys():
@@ -131,9 +172,16 @@ class Manager:
                     if (added == False):
                         break
 
-                    print ("commands_pack", commands_pack)
+                    #print ("commands_pack", commands_pack)
 
-                    self.robots_list[robot_key].add_action (commands_pack)
+                    if (self.robots_list [robot_key].name == "real_qi"):
+                        print ("sending command pack")
+                        self.connections [robot_key].put ({"text"   : "tezd",
+                                                           "action" : commands_pack})
+
+                    else:
+                        self.robots_list [robot_key].add_action (commands_pack)
+
                     commands_pack_num += 1
 
             # for key in self.inputs[modality][1]:
@@ -150,14 +198,14 @@ class Manager:
 
         if (self.silent_mode == False):
             for key in self.robots_list.keys ():
-                # print(key)
-                self.robots_list [key].on_idle ()
+                if (self.robots_list [key].name != "real_qi"):
+                    self.robots_list [key].on_idle ()
 
         for key in self.robots_list.keys ():
-            #print (key)
-            robot_canvas = self.robots_list [key].plot_state (canvas_, 150, 40, 2.5)
-            self.output_images.append (robot_canvas)
-            self.output_names.append  (key)
+            if (self.robots_list[key].name != "real_qi"):
+                robot_canvas = self.robots_list [key].plot_state (canvas_, 150, 40, 2.5)
+                self.output_images.append (robot_canvas)
+                self.output_names.append  (key)
 
     def on_idle (self):
         new_time = time ()

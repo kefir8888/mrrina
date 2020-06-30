@@ -2,7 +2,7 @@
 
 import cv2
 import numpy as np
-import time
+#import time
 import math
 from pathlib import Path
 from time import time, sleep
@@ -16,7 +16,7 @@ import requests
 
 #speech generation
 import os.path
-import cyrtranslit
+#import cyrtranslit
 from gtts import gTTS
 
 #.mp3 files playing

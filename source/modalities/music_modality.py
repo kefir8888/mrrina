@@ -63,7 +63,7 @@ class Archive_angles (Modality):
                 self.folder_path = self.angles_path [:-11]
 
                 self.all_data = data ["angles"]
-                self.available_data_len = 400#len (self.all_data)
+                self.available_data_len = 940#len (self.all_data)
 
             else:
                 print("\nNo angles file with name: ", self.angles_path)
@@ -101,7 +101,10 @@ class Archive_angles (Modality):
         #    smol_dict.update ({key : self.processed_data [key]})
 
         for key, i in zip (smol_listb, range (len (smol_listb))):
-            commands.append (("/set_joint_angle", [key, str (self.processed_data [i])]))
+            commands.append (("/set_joint_angle", [key, str (self.processed_data [i] * 2)]))
+
+        commands.append(("/set_joint_angle", ["head_Yaw", str(abs (self.processed_data[0]) - abs (self.processed_data[3]))]))
+        commands.append(("/set_joint_angle", ["head_Pitch", str(abs (self.processed_data[1]) - abs (self.processed_data[4]))]))
 
         return commands
 
@@ -600,11 +603,16 @@ class Net(nn.Module):
         return x[:, 0, :]
 
 class Music_data:
-    def __init__(self, music_path):
-        self.music_path = music_path
+    def __init__(self, music_path_, length_ = -1):
+        self.music_path = music_path_
         self.load_data()
 
         self.end_of_data_reached = False
+
+        self.length = length_
+
+        if (length_ == -1):
+            self.length = len (self.sound_data)
 
     def load_data(self):
         sound = torchaudio.load(self.music_path, out=None, normalization=True)
@@ -640,7 +648,7 @@ class Music_data:
         lower_ind = index * 1764
         upper_ind = index * 1764 + 320000
 
-        if (upper_ind >= len (self.sound_data)):
+        if (upper_ind >= self.length):#len (self.sound_data)):
             self.end_of_data_reached = True
             return self.get_sample (index - 1)
 
@@ -1084,14 +1092,14 @@ class Net(nn.Module):
 
 
 class External_model (Modality):
-    def __init__ (self, model_path_ = "", music_path_ = "", logger_ = 0):
+    def __init__ (self, model_path_ = "", music_path_ = "", logger_ = 0, length_ = -1):
         Modality.__init__(self, logger_)
 
         self.all_data = []
 
         self.model_path = model_path_
         self.music_path = music_path_
-        self.music_data = Music_data (self.music_path)
+        self.music_data = Music_data (self.music_path, length_)
 
         self.sample_num = 0
 
@@ -1119,13 +1127,13 @@ class External_model (Modality):
                 exit(0)
 
     def __del__ (self):
-        #data = {}
-        #data["angles"] = self.all_angles_data
+        data = {}
+        data["angles"] = self.all_angles_data
 
-        np.save (self.folder_path + 'angles_generated.json.npy', np.array (self.all_angles_data).T)
+        #np.save (self.folder_path + 'angles_generated.json.npy', np.array (self.all_angles_data).T)
 
-        #with open(self.folder_path + "angles_generated.json", 'w') as outfile:
-        #    json.dump(data, outfile)
+        with open(self.folder_path + "angles_generated.json", 'w') as outfile:
+            json.dump(data, outfile)
 
     def name (self):
         return "archive angles"
@@ -1157,7 +1165,7 @@ class External_model (Modality):
     def _interpret_data (self):
         self.processed_data_history.append (self.processed_data)
 
-        self.interpreted_data = np.median (self.processed_data_history [-1: ], axis = 0)
+        self.interpreted_data = np.median (self.processed_data_history [-15: ], axis = 0)
         #print ("inter", self.interpreted_data)
 
     def _get_command (self):
@@ -1169,7 +1177,9 @@ class External_model (Modality):
         commands.append(("/set_joint_angle", ["head_Yaw", str(abs (self.interpreted_data[0, 0]) - abs (self.interpreted_data[0, 3]))]))
         commands.append(("/set_joint_angle", ["head_Pitch", str(abs (self.interpreted_data[0, 1]) - abs (self.interpreted_data[0, 4]))]))
 
-        self.all_angles_data.append([self.interpreted_data [0, i] for _, i in zip (smol_listb, range (len (smol_listb)))])
+        #round(, 2)
+
+        self.all_angles_data.append([round (self.interpreted_data [0, i], 2) for _, i in zip (smol_listb, range (len (smol_listb)))])
 
         return commands
 
@@ -1301,7 +1311,7 @@ class Cyclic (Music):
         #self.timeout = Timeout_module (1 / self.rhythm / 8)
         self.timeout = common.Timeout_module (0.0)
 
-        print ("timeout:", self.timeout)
+        #print ("timeout:", self.timeout)
 
         #song = AudioSegment.from_mp3 (music_path_)
         #play (song)
@@ -1418,7 +1428,7 @@ class Cyclic (Music):
 
             comm = regular_part + unique_part
 
-            print (comm)
+            #print (comm)
 
             self.tick += 1
 

@@ -3,12 +3,37 @@ import numpy as np
 import common
 from collections import deque
 import cv2
+
 from pose_estimation.inference_engine_pytorch import InferenceEnginePyTorch
 from pose_estimation.parse_poses import parse_poses
 from pose_estimation.draw import draw_poses
 from pose_estimation.draw import Plotter3d
+
 import os
 import json
+
+class Data_processor:
+    def __init__ (self, logger_ = 0):
+        self.logger = logger_
+
+    def process_data (self, x):
+        pass
+
+class Identical_data_processor (Data_processor):
+    def __init__ (self, logger_):
+        Data_processor.__init__ (self, logger_)
+
+    def process_data (self, x):
+        return x
+
+# class Vision_processor_wrapper (Data_processor):
+#     def __init__ (self, logger_, vision_processor_config_):
+#         Data_processor.__init__ (self, logger_)
+#
+#
+#
+#     def process_data (self, x):
+#         return self.
 
 class Modality:
     def __init__ (self, logger_=0):
@@ -53,14 +78,16 @@ class Modality:
         self.data_loaded_succ = False
         self.available_data_len = 1
 
+        self.name = "not specified"
+
     def get_available_data_len (self):
         return self.available_data_len
 
     def data_loaded (self):
         return self.data_loaded
 
-    def name (self):
-        return "not specified"
+    def get_name (self):
+        return self.name
 
     def draw (self, img):
         return [np.array ((1, 1, 1), np.uint8)]

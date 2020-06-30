@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from naoqi import ALProxy
+#from naoqi import ALProxy
 from common import *
 import copy
+
+from multiprocessing import Process
+from multiprocessing.queues import Queue
 
 markup_color = (250, 250, 250)
 axes = {"x" : 0, "y" : 1, "z" : 2}
@@ -111,7 +114,8 @@ class Fake_robot(Robot):
         self.name = "fake"
 
     def _send_command (self, action):
-        action=action
+        print (action)
+        #action=action
         # if (action [0] in self.available_commands.keys ()):
         #     # print ("sending command [fake]: ", action)
         #
@@ -503,19 +507,6 @@ class Canvas:
         x, y = self._transform_point(p)
 
         self.put_text (text, x, y)
-
-# class Limb_3D:
-#     def __init__ (self, name_, limb_, coords_, init_angle_, axis_ = "x"):
-#         self.name   = name_
-#         self.limb   = limb_
-#         self.coords = coords_
-#         self.angle  = init_angle_
-#         self.axis   = axis_
-#
-#         #self.children = []
-#
-#     def draw (self, canvas):
-#         canvas.draw_3d_line (self.coords, self.coords.add (self.limb), thickness = 3)
 
 class Limb_3D:
     def __init__(self, name_, limb_, axis_, col1_, col2_, angle_multiplier_):
@@ -1026,33 +1017,18 @@ class Real_robot(Robot):
     def plot_state (self, img, x, y, scale = 1):
         self.simulated.plot_state (img, x, y, scale)
 
-class Real_robot_qi(Robot):
-    def __init__(self, ip_num_, timeout_ = 0.04, logger_ = 0, action_time_ = 0.8, omit_warnings_ = False):
+class Real_robot_qi(Robot, Process):
+    def __init__(self, ip_num_, timeout_ = 0.04, logger_ = 0, action_time_ = 0.8, omit_warnings_ = False,
+                 additional_delay_ = 0):
         Robot.__init__ (self, timeout_)
+        Process.__init__ (self)
+
         self.logger = logger_
         self.first_frame = True
 
         self.action_time = action_time_
 
-        print("Hello")
-
         self.ip_num = ip_num_
-        self.motionProxy = ALProxy("ALMotion", self.ip_num, 9559)
-
-        self.postureProxy = ALProxy("ALRobotPosture", self.ip_num, 9559)
-
-        self.motionProxy.wbEnable(False)
-        self.postureProxy.goToPosture("Stand", 1.5)
-        #self.motionProxy.wbEnable(True)
-        #self.motionProxy.setBreathEnabled('Body', False)
-
-        #self.motionProxy.wbFootState("Fixed", "Legs")
-        #self.motionProxy.wbEnableBalanceConstraint(True, "Legs")
-
-        pNames = "Body"
-        pStiffnessLists = 0.6
-        pTimeLists = 1.0
-        self.motionProxy.stiffnessInterpolation (pNames, pStiffnessLists, pTimeLists)
 
         self.simulated = Simulated_robot (logger_=self.logger, omit_warnings_ = omit_warnings_)
 
@@ -1110,8 +1086,17 @@ class Real_robot_qi(Robot):
 
         self.name = "real_qi"
 
+        self.connection_set = False
+        self.connection = 0
+
+        self.additional_delay = additional_delay_
+
     def __del__ (self):
         self.motionProxy.wbEnable(False)
+
+    def set_connection (self, connection):
+        self.connection = connection
+        self.connection_set = True
 
     def _send_command (self):#, action):
         action = self.queue [self.commands_sent]
@@ -1170,7 +1155,7 @@ class Real_robot_qi(Robot):
 
             else:
                 #timeList = [1.0] * 20
-                curr_step_t = 1.0
+                curr_step_t = 1.0 + self.additional_delay
                 self.first_frame = False
 
             t += curr_step_t
@@ -1204,8 +1189,26 @@ class Real_robot_qi(Robot):
         #print ("angles [0]", angles_ [0])
 
         if (len (angles_ [0]) > 0):
-            print ("sending angleinterpolation")
+            print ("sending angleinterpolation", names, angles_, times_)
+
             self.motionProxy.angleInterpolation (names, angles_, times_, True)
+
+            # _names = list ()
+            # _times = list ()
+            # _keys  = list ()
+            #
+            # _names.append("RWristYaw")
+            # _times.append([0.44, 0.84, 1.92, 3.32, 4.4, 5.72, 6.24, 6.76])
+            # _keys.append([0.493928, -1.27409, -1.27223, -1.27409, -1.27223, -1.27409, 0.883542, 0.0858622])
+            #
+            # try:
+            #     motion = ALProxy("ALMotion", "192.168.1.8", 9559)
+            #     # motion = ALProxy("ALMotion")
+            #     motion.angleInterpolation(names, angles_, times_, True)
+            # except BaseException, err:
+            #     print
+            #     err
+
             print ("angleinterpolation finished")
 
             #text_str   = str (action [0] [1] [0])
@@ -1216,11 +1219,39 @@ class Real_robot_qi(Robot):
         #
         #     self.simulated.updated = False
 
-    def on_idle (self):
-        if (len (self.queue) > self.commands_sent):
-            self._send_command ()#command)
+    def run (self):
+        print ("real_qi robot", self.ip_num, "started")
 
-            self.commands_sent = len (self.queue)
+        if (self.connection_set == False):
+            print ("No connection set to ", self.ip_num, "robot, finishing execution")
+            return
+
+        self.motionProxy = ALProxy("ALMotion", self.ip_num, 9559)
+
+        self.postureProxy = ALProxy("ALRobotPosture", self.ip_num, 9559)
+
+        self.motionProxy.wbEnable(False)
+        self.postureProxy.goToPosture("Stand", 1.5)
+        self.motionProxy.wbEnable(True)
+        self.motionProxy.setBreathEnabled('Body', False)
+
+        while (True):
+            sleep (0.1)
+            print ("robot turn")
+
+            while (self.connection.empty () == False):
+                message = self.connection.get()
+
+                print (str (self.ip_num) + "received" + message ["text"])
+                print (message ["action"])
+
+                self.add_action (message ["action"])
+                sleep(0.001)
+
+            if (len (self.queue) > self.commands_sent):
+                self._send_command ()
+
+                self.commands_sent = len (self.queue)
 
     def plot_state (self, img, x, y, scale = 1):
         return self.simulated.plot_state (img, x, y, scale)
@@ -1349,3 +1380,50 @@ class Real_robot_qi(Robot):
 #
 #     def plot_state (self, img, x, y, scale = 1):
 #         return img
+
+class Real_robot_semiautonomous (Robot):
+    def __init__(self, ip_num_, port_, autonomous_=False, logger_ = 0):
+        self.ip_prefix = "http://"
+        self.ip_postfix = ":"
+
+        self.change_ip(ip_num_)
+
+        self.port = port_
+
+        self.autonomous = autonomous_
+
+    def change_ip(self, new_ip):
+        self.ip_num = new_ip
+        self.ip = self.ip_prefix + self.ip_num + self.ip_postfix
+
+    def _send_command(self, command):
+        if (self.autonomous == True):
+            print("Robot", self.ip, "in autonomous mode, skipping command", command)
+            return
+
+        try:
+            r = requests.get(command)
+
+        except:
+            print("cannot send command", command, "to robot", self.ip, self.port)
+
+    def send_command(self, action, text):
+        command = self.ip + str(self.port) + "/?action=" + action + "&text=" + text
+        self._send_command(command)
+
+    def copy_file_to_robot(self, filename_local, path_remote):
+        # copy_str = "pscp -pw nao 1.mp3 nao@192.168.43.169:/home/nao/remote_control/sounds"
+        copy_str = "pscp -pw nao " + filename_local + " nao@" + self.ip_num + \
+                   self.ip_postfix + path_remote
+
+        time.sleep(0.1)
+
+        print("copy str", copy_str)
+        # os.system ("")
+        os.system(copy_str)
+
+    def copy_file_from_robot(self, filename_remote, path_local):
+        copy_str = "pscp -pw nao " + "nao@" + self.ip_num + self.ip_postfix + \
+                   filename_remote + " " + path_local
+
+        os.system(copy_str + "> nothing.txt")
